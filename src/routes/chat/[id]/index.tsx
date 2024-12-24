@@ -1,57 +1,25 @@
-import { component$, useSignal, $, useContext } from "@builder.io/qwik";
-import type { DocumentHead } from "@builder.io/qwik-city";
+import { component$, useSignal, $ } from "@builder.io/qwik";
 import { useStore } from "@builder.io/qwik";
-import { server$ } from "@builder.io/qwik-city";
-import * as Chat from "~/components/chat-component";
-import { ChatOpenAI } from "@langchain/openai";
 import { useNavigate } from "@builder.io/qwik-city";
 import { v4 as uuid } from "uuid";
-import { ctx_msg } from "./layout";
-export const getStreamableResponse = server$(async function* (
-  input: string,
-  history: any[] = [],
-) {
-  const llm = new ChatOpenAI({
-    model: "gpt-3.5-turbo",
-    temperature: 0,
-    streaming: true,
-  });
+import * as Chat from "~/components/chat-component";
+import { getStreamableResponse } from "~/routes/index";
 
-  const messages = [...history, { role: "user", content: input }];
-  const stream = await llm.stream(messages);
+import { useContext } from "@builder.io/qwik";
+import { ctx_msg } from "~/routes/layout";
 
-  try {
-    for await (const chunk of stream) {
-      if (chunk.content) {
-        yield chunk.content;
-      }
-    }
-  } catch (err) {
-    console.error("Streaming error:", err);
-    throw err;
-  }
-
-  // Store the response in history
-  history.push({ role: "user", content: input });
-  const finalResponse = await llm.invoke(messages);
-  history.push({ role: "assistant", content: finalResponse.content });
-
-  return history;
-});
+export type Message = {
+  type: "ai" | "human";
+  content: string;
+};
 
 export default component$(() => {
+  const message_ctx = useContext(ctx_msg);
   const nav = useNavigate();
   const isRunning = useSignal(false);
   const isErroring = useSignal(false);
-  const ctx = useContext(ctx_msg);
-  const id = uuid();
-  type Message = {
-    type: "ai" | "human";
-    content: string;
-  };
-
   const messages = useStore<{ value: Message[] }>({
-    value: [],
+    value: [...message_ctx],
   });
 
   const submit = $(async (e: Event) => {
@@ -59,18 +27,15 @@ export default component$(() => {
       const form = e.target as HTMLFormElement;
       const formData = new FormData(form);
       const message = formData.get("message");
-
       isErroring.value = false;
-
-      const inputElement = form.querySelector(
-        'input[name="message"]',
-      ) as HTMLInputElement;
-      inputElement.value = "";
-
       messages.value = [
         ...messages.value,
         { type: "human", content: message as string },
       ];
+      const inputElement = form.querySelector(
+        'input[name="message"]',
+      ) as HTMLInputElement;
+      inputElement.value = "";
 
       const data = await getStreamableResponse(
         message as string,
@@ -89,13 +54,6 @@ export default component$(() => {
         messages.value[messages.value.length - 1].content += item + " ";
       }
       isRunning.value = false;
-      while (ctx.length > 0) {
-        ctx.pop();
-      }
-
-      ctx.push(...messages.value);
-
-      return nav("/chat/" + id);
     } catch (error) {
       console.error("Error in chat submission:", error);
       isErroring.value = true;
@@ -106,7 +64,7 @@ export default component$(() => {
   return (
     <div class="flex h-screen flex-col">
       <div class="flex-1 overflow-y-auto  border border-gray-600 bg-gray-700 p-4">
-        <div class="mb-4">
+        <div class="max-md mb-4">
           <h2 class="mb-2 text-lg font-semibold text-white">Previous convos</h2>
           <div class="flex flex-col gap-2">
             {messages.value
@@ -126,7 +84,7 @@ export default component$(() => {
               .map((chat, index) => (
                 <div
                   key={index}
-                  class=" w-72 cursor-pointer rounded bg-gray-600 p-3 hover:bg-gray-500"
+                  class="w-72 cursor-pointer rounded bg-gray-600 p-3 hover:bg-gray-500"
                   onClick$={() => {
                     const input = document.querySelector(
                       'input[name="message"]',
@@ -180,17 +138,16 @@ export default component$(() => {
         </div>
       )}
       <div class="rouded-lg fixed bottom-5 left-0 right-0 mx-auto max-w-4xl p-4">
-        <Chat.ChatInput messages={0} onSubmit$={submit} isRunning={isRunning} />
+        <Chat.ChatInput
+          messages={messages.value.length}
+          onSubmit$={submit}
+          reset={$(() => {
+            messages.value = [];
+            nav("/");
+          })}
+          isRunning={isRunning}
+        />
       </div>
     </div>
   );
 });
-export const head: DocumentHead = {
-  title: "Just Chat",
-  meta: [
-    {
-      name: "description",
-      content: "Just chatting",
-    },
-  ],
-};

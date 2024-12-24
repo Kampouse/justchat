@@ -1,6 +1,11 @@
 import { component$, Slot } from "@builder.io/qwik";
 import type { RequestHandler } from "@builder.io/qwik-city";
-
+import type { Message } from "./chat/[id]";
+import {
+  useStore,
+  useContextProvider,
+  createContextId,
+} from "@builder.io/qwik";
 export const onGet: RequestHandler = async ({ cacheControl }) => {
   // Control caching for this request for best performance and to reduce hosting costs:
   // https://qwik.dev/docs/caching/
@@ -12,6 +17,11 @@ export const onGet: RequestHandler = async ({ cacheControl }) => {
   });
 };
 
+export const ctx_msg = createContextId<Message[]>("messages");
 export default component$(() => {
+  const sharedMessages = useStore<Message[]>([]);
+
+  useContextProvider<Message[]>(ctx_msg, sharedMessages);
+
   return <Slot />;
 });
