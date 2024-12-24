@@ -1,14 +1,9 @@
-import { component$, useSignal } from "@builder.io/qwik";
+import { component$, useSignal, $ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
-import { Form } from "@builder.io/qwik-city";
-import { OpenAI } from "langchain";
-import { OpenAIAgent } from "langchain/agents";
-import { routeAction$ } from "@builder.io/qwik-city";
 import { useStore } from "@builder.io/qwik";
 import { server$ } from "@builder.io/qwik-city";
-
+import * as Chat from "~/components/chat-component";
 import { ChatOpenAI } from "@langchain/openai";
-
 export const getStreamableResponse = server$(async function* (
   input: string,
   history: any[] = [],
@@ -20,7 +15,6 @@ export const getStreamableResponse = server$(async function* (
   });
 
   const messages = [...history, { role: "user", content: input }];
-
   const stream = await llm.stream(messages);
 
   try {
@@ -42,9 +36,9 @@ export const getStreamableResponse = server$(async function* (
   return history;
 });
 
-export const useSendChat = routeAction$(async () => {});
 export default component$(() => {
   const isRunning = useSignal(false);
+  const isErroring = useSignal(false);
   type Message = {
     type: "ai" | "human";
     content: string;
@@ -52,6 +46,46 @@ export default component$(() => {
 
   const messages = useStore<{ value: Message[] }>({
     value: [],
+  });
+
+  const submit = $(async (e: Event) => {
+    try {
+      const form = e.target as HTMLFormElement;
+      const formData = new FormData(form);
+      const message = formData.get("message");
+      isErroring.value = false;
+      messages.value = [
+        ...messages.value,
+        { type: "human", content: message as string },
+      ];
+      const inputElement = form.querySelector(
+        'input[name="message"]',
+      ) as HTMLInputElement;
+      inputElement.value = "";
+
+      const data = await getStreamableResponse(
+        message as string,
+        messages.value,
+      );
+      const output = "";
+      messages.value = [
+        ...messages.value,
+        {
+          type: "ai",
+          content: output,
+        },
+      ];
+      isRunning.value = true;
+      throw Error();
+      for await (const item of data) {
+        messages.value[messages.value.length - 1].content += item + " ";
+      }
+      isRunning.value = false;
+    } catch (error) {
+      console.error("Error in chat submission:", error);
+      isErroring.value = true;
+      isRunning.value = false;
+    }
   });
 
   return (
@@ -63,124 +97,46 @@ export default component$(() => {
               key={index}
               class={`flex items-start ${message.type === "human" ? "justify-end" : ""}`}
             >
-              {message.type === "ai" && (
-                <div class="flex-shrink-0">
-                  <div class="h-8 w-8 rounded-full bg-gray-300"></div>
-                </div>
-              )}
-              <div
-                class={`${message.type === "ai" ? "ml-3" : ""} rounded-lg ${message.type === "human" ? "bg-blue-500" : "bg-white"} p-3 shadow-sm`}
-              >
-                <p
-                  class={
-                    message.type === "human" ? "text-white" : "text-gray-800"
-                  }
-                >
-                  {message.content}
-                </p>
-              </div>
+              {message.type === "ai" && <Chat.AiAvatar />}
+              <Chat.Message message={message} />
             </div>
           ))}
         </div>
       </div>
-
-      <div class="border-t border-gray-200 bg-white p-4">
-        <Form
-          onSubmit$={async (e) => {
-            try {
-              const form = e.target as HTMLFormElement;
-              const formData = new FormData(form);
-              const mess = formData.get("message");
-
-              messages.value = [
-                ...messages.value,
-                { type: "human", content: mess as string },
-              ];
-
-              console.log(mess);
-
-              const inputElement = form.querySelector(
-                'input[name="message"]',
-              ) as HTMLInputElement;
-              inputElement.value = "";
-
-              const data = await getStreamableResponse(
-                mess as string,
-                messages.value,
-              );
-              const output = "";
-              messages.value = [
-                ...messages.value,
-                {
-                  type: "ai",
-                  content: output,
-                },
-              ];
-              isRunning.value = true;
-              for await (const item of data) {
-                messages.value[messages.value.length - 1].content += item + " ";
-              }
-              isRunning.value = false;
-            } catch (error) {
-              console.error("Error in chat submission:", error);
-              isRunning.value = false;
-            }
-          }}
-          class="flex space-x-2"
-        >
-          <input
-            type="text"
-            name="message"
-            placeholder="Type a message..."
-            required
-            minLength={1}
-            autoComplete="off"
-            class="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
-          />
-          <button
-            type="submit"
-            class="flex items-center rounded-lg bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600"
-            disabled={isRunning.value}
-          >
-            {isRunning.value ? (
-              <>
-                <svg
-                  class="-ml-1 mr-3 h-5 w-5 animate-spin text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    class="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="4"
-                  ></circle>
-                  <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                generating...
-              </>
-            ) : (
-              "Send"
-            )}
-          </button>
-        </Form>
-      </div>
+      {isErroring.value && (
+        <div class="fixed bottom-20 left-0 right-0 mx-auto max-w-md p-4">
+          <div class="animate-fade-in rounded-lg border border-red-200 bg-red-100 p-4 text-red-700 shadow-lg">
+            <div class="flex items-center space-x-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5 cursor-pointer"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                onClick$={() => (isErroring.value = false)}
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <p class="font-medium">
+                An error occurred during chat. Please try again.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      <Chat.ChatInput onSubmit$={submit} isRunning={isRunning} />
     </div>
   );
 });
 export const head: DocumentHead = {
-  title: "Welcome to Qwik",
+  title: "Just Chat",
   meta: [
     {
       name: "description",
-      content: "Qwik site description",
+      content: "Just chatting",
     },
   ],
 };
