@@ -9,27 +9,44 @@ import { server$ } from "@builder.io/qwik-city";
 
 import { ChatOpenAI } from "@langchain/openai";
 
-export const getStreamableResponse = server$(async function* (input: string) {
+export const getStreamableResponse = server$(async function* (
+  input: string,
+  history: any[] = [],
+) {
   const llm = new ChatOpenAI({
     model: "gpt-3.5-turbo",
     temperature: 0,
+    streaming: true,
   });
-  const data = await llm.invoke([{ role: "user", content: "Hi im bob" }]);
-  console.log(data);
-  const words = input.split(" ");
 
-  for (const word of words) {
-    yield word;
-    // Simulate processing delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
+  const messages = [...history, { role: "user", content: input }];
+
+  const stream = await llm.stream(messages);
+
+  try {
+    for await (const chunk of stream) {
+      if (chunk.content) {
+        yield chunk.content;
+      }
+    }
+  } catch (err) {
+    console.error("Streaming error:", err);
+    throw err;
   }
+
+  // Store the response in history
+  history.push({ role: "user", content: input });
+  const finalResponse = await llm.invoke(messages);
+  history.push({ role: "assistant", content: finalResponse.content });
+
+  return history;
 });
 
 export const useSendChat = routeAction$(async () => {});
 export default component$(() => {
   const isRunning = useSignal(false);
   type Message = {
-    type: "bot" | "user";
+    type: "ai" | "human";
     content: string;
   };
 
@@ -44,19 +61,19 @@ export default component$(() => {
           {messages.value.map((message, index) => (
             <div
               key={index}
-              class={`flex items-start ${message.type === "user" ? "justify-end" : ""}`}
+              class={`flex items-start ${message.type === "human" ? "justify-end" : ""}`}
             >
-              {message.type === "bot" && (
+              {message.type === "ai" && (
                 <div class="flex-shrink-0">
                   <div class="h-8 w-8 rounded-full bg-gray-300"></div>
                 </div>
               )}
               <div
-                class={`${message.type === "bot" ? "ml-3" : ""} rounded-lg ${message.type === "user" ? "bg-blue-500" : "bg-white"} p-3 shadow-sm`}
+                class={`${message.type === "ai" ? "ml-3" : ""} rounded-lg ${message.type === "human" ? "bg-blue-500" : "bg-white"} p-3 shadow-sm`}
               >
                 <p
                   class={
-                    message.type === "user" ? "text-white" : "text-gray-800"
+                    message.type === "human" ? "text-white" : "text-gray-800"
                   }
                 >
                   {message.content}
@@ -70,36 +87,44 @@ export default component$(() => {
       <div class="border-t border-gray-200 bg-white p-4">
         <Form
           onSubmit$={async (e) => {
-            const form = e.target as HTMLFormElement;
-            const formData = new FormData(form);
-            const mess = formData.get("message");
+            try {
+              const form = e.target as HTMLFormElement;
+              const formData = new FormData(form);
+              const mess = formData.get("message");
 
-            messages.value = [
-              ...messages.value,
-              { type: "user", content: mess as string },
-            ];
+              messages.value = [
+                ...messages.value,
+                { type: "human", content: mess as string },
+              ];
 
-            console.log(mess);
+              console.log(mess);
 
-            const inputElement = form.querySelector(
-              'input[name="message"]',
-            ) as HTMLInputElement;
-            inputElement.value = "";
+              const inputElement = form.querySelector(
+                'input[name="message"]',
+              ) as HTMLInputElement;
+              inputElement.value = "";
 
-            const data = await getStreamableResponse(mess as string);
-            const output = "";
-            messages.value = [
-              ...messages.value,
-              {
-                type: "bot",
-                content: output,
-              },
-            ];
-            isRunning.value = true;
-            for await (const item of data) {
-              messages.value[messages.value.length - 1].content += item + " ";
+              const data = await getStreamableResponse(
+                mess as string,
+                messages.value,
+              );
+              const output = "";
+              messages.value = [
+                ...messages.value,
+                {
+                  type: "ai",
+                  content: output,
+                },
+              ];
+              isRunning.value = true;
+              for await (const item of data) {
+                messages.value[messages.value.length - 1].content += item + " ";
+              }
+              isRunning.value = false;
+            } catch (error) {
+              console.error("Error in chat submission:", error);
+              isRunning.value = false;
             }
-            isRunning.value = false;
           }}
           class="flex space-x-2"
         >
