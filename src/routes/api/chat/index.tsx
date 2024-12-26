@@ -1,5 +1,5 @@
 import { type RequestHandler } from "@builder.io/qwik-city";
-import { getStreamableResponse } from "~/routes";
+import { getStreamableResponse } from "..";
 export const onGet: RequestHandler = async (ctx) => {
   const writableStream = ctx.getWritableStream();
   const writer = writableStream.getWriter();

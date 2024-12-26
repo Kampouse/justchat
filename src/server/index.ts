@@ -1,7 +1,7 @@
-import { Message } from "~/routes/chat/[id]";
 import { Drizzler } from "../../drizzle";
 import { schema } from "../../drizzle/schema";
-import { v4 as uuid } from "uuid";
+import { ChatOpenAI } from "@langchain/openai";
+import { Message } from "~/routes/api";
 import { eq } from "drizzle-orm";
 export type Session = {
   user: {
@@ -42,7 +42,7 @@ export const getUser = async (ctx: Session | null) => {
       .then((users) => users[0]);
   }
 };
-export const createConvo = async (ctx: Session | null) => {
+export const createConvo = async (ctx: Session | null, uuid: string) => {
   if (ctx) {
     const user = await getUser(ctx);
 
@@ -53,7 +53,7 @@ export const createConvo = async (ctx: Session | null) => {
         .values({
           name: ctx.user.email,
           createdAt: new Date(),
-          uuid: uuid(),
+          uuid: uuid,
           createdBy: user.id,
         })
         .returning()
@@ -82,7 +82,7 @@ export const getConvoByUuid = async ({
   }
 };
 
-export const selectConvo = async (ctx: Session | null) => {
+export const getConvos = async (ctx: Session | null) => {
   if (ctx) {
     const user = await getUser(ctx);
     const db = Drizzler();
@@ -91,7 +91,6 @@ export const selectConvo = async (ctx: Session | null) => {
         .select()
         .from(schema.conversations)
         .where(eq(schema.conversations.createdBy, user.id))
-        .limit(5)
         .execute();
     }
   }
@@ -155,5 +154,56 @@ export const createMessages = async ({
         .returning()
         .execute();
     }
+  }
+};
+export async function* streamableResponse(input: string, history: any[] = []) {
+  const llm = new ChatOpenAI({
+    model: "gpt-3.5-turbo",
+    temperature: 0,
+    streaming: true,
+  });
+
+  const messages = [...history, { role: "user", content: input }];
+  const stream = await llm.stream(messages);
+
+  try {
+    for await (const chunk of stream) {
+      if (chunk.content) {
+        yield chunk.content;
+      }
+    }
+  } catch (err) {
+    console.error("Streaming error:", err);
+    throw err;
+  }
+
+  // Store the response in history
+  history.push({ role: "user", content: input });
+  const finalResponse = await llm.invoke(messages);
+  history.push({ role: "assistant", content: finalResponse.content });
+
+  return history;
+}
+export const createChatTitle = async (messages: Message[]) => {
+  const llm = new ChatOpenAI({
+    model: "gpt-3.5-turbo",
+    temperature: 0,
+  });
+
+  if (messages.length === 0) return "Empty chat";
+
+  const firstMessage = messages
+    .slice(0, 1)
+    .map((m) => `${m.type}: ${m.content}`)
+    .join("\n");
+
+  const prompt = `Summarize this chat briefly in 3-4 words based on initial messages:\n${firstMessage}`;
+
+  try {
+    const response = await llm.invoke(prompt);
+    return response.content;
+  } catch (error) {
+    console.error("Error summarizing chat:", error);
+    return null;
   }
 };
