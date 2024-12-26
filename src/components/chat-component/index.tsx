@@ -1,7 +1,5 @@
 import { component$ } from "@builder.io/qwik";
 import { Form } from "@builder.io/qwik-city";
-import { useNavigate } from "@builder.io/qwik-city";
-import { v4 as uuid } from "uuid";
 import type { QRL, Signal } from "@builder.io/qwik";
 
 // Components
@@ -64,8 +62,7 @@ export const ChatInput = component$<{
   onSubmit$: QRL<(e: Event) => Promise<void>>;
   messages: number;
   isRunning: Signal<boolean>;
-}>(({ onSubmit$, isRunning, messages, reset }) => {
-  const nav = useNavigate();
+}>(({ onSubmit$, isRunning, messages }) => {
   return (
     <div class="rounded-lg  border-t border-gray-700 bg-gray-900 p-4">
       <Form preventdefault:submit onSubmit$={onSubmit$} class="flex space-x-2">
@@ -94,21 +91,15 @@ export const ChatInput = component$<{
         </button>
 
         {messages > 1 && (
-          <button
+          <a
             class=" flex items-center rounded-lg border border-gray-700 bg-gray-900 px-4 py-2 text-white hover:bg-gray-800"
-            preventdefault:click
-            onClick$={(e) => {
-              if (reset) {
-                reset(e);
-                nav("/chat/" + uuid());
-              }
-            }}
+            href="/"
           >
             <span class="mr-2">New Chat</span>
             <span role="img" aria-label="fire">
               🔥
             </span>
-          </button>
+          </a>
         )}
       </Form>
     </div>

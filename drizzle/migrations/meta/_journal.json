@@ -1,0 +1,34 @@
+{
+  "version": "5",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1735137049462,
+      "tag": "0000_magical_madripoor",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1735137448260,
+      "tag": "0001_bored_paibok",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1735152110244,
+      "tag": "0002_violet_taskmaster",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1735164082183,
+      "tag": "0003_unusual_joystick",
+      "breakpoints": true
+    }
+  ]
+}

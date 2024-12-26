@@ -1,25 +1,51 @@
 import { component$, useSignal, $ } from "@builder.io/qwik";
 import { useStore } from "@builder.io/qwik";
-import { useNavigate } from "@builder.io/qwik-city";
-import { v4 as uuid } from "uuid";
+import { useLocation, useNavigate } from "@builder.io/qwik-city";
 import * as Chat from "~/components/chat-component";
+import { routeLoader$ } from "@builder.io/qwik-city";
 import { getStreamableResponse } from "~/routes/index";
-
-import { useContext } from "@builder.io/qwik";
-import { ctx_msg } from "~/routes/layout";
-
+import { getAllMessages } from "~/server";
+import type { Session } from "~/server";
+import { CreateMessages } from "~/routes/index";
 export type Message = {
   type: "ai" | "human";
   content: string;
 };
 
+export const useMessages = routeLoader$(async (e) => {
+  const ctx = e.sharedMap.get("session") as Session | null;
+  const uuid = e.params.id;
+
+  const messages = await getAllMessages({
+    ctx: ctx,
+    uuid: uuid,
+  });
+  const msgs = messages?.map((el) => {
+    return {
+      type: el.type,
+      content: el.content,
+    };
+  });
+
+  return msgs as Message[];
+});
+
+export const useServerSessio = routeLoader$((e) => {
+  return e.sharedMap.get("session") as Session | null;
+});
+
 export default component$(() => {
-  const message_ctx = useContext(ctx_msg);
+  const loc = useLocation();
+
+  const uuid = loc.params["id"];
+  const serverMessages = useMessages();
+  console.log("server", serverMessages.value);
+  const session = useServerSessio();
   const nav = useNavigate();
   const isRunning = useSignal(false);
   const isErroring = useSignal(false);
   const messages = useStore<{ value: Message[] }>({
-    value: [...message_ctx],
+    value: [...serverMessages.value],
   });
 
   const submit = $(async (e: Event) => {
@@ -53,6 +79,12 @@ export default component$(() => {
       for await (const item of data) {
         messages.value[messages.value.length - 1].content += item + " ";
       }
+      await CreateMessages({
+        ctx: session.value,
+        uuid: uuid,
+        convo: messages.value,
+      });
+
       isRunning.value = false;
     } catch (error) {
       console.error("Error in chat submission:", error);
@@ -143,7 +175,10 @@ export default component$(() => {
           onSubmit$={submit}
           reset={$(() => {
             messages.value = [];
-            nav("/");
+            nav("/", {
+              forceReload: true,
+              replaceState: true,
+            });
           })}
           isRunning={isRunning}
         />
