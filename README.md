@@ -1,65 +1,95 @@
-# Qwik City App ⚡️
+# JustChat - Qwik.js AI Chat Application
 
-- [Qwik Docs](https://qwik.dev/)
-- [Discord](https://qwik.dev/chat)
-- [Qwik GitHub](https://github.com/QwikDev/qwik)
-- [@QwikDev](https://twitter.com/QwikDev)
-- [Vite](https://vitejs.dev/)
+A modern AI chat application built with Qwik.js, DrizzleORM, LangChain, and GitHub authentication.
 
----
+## Features
+
+- Real-time AI chat powered by OpenAI GPT-3.5
+- Previous conversation history and management
+- GitHub OAuth authentication
+- Streaming responses
+- Clean and intuitive UI
+- Responsive design
+
+## Tech Stack
+
+- **Frontend**: [Qwik.js](https://qwik.builder.io/)
+- **Database**: PostgreSQL with [DrizzleORM](https://orm.drizzle.team/)
+- **AI**: [LangChain](https://js.langchain.com/) with OpenAI
+- **Authentication**: GitHub OAuth via [@auth/qwik](https://authjs.dev/)
+- **Styling**: Tailwind CSS
+
+## Prerequisites
+
+- Node.js
+- GitHub OAuth application credentials
+- OpenAI API key
+
+## Environment Variables
+
+Create a `.env` file with:
+
+```env
+
+OPENAI_API_KEY=""
+AI_SMITH=""
+LANGCHAIN_TRACING_V2="true";
+AUTH_GITHUB_ID=""
+AUTH_GITHUB_SECRET=""
+AUTH_SECRET=""
+```
+
+## Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/yourusername/justchat.git
+cd justchat
+```
+
+2. Install dependencies:
+
+```bash
+pnpm install
+```
+
+3. Set up your database:
+
+```bash
+    npx drizzle-kit  push:sqlite
+```
+
+4. Start the development server:
+
+```bash
+pnpm run dev
+```
+
+Visit http://localhost:5173 to see your app running!
+
+## GitHub OAuth Setup
+
+1. Go to GitHub Developer Settings
+2. Create a new OAuth App
+3. Set Homepage URL to `http://localhost:5173`
+4. Set Authorization callback URL to `http://localhost:5173/auth/callback/github`
+5. Copy Client ID and Client Secret to your `.env` file
 
 ## Project Structure
 
-This project is using Qwik with [QwikCity](https://qwik.dev/qwikcity/overview/). QwikCity is just an extra set of tools on top of Qwik to make it easier to build a full site, including directory-based routing, layouts, and more.
+- `/src/routes` - Page routes and API endpoints
+- `/src/components` - Reusable UI components
+- `/src/server` - Server-side utilities and database operations
+- `/drizzle` - Database schema and migrations
 
-Inside your project, you'll see the following directory structure:
+## Key Features Implementation
 
-```
-├── public/
-│   └── ...
-└── src/
-    ├── components/
-    │   └── ...
-    └── routes/
-        └── ...
-```
+- Real-time chat using LangChain streaming
+- Persistent conversations with DrizzleORM
+- Auth   wit authJS
+- Responsive UI with Tailwind CSS
 
-- `src/routes`: Provides the directory-based routing, which can include a hierarchy of `layout.tsx` layout files, and an `index.tsx` file as the page. Additionally, `index.ts` files are endpoints. Please see the [routing docs](https://qwik.dev/qwikcity/routing/overview/) for more info.
+## License
 
-- `src/components`: Recommended directory for components.
-
-- `public`: Any static assets, like images, can be placed in the public directory. Please see the [Vite public directory](https://vitejs.dev/guide/assets.html#the-public-directory) for more info.
-
-## Add Integrations and deployment
-
-Use the `pnpm qwik add` command to add additional integrations. Some examples of integrations includes: Cloudflare, Netlify or Express Server, and the [Static Site Generator (SSG)](https://qwik.dev/qwikcity/guides/static-site-generation/).
-
-```shell
-pnpm qwik add # or `pnpm qwik add`
-```
-
-## Development
-
-Development mode uses [Vite's development server](https://vitejs.dev/). The `dev` command will server-side render (SSR) the output during development.
-
-```shell
-npm start # or `pnpm start`
-```
-
-> Note: during dev mode, Vite may request a significant number of `.js` files. This does not represent a Qwik production build.
-
-## Preview
-
-The preview command will create a production build of the client modules, a production build of `src/entry.preview.tsx`, and run a local server. The preview server is only for convenience to preview a production build locally and should not be used as a production server.
-
-```shell
-pnpm preview # or `pnpm preview`
-```
-
-## Production
-
-The production build will generate client and server modules by running both client and server build commands. The build command will use Typescript to run a type check on the source code.
-
-```shell
-pnpm build # or `pnpm build`
-```
+MIT
