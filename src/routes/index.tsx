@@ -1,10 +1,9 @@
 import { component$, useSignal, $, useTask$ } from "@builder.io/qwik";
-import { Link } from "@builder.io/qwik-city";
 import type { Message } from "./api";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { useStore } from "@builder.io/qwik";
 import { routeLoader$, useLocation } from "@builder.io/qwik-city";
-import { ModalLogin } from "~/components/modal-login";
+import Panel from "~/components/panel";
 import * as Chat from "~/components/chat-component";
 import { useNavigate } from "@builder.io/qwik-city";
 import { type Session } from "~/server";
@@ -97,29 +96,7 @@ export default component$(() => {
 
   return (
     <div class="flex h-screen">
-      <div class="w-72 border-r border-gray-600 bg-gray-700 p-4">
-        <div class="mb-4">
-          <h2 class="mb-2 text-lg font-semibold text-white">Previous convos</h2>
-          <ModalLogin show={isVsible} />
-
-          <div class="flex flex-col gap-2">
-            {convos.value.slice(-5).map((chat, index) => (
-              <Link
-                href={"/chat/" + chat.uuid}
-                key={index}
-                class="cursor-pointer rounded bg-gray-600 p-3 hover:bg-gray-500"
-              >
-                <h3 class="truncate text-sm font-medium text-white">
-                  {chat.name ?? "no name yet"}
-                </h3>
-                <p class="truncate text-xs text-gray-300">
-                  {chat.createdAt.toLocaleString()}
-                </p>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
+      <Panel convos={convos.value} />
 
       <div class="flex flex-1 flex-col">
         <div class="flex-1 overflow-y-auto bg-gray-700 p-4">

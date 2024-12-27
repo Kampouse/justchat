@@ -2,7 +2,7 @@ import { component$, useSignal, $, useTask$ } from "@builder.io/qwik";
 import { useStore } from "@builder.io/qwik";
 import { useLocation, useNavigate } from "@builder.io/qwik-city";
 import { type DocumentHead } from "@builder.io/qwik-city";
-import { Link } from "@builder.io/qwik-city";
+import Panel from "~/components/panel";
 import * as Chat from "~/components/chat-component";
 import { routeLoader$ } from "@builder.io/qwik-city";
 import {
@@ -46,15 +46,16 @@ export const useConved = routeLoader$(async (e) => {
 export default component$(() => {
   const loc = useLocation();
   const convs = useConved();
-  const uuid = loc.params["id"];
   const serverMessages = useMessages();
   const session = useServerSessio();
   const nav = useNavigate();
   const messages = useStore<{ value: Message[] }>({ value: [] });
   const isRunning = useSignal(false);
   const isErroring = useSignal(false);
+  const uuid = useSignal<string>(loc.params["id"]);
   useTask$(({ track }) => {
-    track(() => loc.url);
+    track(() => loc.params["id"]);
+    uuid.value = loc.params["id"];
     messages.value = [...serverMessages.value];
   });
 
@@ -90,7 +91,7 @@ export default component$(() => {
       }
       await CreateMessages({
         ctx: session.value,
-        uuid: uuid,
+        uuid: uuid.value,
         convo: messages.value.slice(-2), // Only send last user message and AI response
       });
       isRunning.value = false;
@@ -103,28 +104,7 @@ export default component$(() => {
 
   return (
     <div class="flex h-screen">
-      <div class="w-72 border-r border-gray-600 bg-gray-700 p-4">
-        <div class="mb-4">
-          <h2 class="mb-2 text-lg font-semibold text-white">Previous convos</h2>
-          <div class="flex flex-col gap-2">
-            {convs.value.slice(-5).map((chat, index) => (
-              <Link
-                href={"/chat/" + chat.uuid}
-                key={index}
-                class={`cursor-pointer rounded bg-gray-600  p-3 hover:bg-gray-500 `}
-              >
-                <h3 class="truncate text-sm font-medium text-white">
-                  {chat.name ?? "no name yet"}
-                </h3>
-                <p class="truncate text-xs text-gray-300">
-                  {chat.createdAt.toLocaleString()}
-                </p>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-
+      <Panel convos={convs.value} />
       <div class="flex flex-1 flex-col">
         <div class="flex-1 overflow-y-auto bg-gray-700 p-4">
           <div class="flex flex-col space-y-4">

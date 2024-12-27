@@ -17,7 +17,6 @@ export const onGet: RequestHandler = async (req) => {
     "/landing": "public",
     "/landing/": "public",
   };
-
   type Session = {
     user: {
       name: string;
@@ -27,9 +26,9 @@ export const onGet: RequestHandler = async (req) => {
     expires: string;
   } | null;
   const data = req.sharedMap.get("session") as Session;
-
+  console.log(data?.user);
   //get current session time and compare with expires time
-  if (data) {
+  if (data?.user) {
     const currentTime = new Date().getTime();
     const sessionDate = new Date(data.expires).getTime();
     if (currentTime > sessionDate) {
