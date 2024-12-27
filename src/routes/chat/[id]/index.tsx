@@ -1,6 +1,7 @@
 import { component$, useSignal, $, useTask$ } from "@builder.io/qwik";
 import { useStore } from "@builder.io/qwik";
 import { useLocation, useNavigate } from "@builder.io/qwik-city";
+import { type DocumentHead } from "@builder.io/qwik-city";
 import { Link } from "@builder.io/qwik-city";
 import * as Chat from "~/components/chat-component";
 import { routeLoader$ } from "@builder.io/qwik-city";
@@ -9,7 +10,12 @@ import {
   getStreamableResponse,
   type Message,
 } from "~/routes/api";
-import { getAllMessages, getConvos, type Session } from "~/server";
+import {
+  getAllMessages,
+  getConvoByUuid,
+  getConvos,
+  type Session,
+} from "~/server";
 export const useMessages = routeLoader$(async (e) => {
   const ctx = e.sharedMap.get("session") as Session | null;
   const uuid = e.params.id;
@@ -177,3 +183,23 @@ export default component$(() => {
     </div>
   );
 });
+export const useTitle = routeLoader$(async (e) => {
+  const ctx = e.sharedMap.get("session") as Session;
+  const uuid = e.params["id"];
+
+  return await getConvoByUuid({
+    ctx: ctx,
+    uuid: uuid,
+  });
+});
+export const head: DocumentHead = ({ resolveValue }) => {
+  const title = resolveValue(useTitle);
+  return {
+    title: ("justChat | " + title?.name) as string,
+    meta: [
+      {
+        name: "description",
+      },
+    ],
+  };
+};
