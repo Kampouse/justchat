@@ -71,7 +71,6 @@ COPY drizzle drizzle
 COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/dist ./dist
 COPY --from=build /usr/src/app/server ./server
-ENV ORIGIN http://localhost:5173
 # Expose the port that the application listens on.
 EXPOSE 3000
 
