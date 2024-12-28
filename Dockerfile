@@ -12,7 +12,7 @@ WORKDIR /usr/src/app
 FROM base as deps
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm drizzle-kit
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.pnpm-store to speed up subsequent builds.
@@ -37,8 +37,6 @@ COPY . .
 COPY  drizzle.config.ts .
 COPY  drizzle drizzle
 RUN npm install -g pnpm drizzle-kit @libsql/client
-
-RUN npx drizzle-kit  push --config drizzle.config.ts
  # Ensure local.db is writable
 
 # Run the build script.
@@ -70,7 +68,6 @@ COPY drizzle drizzle
 
 
 
-
 # Copy the production dependencies from the deps stage and also
 # the built application from the build stage into the image.
 COPY --from=deps /usr/src/app/node_modules ./node_modules
@@ -81,4 +78,4 @@ ENV ORIGIN http://localhost:5173
 EXPOSE 3000
 
 # Run the application.
-CMD pnpm serve
+CMD ["sh", "-c", "npx drizzle-kit --config drizzle.config.ts  push; pnpm serve"]
