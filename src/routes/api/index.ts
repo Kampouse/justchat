@@ -6,7 +6,7 @@ import {
   createChatTitle,
 } from "~/server";
 import type { Session } from "~/server";
-import { Drizzler } from "../../../drizzle";
+import Drizzler from "../../../drizzle";
 import { conversations } from "../../../drizzle/schema";
 import { eq } from "drizzle-orm";
 

@@ -3,9 +3,9 @@ import type { Config } from "drizzle-kit";
 import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({
-  dialect: "sqlite",
+  dialect: "turso",
   dbCredentials: {
-    url: " ./drizzle/db/db.sqlite",
+    url: "http://localhost:8080",
   },
   schema: "./drizzle/schema.ts",
   out: "./drizzle/migrations",

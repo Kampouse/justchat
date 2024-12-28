@@ -1,4 +1,5 @@
-import { Drizzler } from "../../drizzle";
+import Drizzler from "../../drizzle";
+
 import { schema } from "../../drizzle/schema";
 import { ChatOpenAI } from "@langchain/openai";
 import { Message } from "~/routes/api";
