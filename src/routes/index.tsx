@@ -24,6 +24,7 @@ export default component$(() => {
 
   const user = useServerSession();
   const convos = useConvos();
+  const session = useServerSession();
 
   const isRunning = useSignal(false);
   const isErroring = useSignal(false);
@@ -96,7 +97,7 @@ export default component$(() => {
 
   return (
     <div class="flex h-screen">
-      <Panel convos={convos.value} />
+      <Panel session={session.value} convos={convos.value} />
 
       <div class="flex flex-1 flex-col">
         <div class="flex-1 overflow-y-auto bg-gray-700 p-4">

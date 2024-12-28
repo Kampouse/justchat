@@ -37,6 +37,8 @@ LANGCHAIN_TRACING_V2="true";
 AUTH_GITHUB_ID=""
 AUTH_GITHUB_SECRET=""
 AUTH_SECRET=""
+SQLD_AUTH_JWT_KEY="" npx creds.ts
+AUTH_TOKEN=""  npx creds.ts
 ```
 
 ## Installation
@@ -91,25 +93,19 @@ Visit http://localhost:5173 to see your app running!
 - Responsive UI with Tailwind CSS
 
 ## License
-
 MIT
 
-## Fastify Server
+will not work without all the variables set in the .env file
+```
+ docker compose up --build
+```
 
-This app has a minimal [Fastify server](https://fastify.dev/) implementation. After running a full build, you can preview the build using the command:
+Then visit [http://localhost:5173/](http://localhost:5173/)
+
+
 
 ```
 npm run serve
 ```
 
-Then visit [http://localhost:3000/](http://localhost:3000/)
-
-## Express Server
-
-This app has a minimal [Express server](https://expressjs.com/) implementation. After running a full build, you can preview the build using the command:
-
-```
-npm run serve
-```
-
-Then visit [http://localhost:8080/](http://localhost:8080/)
+Then visit [http://localhost:5173/](http://localhost:5173/)

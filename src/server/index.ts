@@ -11,10 +11,12 @@ export type Session = {
     image: string;
     expires: string;
   };
-};
+} | null;
 
 export const createUser = async (session: Session) => {
   const db = Drizzler();
+  if (!session) return;
+
   console.log(session.user.email);
   const base = await db
     .select()

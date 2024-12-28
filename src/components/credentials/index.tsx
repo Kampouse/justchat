@@ -1,16 +1,19 @@
-import { useSession, useSignIn, useSignOut } from "~/routes/plugin@auth";
+import { useSignIn, useSignOut } from "~/routes/plugin@auth";
 import { component$ } from "@builder.io/qwik";
-export const Credentials = component$(() => {
+import type { Session } from "~/server";
+import { useErrorBoundary } from "@builder.io/qwik";
+export const Credentials = component$<Session | null>((props) => {
+  const boundary = useErrorBoundary();
+  console.log("boundary", boundary.error);
   const login = useSignIn();
   const logout = useSignOut();
-  const session = useSession();
   return (
     <div
       id="login-modal"
       class="rounded-lg bg-gray-800 p-6 text-white shadow-lg"
     >
       <div class="flex flex-col gap-4">
-        {!session.value?.user ? (
+        {!props?.user ? (
           <>
             <p class="text-gray-300">
               Please sign in with your GitHub account to use the chat.
@@ -33,7 +36,7 @@ export const Credentials = component$(() => {
         ) : (
           <div class="flex items-center gap-6 rounded-lg">
             <img
-              src={session.value.user.image || ""}
+              src={props.user.image}
               alt="Profile"
               width="40"
               height="40"
@@ -41,7 +44,7 @@ export const Credentials = component$(() => {
             />
             <div class="flex flex-col gap-1">
               <p class=" w-32 text-lg font-semibold  text-blue-100">
-                {session.value.user.name}
+                {props.user.name}
               </p>
               <button
                 onClick$={async () => {

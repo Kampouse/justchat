@@ -104,7 +104,7 @@ export default component$(() => {
 
   return (
     <div class="flex h-screen">
-      <Panel convos={convs.value} />
+      <Panel session={session.value} convos={convs.value} />
       <div class="flex flex-1 flex-col">
         <div class="flex-1 overflow-y-auto bg-gray-700 p-4">
           <div class="flex flex-col space-y-4">
