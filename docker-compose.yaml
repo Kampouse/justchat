@@ -19,8 +19,6 @@ services:
       - "4983:4983"
     env_file:
       - .env
-    environment:
-      DATABASE_URL: http://db:8080
     depends_on:
       - db
 volumes:
