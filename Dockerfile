@@ -18,10 +18,10 @@ RUN npm install -g pnpm drizzle-kit
 # Leverage a cache mount to /root/.pnpm-store to speed up subsequent builds.
 # Leverage bind mounts to package.json and pnpm-lock.yaml to avoid having to copy them
 # into this layer.
-RUN --mount=type=bind,source=package.json,target=package.json \
-   --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
-   --mount=type=bind,source=drizzle.config.ts,target=drizzle.config.ts \
-   --mount=type=bind,source=drizzle,target=drizzle \
+RUN --mount=type=cache,source=package.json,target=package.json \
+   --mount=type=cache,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
+   --mount=type=cache,source=drizzle.config.ts,target=drizzle.config.ts \
+   --mount=type=cache,source=drizzle,target=drizzle \
 
    pnpm install --frozen-lockfile
 
