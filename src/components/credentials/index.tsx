@@ -37,7 +37,7 @@ export const Credentials = component$<Session | null>((props) => {
               alt="Profile"
               width="40"
               height="40"
-              class="h-12 w-12 rounded-full border-2 border-blue-400 shadow-lg"
+              class="h-12 w-12 rounded-full border-2 border-blue-500 shadow-lg"
             />
             <div class="flex flex-col gap-1">
               <p class=" w-32 text-lg font-semibold  text-blue-100">

@@ -22,7 +22,6 @@ export const CreateConvo = server$(
     const drizzle = Drizzler();
 
     const title = await createChatTitle(messages);
-    console.log(title);
     await drizzle
       .update(conversations)
       .set({

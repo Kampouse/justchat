@@ -64,7 +64,7 @@ export const ChatInput = component$<{
   isRunning: Signal<boolean>;
 }>(({ onSubmit$, isRunning, messages }) => {
   return (
-    <div class="rounded-lg  border-t border-gray-700 bg-gray-900 p-4">
+    <div class="rounded-lg  border-t border-gray-800 bg-gray-900 p-4">
       <Form preventdefault:submit onSubmit$={onSubmit$} class="flex space-x-2">
         <input
           type="text"
@@ -77,16 +77,15 @@ export const ChatInput = component$<{
         />
         <button
           type="submit"
-          class="flex items-center rounded-lg bg-blue-600 px-4 py-2 text-gray-100 transition-colors hover:bg-blue-700"
+          class="flex items-center rounded-lg bg-blue-600 px-4 py-2 text-gray-100 transition-colors duration-500 hover:bg-blue-700"
           disabled={isRunning.value}
         >
           {isRunning.value ? (
-            <>
+            <div class="flex  w-10 justify-end transition duration-500">
               <LoadingSpinner />
-              generating...
-            </>
+            </div>
           ) : (
-            "Send"
+            <div class="w-10">Send</div>
           )}
         </button>
 

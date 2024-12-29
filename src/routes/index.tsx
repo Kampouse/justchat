@@ -124,7 +124,7 @@ export default component$(() => {
               <h2 class="mb-2 text-xl font-semibold text-white">
                 Getting Started
               </h2>
-              <div class="mx-auto max-w-md space-y-4 text-gray-300">
+              <div class="mx-auto flex max-w-md flex-col justify-center space-y-4 text-gray-300">
                 <p>Welcome to the AI Chat! Here's how to use it:</p>
                 <ol class="list-decimal pl-5 text-left">
                   <li>Type your message in the input box below</li>

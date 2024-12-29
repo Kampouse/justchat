@@ -18,7 +18,6 @@ export const createUser = async (session: Session) => {
   if (!session) return;
 
   try {
-    console.log(session.user.email);
     const base = await db
       .select()
       .from(schema.users)
@@ -95,11 +94,18 @@ export const getConvos = async (ctx: Session | null) => {
     const user = await getUser(ctx);
     const db = Drizzler();
     if (user) {
-      return await db
+      const data = await db
         .select()
         .from(schema.conversations)
         .where(eq(schema.conversations.createdBy, user.id))
         .execute();
+
+      data.sort((a, b) => {
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      });
+      return data;
     }
   }
 };

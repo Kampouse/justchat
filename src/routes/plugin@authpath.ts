@@ -26,7 +26,6 @@ export const onGet: RequestHandler = async (req) => {
     expires: string;
   } | null;
   const data = req.sharedMap.get("session") as Session;
-  console.log(data?.user);
   //get current session time and compare with expires time
   if (data?.user) {
     const currentTime = new Date().getTime();

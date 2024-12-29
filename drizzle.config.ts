@@ -5,7 +5,7 @@ import { defineConfig } from "drizzle-kit";
 export default defineConfig({
   dialect: "turso",
   dbCredentials: {
-    url: process.env.DATABASE_URL as string,
+    url: "http://db:8080",
     authToken: process.env.AUTH_TOKEN,
   },
   schema: "./drizzle/schema.ts",
