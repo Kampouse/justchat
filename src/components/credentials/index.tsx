@@ -1,10 +1,7 @@
 import { useSignIn, useSignOut } from "~/routes/plugin@auth";
 import { component$ } from "@builder.io/qwik";
 import type { Session } from "~/server";
-import { useErrorBoundary } from "@builder.io/qwik";
 export const Credentials = component$<Session | null>((props) => {
-  const boundary = useErrorBoundary();
-  console.log("boundary", boundary.error);
   const login = useSignIn();
   const logout = useSignOut();
   return (
