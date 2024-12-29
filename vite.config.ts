@@ -24,11 +24,7 @@ export default defineConfig(({ command, mode }): UserConfig => {
     plugins: [qwikCity(), qwikVite(), tsconfigPaths()],
     // This tells Vite which dependencies to pre-build in dev mode.
     optimizeDeps: {
-      exclude: ["jose"],
       include: ["@auth/qwik"],
-
-      // Put problematic deps that break bundling here, mostly those with binaries.
-      // For example ['better-sqlite3'] if you use that in server functions.
     },
 
     /**
