@@ -11,7 +11,7 @@ services:
     volumes:
       - db-data:/var/lib/libsql
   app:
-    image: docker.io/kampouse/justchat
+    image: docker.io/kampouse/justchat-linux:latest
     build:
       context: .
       dockerfile: Dockerfile
