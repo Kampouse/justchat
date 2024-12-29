@@ -4,7 +4,12 @@ export const onRequest: RequestHandler = async (event) => {
   const session = event.sharedMap.get("session");
   console.log("session", session);
   if (session) {
-    createUser(session);
+    try {
+      const stuff = await createUser(session);
+      console.log(stuff);
+    } catch (e) {
+      console.error(e);
+    }
     throw event.redirect(302, "/");
   }
 };

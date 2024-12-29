@@ -17,22 +17,27 @@ export const createUser = async (session: Session) => {
   const db = Drizzler();
   if (!session) return;
 
-  console.log(session.user.email);
-  const base = await db
-    .select()
-    .from(schema.users)
-    .where(eq(schema.users.email, session.user.email));
+  try {
+    console.log(session.user.email);
+    const base = await db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.email, session.user.email));
 
-  if (base.length == 0) {
-    return await db
-      .insert(schema.users)
-      .values({
-        email: session.user.email,
-        name: session.user.name,
-      })
-      .execute();
+    if (base.length == 0) {
+      return await db
+        .insert(schema.users)
+        .values({
+          email: session.user.email,
+          name: session.user.name,
+        })
+        .execute();
+    }
+    return base;
+  } catch (error) {
+    console.error("Error creating/fetching user:", error);
+    throw error;
   }
-  return base;
 };
 export const getUser = async (ctx: Session | null) => {
   if (ctx) {
