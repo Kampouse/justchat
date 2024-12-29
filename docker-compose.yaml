@@ -10,27 +10,19 @@ services:
       - .env
     volumes:
       - db-data:/var/lib/libsql
-    networks:
-      - app-network
   app:
-    image: docker.io/kampouse/justchat-linux:latest
+    image: docker.io/kampouse/justchat
     build:
       context: .
       dockerfile: Dockerfile
+
     ports:
-      - "80:3000"
+      - "5174:3000"
       - "4983:4983"
     env_file:
       - .env
-    environment:
-      DATABASE_URL: http://db:8080
     depends_on:
       - db
-    networks:
-      - app-network
 volumes:
   db-data:
     driver: local
-networks:
-  app-network:
-    driver: bridge

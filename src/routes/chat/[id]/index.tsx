@@ -49,19 +49,32 @@ export default component$(() => {
   const serverMessages = useMessages();
   const session = useServerSessio();
   const nav = useNavigate();
-  const messages = useStore<{ value: Message[] }>({ value: [] });
+  const lastMessage = useStore<{ value: Message[] }>({
+    value: [],
+  });
+  const messages = useStore<{ value: Message[] }>({
+    value: [...serverMessages.value],
+  });
+
   const isRunning = useSignal(false);
+  const len = useSignal(0);
   const isErroring = useSignal(false);
   const uuid = useSignal<string>(loc.params["id"]);
   useTask$(({ track }) => {
-    track(() => loc.params["id"]);
+    track(() => loc.params);
+
     uuid.value = loc.params["id"];
-    messages.value = [...serverMessages.value];
+    if (isRunning.value == false) {
+      console.log(len.value, messages.value.length);
+
+      messages.value = [...serverMessages.value];
+    }
   });
 
   const submit = $(async (e: Event) => {
     try {
       const form = e.target as HTMLFormElement;
+      e.preventDefault();
       const formData = new FormData(form);
       const message = formData.get("message");
       isErroring.value = false;
@@ -89,11 +102,13 @@ export default component$(() => {
       for await (const item of data) {
         messages.value[messages.value.length - 1].content += item + " ";
       }
-      await CreateMessages({
+      const msgs = await CreateMessages({
         ctx: session.value,
         uuid: uuid.value,
         convo: messages.value.slice(-2), // Only send last user message and AI response
       });
+      len.value = messages.value.length;
+      lastMessage.value = msgs as Message[];
       isRunning.value = false;
     } catch (error) {
       console.error("Error in chat submission:", error);

@@ -4,6 +4,7 @@ import type { getConvos } from "~/server";
 import { Link } from "@builder.io/qwik-city";
 type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
 type Convos = Awaited<ReturnType<typeof getConvos>>;
+import { Login } from "../credentials";
 import type { Session } from "~/server";
 export default component$(
   (props: { session: Session | null; convos: Convos }) => {
@@ -30,8 +31,9 @@ export default component$(
               ))}
           </div>
         </div>
-
-        <Credentials user={props.session?.user as any} />
+        {(!props.session && <Login />) || (
+          <Credentials user={props.session?.user as any} />
+        )}
       </div>
     );
   },

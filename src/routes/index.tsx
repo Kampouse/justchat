@@ -182,7 +182,7 @@ export default component$(() => {
           <Chat.ChatInput
             messages={0}
             onSubmit$={submit}
-            isRunning={isRunning}
+            isRunning={isErroring}
           />
         </div>
       </div>

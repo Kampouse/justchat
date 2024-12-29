@@ -42,10 +42,17 @@ export const CreateMessages = server$(
     uuid: string;
     convo: Message[];
   }) => {
-    createMessages({
+    const msgs = await createMessages({
       ctx: ctx,
       uuid: uuid,
       convo: convo,
+    });
+
+    return msgs?.map((e) => {
+      return {
+        content: e.content,
+        type: e.type as "ai" | "human",
+      } satisfies Message;
     });
   },
 );
