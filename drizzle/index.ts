@@ -5,7 +5,7 @@ import { drizzle } from "drizzle-orm/libsql";
 export default () => {
   console.log(process.env.DATABASE_URL, process.env.AUTH_TOKEN);
   const sqlite = createClient({
-    url: "http://localhost:8080",
+    url: process.env.DATABASE_URL as string,
 
     authToken: process.env.AUTH_TOKEN,
   });
