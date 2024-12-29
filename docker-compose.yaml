@@ -22,7 +22,7 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: http://0.0.0.0:8080
+      DATABASE_URL: http://localhost:8080
     depends_on:
       - db
 volumes:
