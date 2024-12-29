@@ -56,7 +56,6 @@
     "tailwindcss": "^3.4.6",
     "typescript": "5.4.5",
     "undici": "*",
-    "jose": "^5.9.6",
     "vite": "5.3.5",
     "vite-tsconfig-paths": "^4.2.1",
     "@fastify/compress": "^6.2.1",
@@ -67,8 +66,6 @@
     "@libsql/client": "^0.14.0",
     "better-sqlite3": "^9.4.3",
     "express": "4.20.0",
-    "fastify": "^4.17.0",
-    "fastify-plugin": "^4.5.0",
     "langchain": "^0.3.7",
     "uuid": "^11.0.3"
   },
