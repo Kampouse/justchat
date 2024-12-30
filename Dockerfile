@@ -35,7 +35,7 @@ COPY . .
 COPY  drizzle.config.ts .
 COPY  drizzle drizzle
 RUN npm install -g pnpm drizzle-kit @libsql/client
- # Ensure local.db is writable
+# Ensure local.db is writable
 
 # Run the build script.
 RUN pnpm run build
@@ -71,8 +71,11 @@ COPY drizzle drizzle
 COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/dist ./dist
 COPY --from=build /usr/src/app/server ./server
+# Set node env to production mode.
+ENV NODE_ENV=production
 # Expose the port that the application listens on.
 EXPOSE 3000
+
 
 # Run the application.
 CMD ["sh", "-c", "npx drizzle-kit --config drizzle.config.ts  push; pnpm serve"]

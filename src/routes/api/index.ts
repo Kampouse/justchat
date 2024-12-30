@@ -18,6 +18,7 @@ export type Message = {
 export const getStreamableResponse = server$(streamableResponse);
 export const CreateConvo = server$(
   async (ctx: Session | null, uuid: string, messages: Message[]) => {
+    if (!ctx) return;
     const conv = createConvo(ctx, uuid);
     const drizzle = Drizzler();
 
@@ -41,17 +42,23 @@ export const CreateMessages = server$(
     uuid: string;
     convo: Message[];
   }) => {
-    const msgs = await createMessages({
-      ctx: ctx,
-      uuid: uuid,
-      convo: convo,
-    });
+    try {
+      if (!ctx) return;
+      const msgs = await createMessages({
+        ctx: ctx,
+        uuid: uuid,
+        convo: convo,
+      });
 
-    return msgs?.map((e) => {
-      return {
-        content: e.content,
-        type: e.type as "ai" | "human",
-      } satisfies Message;
-    });
+      return msgs?.map((e) => {
+        return {
+          content: e.content,
+          type: e.type as "ai" | "human",
+        } satisfies Message;
+      });
+    } catch (error) {
+      console.error("Error creating messages:", error);
+      return null;
+    }
   },
 );

@@ -1,5 +1,5 @@
 import { component$ } from "@builder.io/qwik";
-import { Form } from "@builder.io/qwik-city";
+import { Form, Link } from "@builder.io/qwik-city";
 import type { QRL, Signal } from "@builder.io/qwik";
 
 // Components
@@ -90,7 +90,7 @@ export const ChatInput = component$<{
         </button>
 
         {messages > 1 && (
-          <a
+          <Link
             class=" flex items-center rounded-lg border border-gray-700 bg-gray-900 px-4 py-2 text-white hover:bg-gray-800"
             href="/"
           >
@@ -98,7 +98,7 @@ export const ChatInput = component$<{
             <span role="img" aria-label="fire">
               🔥
             </span>
-          </a>
+          </Link>
         )}
       </Form>
     </div>

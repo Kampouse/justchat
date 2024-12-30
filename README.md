@@ -31,14 +31,14 @@ Create a `.env` file with:
 
 ```env
 
-OPENAI_API_KEY=""
-AI_SMITH=""
-LANGCHAIN_TRACING_V2="true";
-AUTH_GITHUB_ID=""
+OPENAI_API_KEY="" https://platform.openai.com/account/api-keys
+LANGCHAIN_TRACING_V2="false";
+AUTH_GITHUB_ID="" https://github.com/settings/applications/new
+CALLBACK_URL -> http://localhost:5173/auth/callback/github" on github not in .env
 AUTH_GITHUB_SECRET=""
-AUTH_SECRET=""
-SQLD_AUTH_JWT_KEY="" npx creds.ts
-AUTH_TOKEN=""  npx creds.ts
+AUTH_SECRET="" npm exec auth secret # will add itself to the .env file
+SQLD_AUTH_JWT_KEY="" npx  tsx creds.ts
+AUTH_TOKEN=""  npx tsx creds.ts
 ```
 
 ## Installation
@@ -67,6 +67,11 @@ pnpm install
 ```bash
 pnpm run dev
 ```
+```bash
+dcoker compose up  // with --build if you want to rebuild the image
+
+```
+
 
 Visit http://localhost:5173 to see your app running!
 

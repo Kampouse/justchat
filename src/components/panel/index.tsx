@@ -27,6 +27,7 @@ export default component$(
             {props.convos &&
               props.convos.map((chat, index) => (
                 <Link
+                  prefetch={false}
                   href={"/chat/" + chat.uuid}
                   key={index}
                   class={`cursor-pointer rounded p-3 px-4 hover:bg-gray-500 ${

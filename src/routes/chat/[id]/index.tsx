@@ -1,6 +1,6 @@
 import { component$, useSignal, $, useTask$ } from "@builder.io/qwik";
 import { useStore } from "@builder.io/qwik";
-import { useLocation, useNavigate } from "@builder.io/qwik-city";
+import { useLocation } from "@builder.io/qwik-city";
 import { type DocumentHead } from "@builder.io/qwik-city";
 import Panel from "~/components/panel";
 import * as Chat from "~/components/chat-component";
@@ -24,7 +24,8 @@ export const useMessages = routeLoader$(async (e) => {
     ctx: ctx,
     uuid: uuid,
   });
-  const msgs = messages?.map((el) => {
+  if (!messages) throw e.redirect(302, "/");
+  const msgs = messages.map((el) => {
     return {
       type: el.type,
       content: el.content,
@@ -48,7 +49,6 @@ export default component$(() => {
   const convs = useConved();
   const serverMessages = useMessages();
   const session = useServerSessio();
-  const nav = useNavigate();
   const lastMessage = useStore<{ value: Message[] }>({
     value: [],
   });
@@ -65,8 +65,6 @@ export default component$(() => {
 
     uuid.value = loc.params["id"];
     if (isRunning.value == false) {
-      console.log(len.value, messages.value.length);
-
       messages.value = [...serverMessages.value];
     }
   });
@@ -75,6 +73,7 @@ export default component$(() => {
     try {
       const form = e.target as HTMLFormElement;
       e.preventDefault();
+      //scroll down when user send a messages
       const chatContainer = document.querySelector(".overflow-y-auto");
       if (chatContainer) {
         chatContainer.scrollTo({
@@ -120,7 +119,7 @@ export default component$(() => {
 
           if (isNearBottom) {
             chatContainer.scrollTo({
-              top: chatContainer.scrollHeight,
+              top: chatContainer.scrollHeight + 100,
               behavior: "smooth",
             });
           }
@@ -133,6 +132,10 @@ export default component$(() => {
         convo: messages.value.slice(-2), // Only send last user message and AI response
       });
       len.value = messages.value.length;
+      if (!msgs) {
+        isErroring.value = true;
+      }
+
       lastMessage.value = msgs as Message[];
       isRunning.value = false;
     } catch (error) {
@@ -189,13 +192,6 @@ export default component$(() => {
           <Chat.ChatInput
             messages={messages.value.length}
             onSubmit$={submit}
-            reset={$(() => {
-              messages.value = [];
-              nav("/", {
-                forceReload: true,
-                replaceState: true,
-              });
-            })}
             isRunning={isRunning}
           />
         </div>

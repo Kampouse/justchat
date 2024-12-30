@@ -4,6 +4,7 @@ import { schema } from "../../drizzle/schema";
 import { ChatOpenAI } from "@langchain/openai";
 import { Message } from "~/routes/api";
 import { eq } from "drizzle-orm";
+import { AiChat } from "./ai";
 export type Session = {
   user: {
     name: string;
@@ -118,18 +119,23 @@ export const getAllMessages = async ({
   uuid: string;
 }) => {
   if (ctx) {
-    const conv = await getConvoByUuid({
-      ctx: ctx,
-      uuid: uuid,
-    });
+    try {
+      const conv = await getConvoByUuid({
+        ctx: ctx,
+        uuid: uuid,
+      });
 
-    const db = Drizzler();
-    if (conv) {
-      return await db
-        .select()
-        .from(schema.messages)
-        .where(eq(schema.messages.conversationId, conv.id))
-        .execute();
+      const db = Drizzler();
+      if (conv) {
+        return await db
+          .select()
+          .from(schema.messages)
+          .where(eq(schema.messages.conversationId, conv.id))
+          .execute();
+      }
+    } catch (error) {
+      console.error("Error getting messages:", error);
+      throw error;
     }
   }
 };
@@ -171,30 +177,11 @@ export const createMessages = async ({
   }
 };
 export async function* streamableResponse(input: string, history: any[] = []) {
-  const llm = new ChatOpenAI({
-    model: "gpt-3.5-turbo",
-    temperature: 0,
-    streaming: true,
-  });
+  const data = await AiChat([...history, { type: "human", content: input }]);
 
-  const messages = [...history, { role: "user", content: input }];
-  const stream = await llm.stream(messages);
-
-  try {
-    for await (const chunk of stream) {
-      if (chunk.content) {
-        yield chunk.content;
-      }
-    }
-  } catch (err) {
-    console.error("Streaming error:", err);
-    throw err;
+  for await (const response of data) {
+    yield response.content;
   }
-
-  // Store the response in history
-  history.push({ role: "user", content: input });
-  const finalResponse = await llm.invoke(messages);
-  history.push({ role: "assistant", content: finalResponse.content });
 
   return history;
 }
