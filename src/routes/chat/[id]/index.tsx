@@ -75,6 +75,14 @@ export default component$(() => {
     try {
       const form = e.target as HTMLFormElement;
       e.preventDefault();
+      const chatContainer = document.querySelector(".overflow-y-auto");
+      if (chatContainer) {
+        chatContainer.scrollTo({
+          top: chatContainer.scrollHeight,
+          behavior: "smooth",
+        });
+      }
+
       const formData = new FormData(form);
       const message = formData.get("message");
       isErroring.value = false;
@@ -101,7 +109,24 @@ export default component$(() => {
       isRunning.value = true;
       for await (const item of data) {
         messages.value[messages.value.length - 1].content += item + " ";
+        const chatContainer = document.querySelector(".overflow-y-auto");
+        if (chatContainer) {
+          const threshold = 500; // pixels from bottom
+          const isNearBottom =
+            chatContainer.scrollHeight -
+              chatContainer.scrollTop -
+              chatContainer.clientHeight <=
+            threshold;
+
+          if (isNearBottom) {
+            chatContainer.scrollTo({
+              top: chatContainer.scrollHeight,
+              behavior: "smooth",
+            });
+          }
+        }
       }
+
       const msgs = await CreateMessages({
         ctx: session.value,
         uuid: uuid.value,
