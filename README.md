@@ -4,17 +4,15 @@ A modern AI chat application built with Qwik.js, DrizzleORM, LangChain, and GitH
 
 ## Features
 
-- Real-time AI chat powered by OpenAI GPT-3.5
-- Previous conversation history and management
+-  AI chat powered by OpenAI GPT-3.5
+- Previous conversation access
 - GitHub OAuth authentication
 - Streaming responses
-- Clean and intuitive UI
-- Responsive design
 
 ## Tech Stack
 
 - **Frontend**: [Qwik.js](https://qwik.builder.io/)
-- **Database**: PostgreSQL with [DrizzleORM](https://orm.drizzle.team/)
+- **Database**: libsql with [DrizzleORM](https://orm.drizzle.team/)
 - **AI**: [LangChain](https://js.langchain.com/) with OpenAI
 - **Authentication**: GitHub OAuth via [@auth/qwik](https://authjs.dev/)
 - **Styling**: Tailwind CSS
@@ -68,7 +66,17 @@ pnpm install
 pnpm run dev
 ```
 ```bash
-dcoker compose up  // with --build if you want to rebuild the image
+./drizzle/index.ts
+for dev
+
+```
+
+
+```bash
+docker compose up  // with --build if you want to rebuild the image
+
+open http://localhost:5173 in your browser
+
 
 ```
 
