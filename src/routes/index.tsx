@@ -6,7 +6,7 @@ import { routeLoader$, useLocation } from "@builder.io/qwik-city";
 import Panel from "~/components/panel";
 import * as Chat from "~/components/chat-component";
 import { useNavigate } from "@builder.io/qwik-city";
-import { type Session } from "~/server";
+import { createUser, getUser, type Session } from "~/server";
 import { v4 as uuid } from "uuid";
 import { CreateConvo, CreateMessages, getStreamableResponse } from "./api";
 import { getConvos } from "~/server";
@@ -15,8 +15,13 @@ export const useConvos = routeLoader$(async (e) => {
   const convos = await getConvos(session);
   return convos ?? [];
 });
-export const useServerSession = routeLoader$((e) => {
-  return e.sharedMap.get("session") as Session | null;
+export const useServerSession = routeLoader$(async (e) => {
+  const session = e.sharedMap.get("session") as Session | null;
+  const user = await getUser(session);
+  if (!user) {
+    console.log("Creating user");
+    await createUser(session);
+  }
 });
 
 export default component$(() => {
