@@ -1,6 +1,7 @@
 import { component$, useTask$ } from "@builder.io/qwik";
 import { Credentials } from "../credentials";
 import type { getConvos } from "~/server";
+import type { Signal } from "@builder.io/qwik";
 import { Link } from "@builder.io/qwik-city";
 type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
 type Convos = Awaited<ReturnType<typeof getConvos>>;
@@ -8,13 +9,18 @@ import { useLocation } from "@builder.io/qwik-city";
 import type { Session } from "~/server";
 import { useSignal } from "@builder.io/qwik";
 export default component$(
-  (props: { session: Session | null; convos: Convos }) => {
+  (props: {
+    session: Session | null;
+    convos: Convos;
+    suspensed: Signal<boolean>;
+  }) => {
     const loc = useLocation();
     const uuid = useSignal<string>(loc.params["id"]);
 
     useTask$(({ track }) => {
       track(() => loc.params);
       uuid.value = loc.params["id"];
+      props.suspensed.value = false;
     });
     const isMenuOpen = useSignal(false);
 
@@ -55,7 +61,12 @@ export default component$(
                     prefetch={false}
                     href={"/chat/" + chat.uuid}
                     key={index}
-                    onClick$={() => (isMenuOpen.value = false)}
+                    onClick$={() => {
+                      isMenuOpen.value = false;
+                      if (chat.uuid !== uuid.value) {
+                        props.suspensed.value = true;
+                      }
+                    }}
                     class={`cursor-pointer rounded p-3 px-4 hover:bg-gray-500 ${
                       chat.uuid === uuid.value
                         ? " border border-blue-500 bg-gray-800"

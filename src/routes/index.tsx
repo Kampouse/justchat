@@ -18,7 +18,7 @@ export const useConvos = routeLoader$(async (e) => {
 export const useServerSession = routeLoader$(async (e) => {
   const session = e.sharedMap.get("session") as Session | null;
   const user = await getUser(session);
-  if (!user) {
+  if (user?.length == 0) {
     console.log("Creating user");
     await createUser(session);
   }
@@ -28,6 +28,7 @@ export const useServerSession = routeLoader$(async (e) => {
 export default component$(() => {
   const nav = useNavigate();
 
+  const suspensed = useSignal(false);
   const user = useServerSession();
   const convos = useConvos();
   const session = useServerSession();
@@ -103,7 +104,11 @@ export default component$(() => {
 
   return (
     <div class="flex h-screen">
-      <Panel session={session.value} convos={convos.value} />
+      <Panel
+        suspensed={suspensed}
+        session={session.value}
+        convos={convos.value}
+      />
 
       <div class="flex flex-1 flex-col">
         <div class="flex-1 overflow-y-auto bg-gray-700 p-4">

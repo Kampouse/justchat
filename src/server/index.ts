@@ -46,8 +46,7 @@ export const getUser = async (ctx: Session | null) => {
       .select()
       .from(schema.users)
       .where(eq(schema.users.email, ctx.user.email))
-      .execute()
-      .then((users) => users[0]);
+      .execute();
   }
 };
 export const createConvo = async (ctx: Session | null, uuid: string) => {
@@ -98,7 +97,7 @@ export const getConvos = async (ctx: Session | null) => {
       const data = await db
         .select()
         .from(schema.conversations)
-        .where(eq(schema.conversations.createdBy, user.id))
+        .where(eq(schema.conversations.createdBy, user[0].id))
         .execute();
 
       data.sort((a, b) => {
@@ -161,7 +160,7 @@ export const createMessages = async ({
       const convos = convo.map((e) => {
         return {
           conversationId: conv?.id,
-          senderId: user.id,
+          senderId: user[0].id,
           content: e.content,
           type: e.type,
           createdAt: new Date(),

@@ -46,6 +46,7 @@ export const useConved = routeLoader$(async (e) => {
 
 export default component$(() => {
   const loc = useLocation();
+  const suspensed = useSignal(false);
   const convs = useConved();
   const serverMessages = useMessages();
   const session = useServerSessio();
@@ -146,10 +147,16 @@ export default component$(() => {
   });
   return (
     <div class="flex h-[100dvh] min-h-screen flex-col md:flex-row">
-      <Panel session={session.value} convos={convs.value} />
+      <Panel
+        suspensed={suspensed}
+        session={session.value}
+        convos={convs.value}
+      />
       <div class="flex h-full max-h-[100dvh] flex-1 flex-col">
         <div class="flex-1 overflow-y-auto bg-gray-700 p-2 md:p-4">
-          <div class="flex flex-col space-y-3 md:space-y-4">
+          <div
+            class={`flex flex-col space-y-3 transition-opacity duration-300 md:space-y-4 ${suspensed.value ? "opacity-0" : "opacity-100"}`}
+          >
             {messages.value.map((message, index) => (
               <div
                 key={index}
@@ -159,6 +166,15 @@ export default component$(() => {
                 <Chat.Message message={message} />
               </div>
             ))}
+          </div>
+          <div
+            class={`flex h-full items-center justify-center transition-opacity duration-300 ${suspensed.value ? "opacity-100" : "opacity-0"} ${!suspensed.value ? "hidden" : ""}`}
+          >
+            {suspensed.value && (
+              <div class="fixed inset-0 flex items-center justify-center transition-opacity duration-700">
+                <div class="h-12 w-12 animate-spin rounded-full border-4 border-gray-600 border-t-gray-300"></div>
+              </div>
+            )}
           </div>
         </div>
 
