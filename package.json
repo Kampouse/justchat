@@ -72,6 +72,5 @@
     "jose": "^5.9.6",
     "vite-tsconfig-paths": "^4.2.1"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }

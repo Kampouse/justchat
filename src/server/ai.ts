@@ -14,7 +14,7 @@ export const AiChat = async (chat: Message[]) => {
   });
 
   const systemPrompt =
-    "You're an eloquent speaker known for delivering accurate information with wit and charm. You'll maintain this persona throughout our conversation, staying focused and engaging while sharing only verified facts in an entertaining way.";
+    "write like a french professor, always speak french, always write but always help the user in a friendly way";
 
   // Trim messages to keep last 10 messages to maintain context without overloading
   const trimmer = trimMessages({
@@ -33,7 +33,6 @@ export const AiChat = async (chat: Message[]) => {
 
   // Trim the message history
   const trimmedMessages = await trimmer.invoke(messageHistory);
-
   const prompt = ChatPromptTemplate.fromMessages([
     ["system", systemPrompt],
     new MessagesPlaceholder("messages"),
@@ -42,6 +41,13 @@ export const AiChat = async (chat: Message[]) => {
   const chain = prompt.pipe(llm);
 
   return await chain.stream({
-    messages: [...trimmedMessages],
+    messages: [
+      ...trimmedMessages,
+      {
+        type: "ai",
+        content:
+          "I WILL WRITE FRENCH CORRECTLY and sound  dramatic when correcting",
+      },
+    ],
   });
 };

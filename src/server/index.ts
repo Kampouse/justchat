@@ -179,8 +179,27 @@ export const createMessages = async ({
 export async function* streamableResponse(input: string, history: any[] = []) {
   const data = await AiChat([...history, { type: "human", content: input }]);
 
+  let buffer = [];
   for await (const response of data) {
-    yield response.content;
+    let token = response.content.toString();
+    if (token.startsWith(" ") && buffer.length > 0) {
+      buffer[buffer.length - 1] += token;
+    } else {
+      buffer.push(token);
+    }
+    if (
+      token.endsWith(" ") ||
+      token.endsWith(".") ||
+      token.endsWith("!") ||
+      token.endsWith("?")
+    ) {
+      const content = buffer.join("");
+      buffer = [];
+      yield content;
+    }
+  }
+  if (buffer.length > 0) {
+    yield buffer.join("");
   }
 
   return history;

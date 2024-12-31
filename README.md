@@ -4,7 +4,7 @@ A modern AI chat application built with Qwik.js, DrizzleORM, LangChain, and GitH
 
 ## Features
 
--  AI chat powered by OpenAI GPT-3.5
+- AI chat powered by OpenAI GPT-3.5
 - Previous conversation access
 - GitHub OAuth authentication
 - Streaming responses
@@ -65,12 +65,12 @@ pnpm install
 ```bash
 pnpm run dev
 ```
+
 ```bash
 ./drizzle/index.ts
 for dev
 
 ```
-
 
 ```bash
 docker compose up  // with --build if you want to rebuild the image
@@ -79,7 +79,6 @@ open http://localhost:5173 in your browser
 
 
 ```
-
 
 Visit http://localhost:5173 to see your app running!
 
@@ -102,20 +101,20 @@ Visit http://localhost:5173 to see your app running!
 
 - Real-time chat using LangChain streaming
 - Persistent conversations with DrizzleORM
-- Auth   wit authJS
+- Auth wit authJS
 - Responsive UI with Tailwind CSS
 
 ## License
+
 MIT
 
 will not work without all the variables set in the .env file
+
 ```
  docker compose up --build
 ```
 
 Then visit [http://localhost:5173/](http://localhost:5173/)
-
-
 
 ```
 npm run serve
