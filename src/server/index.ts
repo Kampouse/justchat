@@ -61,7 +61,7 @@ export const createConvo = async (ctx: Session | null, uuid: string) => {
           name: ctx.user.email,
           createdAt: new Date(),
           uuid: uuid,
-          createdBy: user.id,
+          createdBy: user[0].id,
         })
         .returning()
         .execute()
