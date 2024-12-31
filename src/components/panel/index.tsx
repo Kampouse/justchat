@@ -42,7 +42,7 @@ export default component$(
 
         {/* Sidebar panel */}
         <div
-          class={`fixed inset-y-0 left-0 transform ${isMenuOpen.value ? "translate-x-0" : "-translate-x-full"} z-40 flex w-full flex-col justify-between border-gray-800 bg-gray-900 p-2 transition duration-200 ease-in-out md:relative md:w-72 md:translate-x-0`}
+          class={`fixed inset-y-0 left-0 transform ${isMenuOpen.value ? "translate-x-0" : "-translate-x-full"} z-40 flex w-full flex-col justify-between overflow-y-auto border-gray-800 bg-gray-900 p-2 transition duration-200 ease-in-out md:relative md:w-72 md:translate-x-0`}
         >
           <div>
             <h2 class="mb-2 pb-2 text-center text-lg font-semibold text-white">
