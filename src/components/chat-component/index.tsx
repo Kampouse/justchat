@@ -85,7 +85,7 @@ export const ChatInput = component$<{
               <LoadingSpinner />
             </div>
           ) : (
-            <div class="w-10">Send</div>
+            <div class="px-2 text-center">Send</div>
           )}
         </button>
 
@@ -94,7 +94,7 @@ export const ChatInput = component$<{
             class=" flex items-center rounded-lg border border-gray-700 bg-gray-900 py-2 text-white hover:bg-gray-800 md:px-4"
             href="/"
           >
-            <span class="mr-2 text-center">New Chat</span>
+            <span class="px-2 text-center">New Chat</span>
             <span role="img" aria-label="fire" class="hidden sm:inline">
               🔥
             </span>

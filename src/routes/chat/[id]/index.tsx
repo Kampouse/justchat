@@ -144,11 +144,10 @@ export default component$(() => {
       isRunning.value = false;
     }
   });
-
   return (
-    <div class="flex h-screen flex-col md:flex-row">
+    <div class="flex h-[100dvh] min-h-screen flex-col md:flex-row">
       <Panel session={session.value} convos={convs.value} />
-      <div class="flex flex-1 flex-col">
+      <div class="flex h-full max-h-[100dvh] flex-1 flex-col">
         <div class="flex-1 overflow-y-auto bg-gray-700 p-2 md:p-4">
           <div class="flex flex-col space-y-3 md:space-y-4">
             {messages.value.map((message, index) => (
