@@ -73,11 +73,11 @@ export const ChatInput = component$<{
           required
           minLength={1}
           autoComplete="off"
-          class="flex-1 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:border-blue-500 focus:outline-none"
+          class="w-full flex-1 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:border-blue-500 focus:outline-none sm:w-3/4 md:w-4/5 lg:w-5/6"
         />
         <button
           type="submit"
-          class="flex items-center rounded-lg bg-blue-600 px-4 py-2 text-gray-100 transition-colors duration-500 hover:bg-blue-700"
+          class="flex items-center rounded-lg bg-blue-600  py-2 text-gray-100 transition-colors duration-500 hover:bg-blue-700"
           disabled={isRunning.value}
         >
           {isRunning.value ? (
@@ -91,7 +91,7 @@ export const ChatInput = component$<{
 
         {messages > 1 && (
           <Link
-            class=" flex items-center rounded-lg border border-gray-700 bg-gray-900 py-2 text-white hover:bg-gray-800 md:px-4"
+            class=" flex items-center rounded-lg border border-gray-700 bg-gray-900  text-white hover:bg-gray-800 md:px-4"
             href="/"
           >
             <span class="px-2 text-center">New Chat</span>
