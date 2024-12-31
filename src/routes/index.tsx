@@ -8,9 +8,8 @@ import * as Chat from "~/components/chat-component";
 import { useNavigate } from "@builder.io/qwik-city";
 import { type Session } from "~/server";
 import { v4 as uuid } from "uuid";
-import { CreateConvo, CreateMessages } from "./api";
+import { CreateConvo, CreateMessages, getStreamableResponse } from "./api";
 import { getConvos } from "~/server";
-import { AiChat } from "~/server/ai";
 export const useConvos = routeLoader$(async (e) => {
   const session = e.sharedMap.get("session") as Session | null;
   const convos = await getConvos(session);
@@ -60,10 +59,10 @@ export default component$(() => {
         { type: "human", content: message as string },
       ];
       const conv_uuid = uuid();
-      const data = await AiChat([
-        ...messages.value,
-        { type: "human", content: message as string },
-      ]);
+      const data = await getStreamableResponse(
+        message as string,
+        messages.value,
+      );
       const output = "";
       messages.value = [
         ...messages.value,
@@ -77,16 +76,18 @@ export default component$(() => {
       for await (const item of data) {
         messages.value[messages.value.length - 1].content += item + " ";
       }
+
       const convo = await CreateConvo(user.value, conv_uuid, messages.value);
+
       await CreateMessages({
         ctx: user.value,
         uuid: conv_uuid,
         convo: messages.value,
       });
-      isRunning.value = false;
-      if (!convo) return;
 
       return nav("/chat/" + conv_uuid);
+      isRunning.value = false;
+      if (!convo) return;
     } catch (error) {
       console.error("Error in chat submission:", error);
       isErroring.value = true;
