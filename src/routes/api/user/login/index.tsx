@@ -12,6 +12,6 @@ export const onRequest: RequestHandler = async (event) => {
     } catch (e) {
       console.error(e);
     }
-    throw event.redirect(302, "/chat" + id);
+    throw event.redirect(302, "/chat/" + id);
   }
 };
