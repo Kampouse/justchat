@@ -8,7 +8,7 @@ export default defineConfig({
     url:
       process.env.NODE_ENV === "production"
         ? "http://db:8080"
-        : "http://localhost:8080",
+        : (process.env.DATABASE_URL as string),
     authToken: process.env.AUTH_TOKEN,
   },
   schema: "./drizzle/schema.ts",
