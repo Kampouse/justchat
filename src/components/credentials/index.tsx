@@ -7,14 +7,16 @@ export const Credentials = component$<Session | null>((props) => {
   return (
     <div
       id="login-modal"
-      class="mx-auto max-w-[90vw] rounded-lg bg-gray-800 p-4 text-white shadow-lg sm:p-6"
+      class="mx-auto mt-2 max-w-[90vw] rounded-lg bg-gray-800  p-3 text-white shadow-lg sm:p-6"
     >
-      <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-3">
         {!props?.user ? (
           <>
-            <p class="text-sm text-gray-300 sm:text-base">
-              Please sign in with your GitHub account to use the chat.
-            </p>
+            <div class="flex flex-row items-center sm:flex-col">
+              <p class="text-xs text-gray-300 sm:text-base">
+                Please sign in with your GitHub account to use the chat.
+              </p>
+            </div>
             <button
               onClick$={async () => {
                 await login.submit({
@@ -22,10 +24,10 @@ export const Credentials = component$<Session | null>((props) => {
                   redirectTo: "/api/user/login/",
                 });
               }}
-              class="flex items-center justify-center gap-2 rounded bg-blue-600 px-3 py-2 text-sm hover:bg-blue-700 sm:px-4 sm:py-2 sm:text-base"
+              class="flex items-center justify-center gap-2 rounded bg-blue-600 px-2 py-1.5 text-xs hover:bg-blue-700 sm:px-4 sm:py-2 sm:text-base"
             >
               <svg
-                class="h-4 w-4 sm:h-5 sm:w-5"
+                class="h-3.5 w-3.5 sm:h-5 sm:w-5"
                 fill="currentColor"
                 viewBox="0 0 24 24"
               >
@@ -35,36 +37,39 @@ export const Credentials = component$<Session | null>((props) => {
             </button>
           </>
         ) : (
-          <div class="flex flex-col items-center gap-3 rounded-lg sm:flex-row sm:gap-6">
+          <div class="flex flex-row items-center gap-2 rounded-lg sm:flex-row sm:gap-6">
             <img
               src={props.user.image}
               alt="Profile"
               width="40"
               height="40"
-              class="h-10 w-10 rounded-full border-2 border-blue-500 shadow-lg sm:h-12 sm:w-12"
+              class="h-8 w-8 rounded-full border-2 border-blue-500 shadow-lg sm:h-12 sm:w-12"
             />
-            <div class="flex flex-col items-center gap-1 sm:items-start">
-              <p class="text-center text-base font-semibold text-blue-100 sm:text-left sm:text-lg">
+            <div class="flex flex-row items-center gap-2 sm:flex-col sm:items-start sm:gap-1">
+              <p class="text-sm font-semibold text-blue-100 sm:text-left sm:text-lg">
                 {props.user.name}
               </p>
-              <button
-                onClick$={async () => {
-                  await logout.submit({});
-                }}
-                type="submit"
-                class="flex items-center gap-2 text-xs text-gray-300 transition-colors duration-200 hover:text-white sm:text-sm"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-3 w-3 sm:h-4 sm:w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+              <div class="flex flex-row items-center gap-2">
+                <div class="h-2 w-2 rounded-full bg-green-500"></div>
+                <button
+                  onClick$={async () => {
+                    await logout.submit({});
+                  }}
+                  type="submit"
+                  class="flex items-center gap-1.5 rounded-md bg-gray-700 px-2 py-1 text-xs text-gray-300 transition-colors duration-200 hover:bg-gray-600 hover:text-white sm:text-sm"
                 >
-                  <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                Sign out
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-3 w-3 sm:h-4 sm:w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Sign out
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -44,11 +44,11 @@ export default component$(
         <div
           class={`fixed inset-y-0 left-0 transform ${isMenuOpen.value ? "translate-x-0" : "-translate-x-full"} z-40 flex w-full flex-col justify-between overflow-y-auto border-gray-800 bg-gray-900 p-2 transition duration-200 ease-in-out md:relative md:w-72 md:translate-x-0`}
         >
-          <div>
+          <div class="flex h-full flex-col">
             <h2 class="mb-2 pb-2 text-center text-lg font-semibold text-white">
               Previous convos
             </h2>
-            <div class="scrollbar-hide flex max-h-[32em] flex-col gap-2 overflow-y-scroll rounded-xl px-5 md:max-h-[35em]">
+            <div class="scrollbar-hide flex max-h-[40em] flex-grow flex-col gap-2 overflow-y-scroll rounded-xl px-5 md:max-h-[35em]">
               {props.convos &&
                 props.convos.map((chat, index) => (
                   <Link
@@ -71,8 +71,9 @@ export default component$(
                   </Link>
                 ))}
             </div>
+
+            <Credentials user={props.session?.user as any} />
           </div>
-          <Credentials user={props.session?.user as any} />
         </div>
 
         {/* Overlay when menu is open on mobile */}
