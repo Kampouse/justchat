@@ -22,6 +22,7 @@ export const useServerSession = routeLoader$(async (e) => {
     console.log("Creating user");
     await createUser(session);
   }
+  return session;
 });
 
 export default component$(() => {
