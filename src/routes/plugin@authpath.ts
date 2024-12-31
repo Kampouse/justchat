@@ -1,7 +1,8 @@
 import type { RequestHandler } from "@builder.io/qwik-city";
-export const onGet: RequestHandler = async () => {
+export const onGet: RequestHandler = async (req) => {
   //get the auth data from the request
 
+  const activePath = req.url.pathname;
   //type of key value pair object
   type publicpath = { [key: string]: string };
 
@@ -16,9 +17,35 @@ export const onGet: RequestHandler = async () => {
     "/landing": "public",
     "/landing/": "public",
   };
-
-  //const data = req.sharedMap.get("session") as Session;
+  type Session = {
+    user: {
+      name: string;
+      email: string;
+      image: string;
+    };
+    expires: string;
+  } | null;
+  const data = req.sharedMap.get("session") as Session;
   //get current session time and compare with expires time
+  if (data?.user) {
+    const currentTime = new Date().getTime();
+    const sessionDate = new Date(data.expires).getTime();
+    if (currentTime > sessionDate) {
+      throw req.redirect(302, "/");
+    }
+  }
+
+  if (!data?.user) {
+    const keys = Object.keys(publicpath);
+    if (keys.includes(activePath)) {
+      return req.next();
+    }
+    const path = new String(req.pathname);
+    if (path === "/") {
+      return req.next();
+    }
+    throw req.redirect(302, "/");
+  }
 
   //string contain method
 };

@@ -146,11 +146,11 @@ export default component$(() => {
   });
 
   return (
-    <div class="flex h-screen">
+    <div class="flex h-screen flex-col md:flex-row">
       <Panel session={session.value} convos={convs.value} />
       <div class="flex flex-1 flex-col">
-        <div class="flex-1 overflow-y-auto bg-gray-700 p-4">
-          <div class="flex flex-col space-y-4">
+        <div class="flex-1 overflow-y-auto bg-gray-700 p-2 md:p-4">
+          <div class="flex flex-col space-y-3 md:space-y-4">
             {messages.value.map((message, index) => (
               <div
                 key={index}
@@ -164,12 +164,12 @@ export default component$(() => {
         </div>
 
         {isErroring.value && (
-          <div class="fixed bottom-20 left-0 right-0 mx-auto max-w-md p-4">
-            <div class="animate-fade-in rounded-lg border border-red-200 bg-red-100 p-4 text-red-700 shadow-lg">
+          <div class="fixed bottom-20 left-0 right-0 mx-auto max-w-md p-2 md:p-4">
+            <div class="animate-fade-in rounded-lg border border-red-200 bg-red-100 p-3 text-sm text-red-700 shadow-lg md:p-4 md:text-base">
               <div class="flex items-center space-x-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5 cursor-pointer"
+                  class="h-4 w-4 cursor-pointer md:h-5 md:w-5"
                   viewBox="0 0 20 20"
                   fill="currentColor"
                   onClick$={() => (isErroring.value = false)}
@@ -188,7 +188,7 @@ export default component$(() => {
           </div>
         )}
 
-        <div class="border-t border-gray-600 bg-gray-700 p-4">
+        <div class="border-t border-gray-600 bg-gray-700 p-2 md:p-4">
           <Chat.ChatInput
             messages={messages.value.length}
             onSubmit$={submit}
