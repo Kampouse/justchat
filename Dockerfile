@@ -73,6 +73,7 @@ COPY --from=build /usr/src/app/dist ./dist
 COPY --from=build /usr/src/app/server ./server
 # Set node env to production mode.
 ENV NODE_ENV=production
+ENV DOCKER=true
 # Expose the port that the application listens on.
 EXPOSE 3000
 

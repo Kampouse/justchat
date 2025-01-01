@@ -75,7 +75,8 @@ export default component$(() => {
       const form = e.target as HTMLFormElement;
       e.preventDefault();
       //scroll down when user send a messages
-      const chatContainer = document.querySelector(".overflow-y-auto");
+      const chatContainer = document.getElementById("chat");
+      console.log(chatContainer);
       if (chatContainer) {
         chatContainer.scrollTo({
           top: chatContainer.scrollHeight,
@@ -109,7 +110,7 @@ export default component$(() => {
       isRunning.value = true;
       for await (const item of data) {
         messages.value[messages.value.length - 1].content += item + " ";
-        const chatContainer = document.querySelector(".overflow-y-auto");
+        const chatContainer = document.getElementById("chat");
         if (chatContainer) {
           const threshold = 500; // pixels from bottom
           const isNearBottom =
@@ -153,7 +154,7 @@ export default component$(() => {
         convos={convs.value}
       />
       <div class="flex h-full max-h-[100dvh] flex-1 flex-col">
-        <div class="flex-1 overflow-y-auto bg-gray-700 p-2 md:p-4">
+        <div id="chat" class="flex-1 overflow-y-auto bg-gray-700 p-2 md:p-4">
           <div
             class={`flex flex-col space-y-3 transition-opacity duration-300 md:space-y-4 ${suspensed.value ? "opacity-0" : "opacity-100"}`}
           >

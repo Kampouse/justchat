@@ -67,11 +67,7 @@ export default component$(
                         props.suspensed.value = true;
                       }
                     }}
-                    class={`cursor-pointer rounded p-3 px-4 hover:bg-gray-500 ${
-                      chat.uuid === uuid.value
-                        ? " border border-blue-500 bg-gray-800"
-                        : "bg-gray-600"
-                    }`}
+                    class={`cursor-pointer rounded bg-gray-800 p-3 px-4 transition-all duration-300 ease-in-out hover:bg-gray-700 ${chat.uuid === uuid.value ? "scale-[1.02] border-2 border-blue-500 bg-gray-700 shadow-lg" : "border-2 border-gray-800"}`}
                   >
                     <h3 class="truncate text-sm font-medium text-white">
                       {chat.name ?? "no name yet"}
