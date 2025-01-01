@@ -121,43 +121,48 @@ export default component$(() => {
         session={session.value}
         convos={convos.value}
       />
-
       <div class="flex flex-1 flex-col">
         <div class="flex-1 overflow-y-auto bg-gray-700 p-4">
-          <div
-            class={`flex flex-col space-y-4 ${!showBanner.value ? "hidden" : ""}`}
-          >
-            <div class="text-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="120"
-                height="120"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="mx-auto mb-4 text-gray-300"
-              >
-                <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2m0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16" />
-                <circle cx="12" cy="12" r="3" />
-                <path d="M12 7v2M12 15v2M7 12h2M15 12h2" />
-              </svg>
-              <h2 class="mb-2 text-xl font-semibold text-white">
-                Getting Started
-              </h2>
-              <div class="mx-auto flex max-w-md flex-col justify-center space-y-4 text-gray-300">
-                <p>Welcome to the AI Chat! Here's how to use it:</p>
-                <ol class="list-decimal pl-5 text-left">
-                  <li>Type your message in the input box below</li>
-                  <li>Press Enter or click Send to start the conversation</li>
-                  <li>Previous conversations will appear above</li>
-                  <li>Click the 'Reset' to start a new chat</li>
-                </ol>
+          {suspensed.value ? (
+            <div class="flex h-full items-center justify-center">
+              <div class="h-12 w-12 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
+            </div>
+          ) : (
+            <div
+              class={`flex flex-col space-y-4 ${!showBanner.value ? "hidden" : ""}`}
+            >
+              <div class="text-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="120"
+                  height="120"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="mx-auto mb-4 text-gray-300"
+                >
+                  <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2m0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16" />
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M12 7v2M12 15v2M7 12h2M15 12h2" />
+                </svg>
+                <h2 class="mb-2 text-xl font-semibold text-white">
+                  Getting Started
+                </h2>
+                <div class="mx-auto flex max-w-md flex-col justify-center space-y-4 text-gray-300">
+                  <p>Welcome to the AI Chat! Here's how to use it:</p>
+                  <ol class="list-decimal pl-5 text-left">
+                    <li>Type your message in the input box below</li>
+                    <li>Press Enter or click Send to start the conversation</li>
+                    <li>Previous conversations will appear above</li>
+                    <li>Click the 'Reset' to start a new chat</li>
+                  </ol>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {isErroring.value && (
