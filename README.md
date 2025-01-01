@@ -34,6 +34,7 @@ LANGCHAIN_TRACING_V2="false";
 AUTH_GITHUB_ID="" https://github.com/settings/applications/new
 CALLBACK_URL -> http://localhost:5173/auth/callback/github" on github not in .env
 AUTH_GITHUB_SECRET=""
+DATABASE_URL='http://db:8080' # in  signle quotes not double
 AUTH_SECRET="" npm exec auth secret # will add itself to the .env file
 SQLD_AUTH_JWT_KEY="" npx  tsx creds.ts
 AUTH_TOKEN=""  npx tsx creds.ts
