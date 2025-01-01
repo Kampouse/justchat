@@ -6,6 +6,15 @@ export const onRequest: RequestHandler = async (event) => {
   if (session) {
     const id = v4();
     try {
+      if (
+        session.user.email.includes("@tractr") ||
+        session.user.email.includes("@jemartel")
+      ) {
+        await createUser(session);
+      } else {
+        throw event.redirect(302, "/");
+      }
+
       const stuff = await createUser(session);
       await createConvo(session, id);
       console.log(stuff);

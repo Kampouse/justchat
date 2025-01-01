@@ -92,6 +92,7 @@ export const getConvoByUuid = async ({
 export const getConvos = async (ctx: Session | null) => {
   if (ctx) {
     const user = await getUser(ctx);
+    if (!user || user.length == 0) return;
     const db = Drizzler();
     if (user) {
       const data = await db

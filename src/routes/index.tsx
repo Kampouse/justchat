@@ -20,7 +20,19 @@ export const useServerSession = routeLoader$(async (e) => {
   const user = await getUser(session);
   if (user?.length == 0) {
     console.log("Creating user");
-    await createUser(session);
+    session?.user.email;
+    if (
+      session?.user.email.includes("@tractr") ||
+      session?.user.email.includes("@jemartel") ||
+      session?.user.email.includes("jpmartel98@gmail.com") ||
+      session?.user.email.includes("t-jean98@gmail.com")
+    ) {
+      await createUser(session);
+    } else {
+      e.sharedMap.delete("session");
+
+      return null;
+    }
   }
   return session;
 });
