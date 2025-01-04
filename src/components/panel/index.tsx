@@ -54,7 +54,7 @@ export default component$(
             <h2 class="mb-2 pb-2 text-center text-lg font-semibold text-white">
               Previous convos
             </h2>
-            <div class="scrollbar-hide flex max-h-[40em] flex-grow flex-col gap-2 overflow-y-scroll rounded-xl px-5 md:max-h-[35em]">
+            <div class="scrollbar-hide flex max-h-[40em] flex-grow flex-col gap-2 overflow-y-scroll rounded-xl px-5">
               {props.convos &&
                 props.convos.map((chat, index) => (
                   <Link
