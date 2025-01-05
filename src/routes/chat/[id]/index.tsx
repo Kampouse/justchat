@@ -204,7 +204,7 @@ export default component$(() => {
           </div>
         )}
 
-        <div class="border-t border-gray-600 bg-gray-700 p-2 md:p-4">
+        <div class="border-t border-gray-600 bg-gray-700 p-2 ">
           <Chat.ChatInput
             messages={messages.value.length}
             onSubmit$={submit}
