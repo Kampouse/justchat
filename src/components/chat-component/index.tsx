@@ -75,31 +75,39 @@ export const ChatInput = component$<{
           autoComplete="off"
           class="w-full flex-1 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:border-blue-500 focus:outline-none sm:w-3/4 md:w-4/5 lg:w-5/6"
         />
-        <button
-          type="submit"
-          class="flex items-center rounded-lg bg-blue-600  py-2 text-gray-100 transition-colors duration-500 hover:bg-blue-700"
-          disabled={isRunning.value}
-        >
-          {isRunning.value ? (
-            <div class="flex  w-10 justify-end transition duration-500">
-              <LoadingSpinner />
-            </div>
-          ) : (
-            <div class="px-2 text-center">Send</div>
-          )}
-        </button>
-
         {messages > 1 && (
           <Link
-            class=" flex items-center rounded-lg border border-gray-700 bg-gray-900  text-white hover:bg-gray-800 md:px-4"
+            class="flex  w-16 items-center justify-center rounded-lg border border-gray-700 bg-gray-900 px-1 text-white hover:bg-gray-800 md:w-24 md:px-4"
             href="/"
           >
-            <span class="px-2 text-center">New Chat</span>
+            <span class="hidden w-20 px-2 text-center sm:inline">New Chat</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              class="inline h-5 w-5 sm:hidden"
+            >
+              <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
             <span role="img" aria-label="fire" class="hidden sm:inline">
               🔥
             </span>
           </Link>
         )}
+        <button
+          type="submit"
+          class="flex w-28 items-center justify-center rounded-lg bg-blue-600 py-2 text-gray-100 transition-colors duration-500 hover:bg-blue-700"
+          disabled={isRunning.value}
+        >
+          {isRunning.value ? (
+            <div class="flex w-5 justify-center transition duration-500">
+              <LoadingSpinner />
+            </div>
+          ) : (
+            <h1 class="flex justify-center px-2 text-center">Send</h1>
+          )}
+        </button>
       </Form>
     </div>
   );
