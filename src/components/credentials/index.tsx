@@ -7,13 +7,14 @@ export const Credentials = component$<Session | null>((props) => {
   return (
     <div
       id="login-modal"
-      class="mx-auto mt-2 max-w-[90vw] rounded-lg bg-gray-800  p-3 text-white shadow-lg sm:p-6"
+      class=" mt-2 justify-center rounded-lg bg-gray-800 p-3
+      text-white shadow-lg  md:max-w-[90vw]"
     >
-      <div class="flex flex-col gap-3">
+      <div class="flex flex-col   justify-center gap-3  sm:justify-center">
         {!props?.user ? (
           <>
-            <div class="flex flex-row items-center sm:flex-col">
-              <p class="text-xs text-gray-300 sm:text-base">
+            <div class="flex flex-row   justify-center sm:flex-col">
+              <p class="text-xs text-gray-300 sm:text-center md:text-balance md:text-base">
                 Please sign in with your GitHub account to use the chat.
               </p>
             </div>
@@ -37,7 +38,7 @@ export const Credentials = component$<Session | null>((props) => {
             </button>
           </>
         ) : (
-          <div class="flex flex-row items-center gap-2 rounded-lg sm:flex-row sm:gap-6">
+          <div class="flex flex-row items-center justify-center gap-2 rounded-lg sm:flex-row sm:gap-6">
             <img
               src={props.user.image}
               alt="Profile"
@@ -50,7 +51,6 @@ export const Credentials = component$<Session | null>((props) => {
                 {props.user.name}
               </p>
               <div class="flex flex-row items-center gap-2">
-                <div class="h-2 w-2 rounded-full bg-green-500"></div>
                 <button
                   onClick$={async () => {
                     await logout.submit({});
