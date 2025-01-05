@@ -191,7 +191,7 @@ export default component$(() => {
         )}
 
         <div
-          class={`border-t border-gray-600 bg-gray-700 p-4 ${isVsible.value ? "hidden" : ""}`}
+          class={`border-t border-gray-600 bg-gray-700 p-2 ${isVsible.value ? "hidden" : ""}`}
         >
           {isRunning.value && (
             <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
