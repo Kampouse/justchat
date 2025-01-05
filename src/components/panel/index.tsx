@@ -54,7 +54,20 @@ export default component$(
             <h2 class="mb-2 pb-2 text-center text-lg font-semibold text-white">
               Previous convos
             </h2>
-            <div class="scrollbar-hide flex flex-grow flex-col gap-2 overflow-y-scroll rounded-xl pr-2">
+
+            <div class="scrollbar-hide flex flex-grow flex-col gap-2 overflow-y-scroll rounded-xl px-2">
+              <Link
+                prefetch={false}
+                href={"/"}
+                onClick$={() => {
+                  isMenuOpen.value = false;
+                  props.suspensed.value = true;
+                }}
+                class="flex cursor-pointer items-center justify-center rounded border-2 border-gray-800 bg-gray-800 p-3 px-4 font-medium text-white transition-all duration-300 ease-in-out hover:bg-gray-700"
+              >
+                + Start New Chat
+              </Link>
+
               {props.convos &&
                 props.convos.map((chat, index) => (
                   <Link

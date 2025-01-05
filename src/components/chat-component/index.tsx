@@ -1,5 +1,5 @@
 import { component$ } from "@builder.io/qwik";
-import { Form, Link } from "@builder.io/qwik-city";
+import { Form } from "@builder.io/qwik-city";
 import type { QRL, Signal } from "@builder.io/qwik";
 
 // Components
@@ -62,7 +62,7 @@ export const ChatInput = component$<{
   onSubmit$: QRL<(e: Event) => Promise<void>>;
   messages: number;
   isRunning: Signal<boolean>;
-}>(({ onSubmit$, isRunning, messages }) => {
+}>(({ onSubmit$, isRunning }) => {
   return (
     <div class="rounded-lg  border-t border-gray-800 bg-gray-900 p-4">
       <Form preventdefault:submit onSubmit$={onSubmit$} class="flex space-x-2">
@@ -73,28 +73,10 @@ export const ChatInput = component$<{
           required
           minLength={1}
           autoComplete="off"
-          class="w-full flex-1 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:border-blue-500 focus:outline-none sm:w-3/4 md:w-4/5 lg:w-5/6"
+          class="h-auto min-h-[40px] w-full flex-1 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:border-blue-500 focus:outline-none sm:w-3/4 md:w-4/5 lg:w-5/6"
+          style="height: auto; min-height: 40px; resize: vertical;"
         />
-        {messages > 1 && (
-          <Link
-            class="flex  w-16 items-center justify-center rounded-lg border border-gray-700 bg-gray-900 px-1 text-white hover:bg-gray-800 md:w-24 md:px-4"
-            href="/"
-          >
-            <span class="hidden w-20 px-2 text-center sm:inline">New Chat</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              class="inline h-5 w-5 sm:hidden"
-            >
-              <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-            <span role="img" aria-label="fire" class="hidden sm:inline">
-              🔥
-            </span>
-          </Link>
-        )}
+
         <button
           type="submit"
           class="flex w-28 items-center justify-center rounded-lg bg-blue-600 py-2 text-gray-100 transition-colors duration-500 hover:bg-blue-700"
