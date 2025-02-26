@@ -2,25 +2,25 @@ import { component$, useSignal, $, useTask$ } from "@builder.io/qwik";
 import type { Message } from "./api";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { useStore } from "@builder.io/qwik";
-import { routeLoader$, useLocation } from "@builder.io/qwik-city";
+import { routeLoader$, useLocation, useNavigate } from "@builder.io/qwik-city";
 import Panel from "~/components/panel";
 import * as Chat from "~/components/chat-component";
-import { useNavigate } from "@builder.io/qwik-city";
-import { createUser, getUser, type Session } from "~/server";
+import { createUser, getUser, getConvos, type Session } from "~/server";
 import { v4 as uuid } from "uuid";
 import { CreateConvo, CreateMessages, getStreamableResponse } from "./api";
-import { getConvos } from "~/server";
+
 export const useConvos = routeLoader$(async (e) => {
   const session = e.sharedMap.get("session") as Session | null;
   const convos = await getConvos(session);
   return convos ?? [];
 });
+
 export const useServerSession = routeLoader$(async (e) => {
   const session = e.sharedMap.get("session") as Session | null;
   const user = await getUser(session);
-  if (user?.length == 0) {
+  if (user?.length === 0) {
     console.log("Creating user");
-    session?.user.email;
+    // Check if the user's email is from an allowed domain
     if (
       session?.user.email.includes("@tractr") ||
       session?.user.email.includes("@jemartel") ||
@@ -30,7 +30,6 @@ export const useServerSession = routeLoader$(async (e) => {
       await createUser(session);
     } else {
       e.sharedMap.delete("session");
-
       return null;
     }
   }
@@ -38,6 +37,7 @@ export const useServerSession = routeLoader$(async (e) => {
 });
 
 export default component$(() => {
+  // Navigation hook
   const nav = useNavigate();
 
   const suspensed = useSignal(false);
@@ -49,17 +49,20 @@ export default component$(() => {
   const isErroring = useSignal(false);
   const showBanner = useSignal(true);
   const locator = useLocation();
-  const isVsible = useSignal(user.value ? false : true);
+  const isVisible = useSignal(user.value ? false : true);
 
+  // Monitor route changes to trigger banner visibility
   useTask$(({ track }) => {
     track(() => locator.url.pathname);
     console.log(locator.url.pathname);
     showBanner.value = true;
   });
+
   const messages = useStore<{ value: Message[] }>({
     value: [],
   });
 
+  // Handle form submission for chat messages
   const submit = $(async (e: Event) => {
     try {
       const form = e.target as HTMLFormElement;
@@ -83,15 +86,10 @@ export default component$(() => {
         messages.value,
       );
       const output = "";
-      messages.value = [
-        ...messages.value,
-        {
-          type: "ai",
-          content: output,
-        },
-      ];
+      messages.value = [...messages.value, { type: "ai", content: output }];
       isRunning.value = true;
       showBanner.value = false;
+
       for await (const item of data) {
         messages.value[messages.value.length - 1].content += item + " ";
       }
@@ -139,9 +137,6 @@ export default component$(() => {
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
                   class="mx-auto mb-4 text-gray-300"
                 >
                   <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2m0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16" />
@@ -176,11 +171,7 @@ export default component$(() => {
                   fill="currentColor"
                   onClick$={() => (isErroring.value = false)}
                 >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clip-rule="evenodd"
-                  />
+                  <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" />
                 </svg>
                 <p class="font-medium">
                   An error occurred during chat. Please try again.
@@ -191,7 +182,7 @@ export default component$(() => {
         )}
 
         <div
-          class={`border-t border-gray-600 bg-gray-700 p-2 ${isVsible.value ? "hidden" : ""}`}
+          class={`border-t border-gray-600 bg-gray-700 p-2 ${isVisible.value ? "hidden" : ""}`}
         >
           {isRunning.value && (
             <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -217,6 +208,7 @@ export default component$(() => {
     </div>
   );
 });
+
 export const head: DocumentHead = {
   title: "Just Chat",
   meta: [
