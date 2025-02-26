@@ -16,6 +16,8 @@ export const onGet: RequestHandler = async (req) => {
     "/logout": "public",
     "/landing": "public",
     "/landing/": "public",
+    "/profile": "public",
+    "/profile/": "public",
   };
   type Session = {
     user: {

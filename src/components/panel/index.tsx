@@ -92,7 +92,9 @@ export default component$(
                 ))}
             </div>
 
-            <Credentials user={props.session?.user as any} />
+            <Link href="/profile">
+              <Credentials user={props.session?.user as any} />
+            </Link>
           </div>
         </div>
 

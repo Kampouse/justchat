@@ -3,7 +3,7 @@ import type { Message } from "./api";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { useStore } from "@builder.io/qwik";
 import { routeLoader$, useLocation, useNavigate } from "@builder.io/qwik-city";
-import Panel from "~/components/panel";
+import Panel from "~/components/panel/index";
 import * as Chat from "~/components/chat-component";
 import { createUser, getUser, getConvos, type Session } from "~/server";
 import { v4 as uuid } from "uuid";
