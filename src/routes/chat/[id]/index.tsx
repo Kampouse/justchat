@@ -50,7 +50,11 @@ export const useRemainingQueires = routeLoader$(async (e) => {
   const session = e.sharedMap.get("session") as Session | null;
 
   if (!session) return 0;
-  return await GetRemainingQueries(session);
+  const data = await GetRemainingQueries(session);
+  if (data == null) {
+    return 0;
+  }
+  return data;
 });
 
 /* ==========================================================================
@@ -171,7 +175,7 @@ export default component$(() => {
       />
       <div class="flex h-full max-h-[100dvh] flex-1 flex-col">
         <div id="chat" class="flex-1 overflow-y-auto bg-gray-700 p-2 md:p-4">
-          {remaining.value && remaining.value <= 0 && (
+          {remaining.value <= 0 && (
             <WarningBanner
               title="Query Limit Reached"
               message="You've reached your daily query limit. Please upgrade your plan or wait until tomorrow."

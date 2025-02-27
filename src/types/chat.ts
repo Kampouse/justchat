@@ -5,6 +5,6 @@ export interface RemainingQueriesProps {
 export interface WarningBannerProps {
   title: string;
   message: string;
-  type?: 'warning' | 'error' | 'info';
+  type?: "warning" | "error" | "info";
   className?: string;
 }
