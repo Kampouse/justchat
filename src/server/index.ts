@@ -5,7 +5,6 @@ import { ChatOpenAI } from "@langchain/openai";
 import { Message } from "~/routes/api";
 import { eq } from "drizzle-orm";
 import { AiChat } from "./ai";
-import { R } from "../../server/q-De7dZrfv";
 export type Session = {
   user: {
     name: string;
