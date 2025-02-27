@@ -19,10 +19,10 @@ export const users = sqliteTable("users", {
   email: text("email").notNull(),
   // Add these new fields
   queriesRemaining: integer("queries_remaining", { mode: "number" }).default(
-    1000,
+    50,
   ),
   queriesUsed: integer("queries_used", { mode: "number" }).default(0),
-  totalQueries: integer("total_queries", { mode: "number" }).default(1000),
+  totalQueries: integer("total_queries", { mode: "number" }).default(50),
   lastQueryReset: integer("last_query_reset", { mode: "timestamp" }).default(
     new Date(),
   ),

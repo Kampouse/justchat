@@ -235,6 +235,7 @@ export default component$(() => {
 
         <div class="border-t border-gray-600 bg-gray-700 p-2">
           <Chat.ChatInput
+            remaining={remaining.value ?? 0}
             messages={messages.value.length}
             onSubmit$={submit}
             isRunning={isRunning}

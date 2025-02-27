@@ -1,5 +1,6 @@
 import { useSignIn, useSignOut } from "~/routes/plugin@auth";
 import { component$ } from "@builder.io/qwik";
+import { Link } from "@builder.io/qwik-city";
 import type { Session } from "~/server";
 export const Credentials = component$<Session | null>((props) => {
   const login = useSignIn();
@@ -7,7 +8,7 @@ export const Credentials = component$<Session | null>((props) => {
   return (
     <div
       id="login-modal"
-      class=" mt-2 justify-center rounded-lg bg-gray-800 p-3
+      class=" mt-2 justify-center  rounded-lg bg-gray-800 p-3 pr-2
       text-white shadow-lg  md:max-w-[90vw]"
     >
       <div class="flex flex-col   justify-center gap-3  sm:justify-center">
@@ -39,13 +40,15 @@ export const Credentials = component$<Session | null>((props) => {
           </>
         ) : (
           <div class="flex flex-row items-center justify-center gap-2 rounded-lg sm:flex-row sm:gap-6">
-            <img
-              src={props.user.image}
-              alt="Profile"
-              width="40"
-              height="40"
-              class="h-8 w-8 rounded-full border-2 border-blue-500 shadow-lg sm:h-12 sm:w-12"
-            />
+            <Link href="/profile" class="group relative">
+              <img
+                src={props.user.image}
+                alt="Profile"
+                width="40"
+                height="40"
+                class="h-8 w-8 rounded-full border-2 border-blue-500 shadow-lg transition-colors hover:border-blue-400 sm:h-12 sm:w-12"
+              />
+            </Link>
             <div class="flex flex-row items-center gap-2 sm:flex-col sm:items-start sm:gap-1">
               <p class="text-sm font-semibold text-blue-100 sm:text-left sm:text-lg">
                 {props.user.name}

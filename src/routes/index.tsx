@@ -20,7 +20,13 @@ export const useConvos = routeLoader$(async (e) => {
 export const useRemainingQueries = routeLoader$(async (e) => {
   const session = e.sharedMap.get("session") as Session | null;
   if (!session) return 0;
-  return await GetRemainingQueries(session);
+
+  const data = await GetRemainingQueries(session);
+  if (data == null) {
+    return 0;
+  }
+
+  return data;
 });
 
 export const useServerSession = routeLoader$(async (e) => {
@@ -59,7 +65,9 @@ export default component$(() => {
   const locator = useLocation();
   const session = useServerSession();
   const isVisible = useSignal(user.value ? false : true);
-
+  const isBannerVisible = useSignal(
+    session.value != null && remaining.value <= 0,
+  );
   // Monitor route changes to trigger banner visibility
   useTask$(({ track }) => {
     track(() => locator.url.pathname);
@@ -129,7 +137,7 @@ export default component$(() => {
       />
       <div class="flex flex-1 flex-col">
         <div class="flex-1 overflow-y-auto bg-gray-700 p-4">
-          {remaining.value && remaining.value <= 0 && (
+          {isBannerVisible.value && (
             <WarningBanner
               title="Query Limit Reached"
               message="You've reached your daily query limit. Please upgrade your plan or wait until tomorrow."
@@ -215,6 +223,7 @@ export default component$(() => {
 
           <Chat.ChatInput
             messages={0}
+            remaining={remaining.value}
             onSubmit$={submit}
             isRunning={isErroring}
           />

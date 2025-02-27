@@ -61,26 +61,30 @@ export const ChatInput = component$<{
   reset?: QRL<(e: Event) => void>;
   onSubmit$: QRL<(e: Event) => Promise<void>>;
   messages: number;
+  remaining: number;
   isRunning: Signal<boolean>;
-}>(({ onSubmit$, isRunning }) => {
+}>(({ onSubmit$, isRunning, remaining }) => {
   return (
     <div class="rounded-lg  border-t border-gray-800 bg-gray-900 p-4">
       <Form preventdefault:submit onSubmit$={onSubmit$} class="flex space-x-2">
         <input
           type="text"
           name="message"
-          placeholder="Type a message..."
+          placeholder={
+            remaining <= 0 ? "Query limit reached" : "Type a message..."
+          }
           required
           minLength={1}
           autoComplete="off"
-          class="h-auto min-h-[40px] w-full flex-1 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:border-blue-500 focus:outline-none sm:w-3/4 md:w-4/5 lg:w-5/6"
+          disabled={remaining <= 0}
+          class={`h-auto min-h-[40px] w-full flex-1 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:border-blue-500 focus:outline-none sm:w-3/4 md:w-4/5 lg:w-5/6 ${remaining <= 0 ? "cursor-not-allowed opacity-50" : ""}`}
           style="height: auto; min-height: 40px; resize: vertical;"
         />
 
         <button
           type="submit"
-          class="flex w-28 items-center justify-center rounded-lg bg-blue-600 py-2 text-gray-100 transition-colors duration-500 hover:bg-blue-700"
-          disabled={isRunning.value}
+          class={`flex w-28 items-center justify-center rounded-lg bg-blue-600 py-2 text-gray-100 transition-colors duration-500 hover:bg-blue-700 ${remaining <= 0 ? "cursor-not-allowed opacity-50" : ""}`}
+          disabled={isRunning.value || remaining <= 0}
         >
           {isRunning.value ? (
             <div class="flex w-5 justify-center transition duration-500">

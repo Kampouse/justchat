@@ -1,8 +1,11 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, useSignal } from "@builder.io/qwik";
+import { Link } from "@builder.io/qwik-city";
 import type { WarningBannerProps } from "~/types/chat";
 
 export const WarningBanner = component$((props: WarningBannerProps) => {
-  return (
+  const isVisible = useSignal(true);
+
+  return isVisible.value ? (
     <div
       class="fixed left-0 right-0 top-0 z-50 m-4 mx-auto max-w-2xl rounded-lg border border-yellow-600 bg-yellow-100/10 px-4 py-3 text-yellow-200 shadow-lg backdrop-blur-sm transition-all duration-300"
       role="alert"
@@ -25,8 +28,20 @@ export const WarningBanner = component$((props: WarningBannerProps) => {
             <strong class="block text-lg font-bold">{props.title}</strong>
             <span class="text-yellow-100/80">{props.message}</span>
           </div>
+          <Link
+            href="/profile"
+            class="rounded-lg px-4 py-2 text-yellow-100/80 transition-colors duration-200 hover:bg-yellow-500/10 hover:text-yellow-500"
+          >
+            Upgrade
+          </Link>
         </div>
+        <button
+          onClick$={() => (isVisible.value = false)}
+          class="ml-4 text-yellow-200 hover:text-yellow-500"
+        >
+          ✕
+        </button>
       </div>
     </div>
-  );
+  ) : null;
 });
