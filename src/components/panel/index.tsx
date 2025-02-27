@@ -30,7 +30,7 @@ export default component$(
         {/* Hamburger button - only visible on mobile */}
         <button
           onClick$={() => (isMenuOpen.value = !isMenuOpen.value)}
-          class="fixed left-0 top-0 z-50 w-full  p-4  md:hidden"
+          class="fixed left-2  top-0 z-50 w-fit   p-4  md:hidden"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -56,7 +56,7 @@ export default component$(
               {(session.value && (
                 <div class="flex flex-row items-center justify-between rounded-lg bg-gray-800 p-4  pl-32 md:pl-4">
                   <h2 class="text-center text-xl font-bold text-white">
-                    Chat History
+                    Chat stuf
                   </h2>
                   <Link
                     prefetch={false}
@@ -65,7 +65,8 @@ export default component$(
                       if (loc.url.pathname === "/") {
                         return;
                       }
-                      isMenuOpen.value = false;
+
+                      //isMenuOpen.value = false;
                       props.suspensed.value = true;
                     }}
                     class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors duration-200 hover:bg-blue-700"
