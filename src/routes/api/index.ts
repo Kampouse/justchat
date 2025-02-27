@@ -4,6 +4,8 @@ import {
   createConvo,
   createMessages,
   createChatTitle,
+  updateUserQueries,
+  getRemainingQueries,
 } from "~/server";
 import type { Session } from "~/server";
 import Drizzler from "../../../drizzle";
@@ -15,10 +17,24 @@ export type Message = {
   content: string;
 };
 
-export const getStreamableResponse = server$(streamableResponse);
+export const getStreamableResponse = server$(async function (input, history) {
+  const data = this.sharedMap.get("session");
+
+  const result = await updateUserQueries(data);
+  if (result == false) {
+    throw new Error("User quotas exceeded or failed");
+  }
+
+  return streamableResponse(input, history);
+});
+
 export const CreateConvo = server$(
   async (ctx: Session | null, uuid: string, messages: Message[]) => {
     if (!ctx) return;
+    const result = await getRemainingQueries(ctx);
+    if (result && result <= 0) {
+      throw new Error("User quotas exceeded or failed");
+    }
     const conv = createConvo(ctx, uuid);
     const drizzle = Drizzler();
 

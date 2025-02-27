@@ -5,6 +5,7 @@ import { ChatOpenAI } from "@langchain/openai";
 import { Message } from "~/routes/api";
 import { eq } from "drizzle-orm";
 import { AiChat } from "./ai";
+import { R } from "../../server/q-De7dZrfv";
 export type Session = {
   user: {
     name: string;
@@ -49,13 +50,76 @@ export const getUser = async (ctx: Session | null) => {
       .execute();
   }
 };
-export const createConvo = async (ctx: Session | null, uuid: string) => {
+export const updateUserQueries = async (ctx: Session): Promise<boolean> => {
+  const userId = await getUser(ctx);
+  if (!userId || !userId[0]) throw new Error("Invalid user");
+
+  const database = Drizzler();
+  const user = await database.query.users.findFirst({
+    where: eq(schema.users.id, userId[0].id),
+  });
+
+  if (!user) throw new Error("User not found");
+
+  // Check if queries are exhausted
+  if (user.queriesRemaining && user.queriesRemaining <= 0) {
+    throw new Error("Query limit exceeded");
+  }
+
+  // Update user's query counts
+  const updatedUser = await database
+    .update(schema.users)
+    .set({
+      queriesRemaining: (user.queriesRemaining || 0) - 1,
+      queriesUsed: (user.queriesUsed || 0) + 1,
+    })
+    .where(eq(schema.users.id, userId[0].id))
+    .returning();
+  // Return true if user has remaining queries, otherwise false
+  return updatedUser && updatedUser[0] && typeof updatedUser[0].queriesRemaining === 'number' && updatedUser[0].queriesRemaining > 0;
+};
+
+export const getRemainingQueries = async (ctx: Session): Promise<number | null> => {
+  const userId = await getUser(ctx);
+  if (!userId || !userId[0]) return null;
+
+  const database = Drizzler();
+  const user = await database.query.users.findFirst({
+    where: eq(schema.users.id, userId[0].id)
+  });
+
+  if (!user) return null;
+
+  return user.queriesRemaining || 0;
+};
+export const GetRemainingQueries = async (ctx: Session): Promise<number | null> => {
+  const userId = await getUser(ctx);
+  if (!userId || !userId[0]) return null;
+
+  const database = Drizzler();
+  const user = await database.query.users.findFirst({
+    where: eq(schema.users.id, userId[0].id)
+  });
+
+  if (!user) return null;
+
+  return user.queriesRemaining || 0;
+};
+
+
+export const createConvo = async (ctx: Session | null, uuid: string): Promise<{
+  id: number;
+  name: string;
+  createdAt: Date;
+  uuid: string;
+  createdBy: number;
+} | undefined> => {
   if (ctx) {
     const user = await getUser(ctx);
-
     const db = Drizzler();
-    if (user) {
-      return await db
+
+    if (user && user[0]) {
+      const conversation = await db
         .insert(schema.conversations)
         .values({
           name: ctx.user.email,
@@ -64,12 +128,29 @@ export const createConvo = async (ctx: Session | null, uuid: string) => {
           createdBy: user[0].id,
         })
         .returning()
-        .execute()
-        .then((conversations) => conversations[0]);
+        .execute();
+
+      const result = conversation[0];
+
+      // Type guard to ensure all required properties exist
+      if (result &&
+          typeof result.id === 'number' &&
+          typeof result.name === 'string' &&
+          result.createdAt instanceof Date &&
+          typeof result.uuid === 'string' &&
+          typeof result.createdBy === 'number') {
+        return {
+          id: result.id,
+          name: result.name,
+          createdAt: result.createdAt,
+          uuid: result.uuid,
+          createdBy: result.createdBy
+        };
+      }
     }
   }
+  return undefined;
 };
-
 export const getConvoByUuid = async ({
   ctx,
   uuid,

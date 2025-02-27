@@ -1,4 +1,6 @@
 import { HumanMessage, AIMessage } from "@langchain/core/messages";
+import { users } from "../../drizzle/schema";
+import { eq } from "drizzle-orm";
 import {
   ChatPromptTemplate,
   MessagesPlaceholder,
@@ -6,6 +8,13 @@ import {
 import { ChatOpenAI } from "@langchain/openai";
 import { trimMessages } from "@langchain/core/messages";
 import { Message } from "~/routes/api";
+import Drizzler from "../../drizzle";
+import { getUser, Session } from ".";
+
+
+
+
+
 export const AiChat = async (chat: Message[]) => {
   const llm = new ChatOpenAI({
     model: "gpt-3.5-turbo",

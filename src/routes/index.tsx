@@ -8,11 +8,19 @@ import * as Chat from "~/components/chat-component";
 import { createUser, getUser, getConvos, type Session } from "~/server";
 import { v4 as uuid } from "uuid";
 import { CreateConvo, CreateMessages, getStreamableResponse } from "./api";
+import { WarningBanner } from "~/components/warning-banner";
+import { GetRemainingQueries } from "~/server";
 
 export const useConvos = routeLoader$(async (e) => {
   const session = e.sharedMap.get("session") as Session | null;
   const convos = await getConvos(session);
   return convos ?? [];
+});
+
+export const useRemainingQueries = routeLoader$(async (e) => {
+  const session = e.sharedMap.get("session") as Session | null;
+  if (!session) return 0;
+  return await GetRemainingQueries(session);
 });
 
 export const useServerSession = routeLoader$(async (e) => {
@@ -43,12 +51,13 @@ export default component$(() => {
   const suspensed = useSignal(false);
   const user = useServerSession();
   const convos = useConvos();
-  const session = useServerSession();
+  const remaining = useRemainingQueries();
 
   const isRunning = useSignal(false);
   const isErroring = useSignal(false);
   const showBanner = useSignal(true);
   const locator = useLocation();
+  const session = useServerSession();
   const isVisible = useSignal(user.value ? false : true);
 
   // Monitor route changes to trigger banner visibility
@@ -102,9 +111,8 @@ export default component$(() => {
         convo: messages.value,
       });
 
-      return nav("/chat/" + conv_uuid);
-      isRunning.value = false;
       if (!convo) return;
+      return nav("/chat/" + conv_uuid);
     } catch (error) {
       console.error("Error in chat submission:", error);
       isErroring.value = true;
@@ -121,6 +129,13 @@ export default component$(() => {
       />
       <div class="flex flex-1 flex-col">
         <div class="flex-1 overflow-y-auto bg-gray-700 p-4">
+          {remaining.value && remaining.value <= 0 && (
+            <WarningBanner
+              title="Query Limit Reached"
+              message="You've reached your daily query limit. Please upgrade your plan or wait until tomorrow."
+              type="warning"
+            />
+          )}
           {suspensed.value ? (
             <div class="flex h-full items-center justify-center">
               <div class="h-12 w-12 animate-spin rounded-full border-4 border-white border-t-transparent"></div>

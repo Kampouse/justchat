@@ -5,6 +5,7 @@ import { type DocumentHead } from "@builder.io/qwik-city";
 
 import Panel from "~/components/panel";
 import * as Chat from "~/components/chat-component";
+import { WarningBanner } from "~/components/warning-banner";
 
 import { routeLoader$ } from "@builder.io/qwik-city";
 import {
@@ -16,6 +17,7 @@ import {
   getAllMessages,
   getConvoByUuid,
   getConvos,
+  GetRemainingQueries,
   type Session,
 } from "~/server";
 
@@ -42,6 +44,13 @@ export const useServerSessio = routeLoader$((e) => {
 export const useConved = routeLoader$(async (e) => {
   const session = e.sharedMap.get("session") as Session | null;
   return (await getConvos(session)) ?? [];
+});
+
+export const useRemainingQueires = routeLoader$(async (e) => {
+  const session = e.sharedMap.get("session") as Session | null;
+
+  if (!session) return 0;
+  return await GetRemainingQueries(session);
 });
 
 /* ==========================================================================
@@ -77,7 +86,6 @@ export default component$(() => {
 
   const convs = useConved();
   const serverMessages = useMessages();
-  const session = useServerSessio();
 
   const messages = useStore<{ value: Message[] }>({
     value: [...serverMessages.value],
@@ -86,6 +94,9 @@ export default component$(() => {
     value: [],
   });
   const uuid = useSignal<string>(loc.params["id"]);
+
+  const session = useServerSessio();
+  const remaining = useRemainingQueires();
 
   // Update conversation when location changes.
   useTask$(({ track }) => {
@@ -160,6 +171,13 @@ export default component$(() => {
       />
       <div class="flex h-full max-h-[100dvh] flex-1 flex-col">
         <div id="chat" class="flex-1 overflow-y-auto bg-gray-700 p-2 md:p-4">
+          {remaining.value && remaining.value <= 0 && (
+            <WarningBanner
+              title="Query Limit Reached"
+              message="You've reached your daily query limit. Please upgrade your plan or wait until tomorrow."
+              type="warning"
+            />
+          )}
           <div
             class={`flex flex-col space-y-3 transition-opacity duration-300 md:space-y-4 ${
               suspensed.value ? "opacity-0" : "opacity-100"
