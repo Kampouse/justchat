@@ -221,13 +221,29 @@ export default component$(() => {
     </div>
   );
 });
-
 export const head: DocumentHead = {
   title: "Just Chat",
   meta: [
     {
       name: "description",
       content: "Just chatting",
+    },
+    {
+      property: "og:image",
+      content:
+        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='630' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2m0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16'%3E%3C/path%3E%3Ccircle cx='12' cy='12' r='3'%3E%3C/circle%3E%3Cpath d='M12 7v2M12 15v2M7 12h2M15 12h2'%3E%3C/path%3E%3C/svg%3E",
+    },
+    {
+      property: "og:title",
+      content: "Just Chat - AI Powered Conversations",
+    },
+    {
+      property: "og:description",
+      content: "Experience intelligent conversations with our AI chatbot",
+    },
+    {
+      property: "og:type",
+      content: "website",
     },
   ],
 };
