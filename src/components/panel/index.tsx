@@ -56,7 +56,7 @@ export default component$(
               {(session.value && (
                 <div class="flex flex-row items-center justify-between rounded-lg bg-gray-800 p-4  pl-32 md:pl-4">
                   <h2 class="text-center text-xl font-bold text-white">
-                    Chat stuf
+                    Chat History
                   </h2>
                   <Link
                     prefetch={false}
