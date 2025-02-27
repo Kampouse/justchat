@@ -31,12 +31,13 @@ export const useRemainingQueries = routeLoader$(async (e) => {
 
 export const useServerSession = routeLoader$(async (e) => {
   const session = e.sharedMap.get("session") as Session | null;
-  const user = await getUser(session);
+  let user = await getUser(session);
   if (user?.length === 0) {
     await createUser(session);
+    user = await getUser(session);
   }
 
-  return session;
+  return { user, session };
 });
 
 export default component$(() => {
@@ -52,10 +53,12 @@ export default component$(() => {
   const isErroring = useSignal(false);
   const showBanner = useSignal(true);
   const locator = useLocation();
-  const session = useServerSession();
-  const isVisible = useSignal(user.value ? false : true);
+  const isVisible = useSignal(user.value.session ? false : true);
   const isBannerVisible = useSignal(
-    session.value != null && remaining.value <= 0,
+    user.value.user &&
+      user.value.user.length > 0 &&
+      user.value.user[0].queriesRemaining &&
+      user.value.user[0].queriesRemaining <= 0,
   );
   // Monitor route changes to trigger banner visibility
   useTask$(({ track }) => {
@@ -100,10 +103,14 @@ export default component$(() => {
         messages.value[messages.value.length - 1].content += item + " ";
       }
 
-      const convo = await CreateConvo(user.value, conv_uuid, messages.value);
+      const convo = await CreateConvo(
+        user.value.session,
+        conv_uuid,
+        messages.value,
+      );
 
       await CreateMessages({
-        ctx: user.value,
+        ctx: user.value.session,
         uuid: conv_uuid,
         convo: messages.value,
       });
@@ -121,7 +128,7 @@ export default component$(() => {
     <div class="flex h-screen">
       <Panel
         suspensed={suspensed}
-        session={session.value}
+        session={user.value.session}
         convos={convos.value}
       />
       <div class="flex flex-1 flex-col">
