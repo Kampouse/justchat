@@ -1,80 +1,86 @@
 import { component$ } from "@builder.io/qwik";
-import { routeLoader$ } from "@builder.io/qwik-city";
+import { routeLoader$, useNavigate } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
+import { DB } from "../../../drizzle";
+import { users } from "../../../drizzle/schema";
+import { eq } from "drizzle-orm";
 
-const exampleData = {
-  id: 1,
-  name: "Example User",
-  email: "example@user.com",
-  image: "https://via.placeholder.com/150",
-  created_at: "2023-01-01",
-  updated_at: "2023-12-31",
-  queries_remaining: 1000,
-  queries_used: 500,
-  total_queries: 1500,
-};
+export const useProfile = routeLoader$(async ({ sharedMap }) => {
+  const db = DB();
+  const session = await sharedMap.get("session");
 
-export const useProfile = routeLoader$(async () => {
-  return [exampleData];
+  if (!session?.user?.email) {
+    return null;
+  }
+
+  const user = await db.query.users.findFirst({
+    where: eq(users.email, session.user.email),
+  });
+
+  return user;
 });
 
 export default component$(() => {
-  const profile = useProfile();
+  const user = useProfile();
+  const nav = useNavigate();
+
+  if (!user.value) {
+    return (
+      <div class="flex min-h-screen items-center justify-center bg-gray-700 p-4 text-white">
+        <p>Please sign in to view your profile</p>
+      </div>
+    );
+  }
 
   return (
     <div class="min-h-screen bg-gray-700 p-4 text-white">
       <div class="mx-auto max-w-3xl">
-        <h1 class="mb-8 text-3xl font-bold">Profile</h1>
+        <div class="mb-8 flex items-center justify-between">
+          <h1 class="text-3xl font-bold">Profile</h1>
+          <button
+            onClick$={() => nav("/")}
+            class="rounded-lg bg-gray-600 px-4 py-2 text-white transition-colors hover:bg-gray-500"
+          >
+            <div class="flex items-center space-x-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <span>Back</span>
+            </div>
+          </button>
+        </div>
 
         <div class="rounded-lg bg-gray-800 p-6 shadow-lg">
           <div class="mb-6 flex items-center space-x-4">
-            {profile.value[0].image && (
-              <img
-                src={profile.value[0].image}
-                alt="Profile"
-                class="h-20 w-20 rounded-full object-cover"
-                width={80}
-                height={80}
-              />
-            )}
             <div>
-              <h2 class="text-xl font-semibold">{profile.value[0].name}</h2>
-              <p class="text-gray-400">{profile.value[0].email}</p>
+              <h2 class="text-xl font-semibold">{user.value.name}</h2>
+              <p class="text-gray-400">{user.value.email}</p>
             </div>
           </div>
 
           <div class="space-y-4">
-            <div class="rounded-md bg-gray-700 p-4">
-              <h3 class="mb-2 text-lg font-medium">Account Details</h3>
-              <div class="space-y-2">
-                <p>
-                  <span class="text-gray-400">Member since: </span>
-                  {profile.value[0].created_at
-                    ? new Date(profile.value[0].created_at).toLocaleDateString()
-                    : "N/A"}
-                </p>
-                <p>
-                  <span class="text-gray-400">Last updated: </span>
-                  {profile.value[0].updated_at
-                    ? new Date(profile.value[0].updated_at).toLocaleDateString()
-                    : "N/A"}
-                </p>
-              </div>
-            </div>
-
             <div class="rounded-md bg-gray-700 p-4">
               <h3 class="mb-2 text-lg font-medium">Query Usage</h3>
               <div class="space-y-2">
                 <div class="flex items-center justify-between">
                   <span class="text-gray-400">Queries Remaining:</span>
                   <span class="font-semibold text-white">
-                    {profile.value[0].queries_remaining ?? "Unlimited"}
+                    {user.value.queriesRemaining ?? "Unlimited"}
                   </span>
                 </div>
                 <div class="flex items-center justify-between">
                   <span class="text-gray-400">Total Queries Used:</span>
                   <span class="font-semibold text-white">
-                    {profile.value[0].queries_used ?? 0}
+                    {user.value.queriesUsed ?? 0}
                   </span>
                 </div>
                 <div class="mt-4">
@@ -83,8 +89,8 @@ export default component$(() => {
                       class="h-full rounded-full bg-blue-500"
                       style={{
                         width: `${Math.min(
-                          ((profile.value[0].queries_used ?? 0) /
-                            (profile.value[0].total_queries ?? 100)) *
+                          ((user.value.queriesUsed ?? 0) /
+                            (user.value.totalQueries ?? 100)) *
                             100,
                           100,
                         )}%`,
