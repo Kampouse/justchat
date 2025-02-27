@@ -33,20 +33,9 @@ export const useServerSession = routeLoader$(async (e) => {
   const session = e.sharedMap.get("session") as Session | null;
   const user = await getUser(session);
   if (user?.length === 0) {
-    console.log("Creating user");
-    // Check if the user's email is from an allowed domain
-    if (
-      session?.user.email.includes("@tractr") ||
-      session?.user.email.includes("@jemartel") ||
-      session?.user.email.includes("jpmartel98@gmail.com") ||
-      session?.user.email.includes("t-jean98@gmail.com")
-    ) {
-      await createUser(session);
-    } else {
-      e.sharedMap.delete("session");
-      return null;
-    }
+    await createUser(session);
   }
+
   return session;
 });
 
