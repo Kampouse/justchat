@@ -246,7 +246,7 @@ export const head: DocumentHead = {
     {
       property: "og:image",
       content:
-        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='630' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2m0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16'%3E%3C/path%3E%3Ccircle cx='12' cy='12' r='3'%3E%3C/circle%3E%3Cpath d='M12 7v2M12 15v2M7 12h2M15 12h2'%3E%3C/path%3E%3C/svg%3E",
+        "https://images.nightcafe.studio/jobs/2XaPSbxbxtqU07IqTCPZ/2XaPSbxbxtqU07IqTCPZ--1--nqe8a.jpg?tr=w-320,c-at_max",
     },
     {
       property: "og:title",
@@ -254,7 +254,7 @@ export const head: DocumentHead = {
     },
     {
       property: "og:description",
-      content: "Experience intelligent conversations with our AI chatbot",
+      content: "Experience intelligent conversations with   AI ",
     },
     {
       property: "og:type",
