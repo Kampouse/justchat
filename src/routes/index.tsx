@@ -10,6 +10,7 @@ import { createUser, getUser, getConvos, type Session } from "~/server";
 import { v4 as uuid } from "uuid";
 import { CreateConvo, CreateMessages, getStreamableResponse } from "./api";
 import { WarningBanner } from "~/components/warning-banner";
+import type { Language } from "~/components/chat-component";
 import { GetRemainingQueries } from "~/server";
 
 export const useConvos = routeLoader$(async (e) => {
@@ -49,7 +50,11 @@ export default component$(() => {
   const user = useServerSession();
   const convos = useConvos();
   const remaining = useRemainingQueries();
-  const selectedLanguage = useSignal("french");
+  const selectedLanguage = useSignal<Language>({
+    code: "fr",
+    name: "French",
+    flag: "🇫🇷",
+  });
   const isRunning = useSignal(false);
   const isErroring = useSignal(false);
   const showBanner = useSignal(true);
@@ -67,7 +72,6 @@ export default component$(() => {
     console.log(locator.url.pathname);
     showBanner.value = true;
   });
-
   const messages = useStore<{ value: Message[] }>({
     value: [],
   });
@@ -91,10 +95,12 @@ export default component$(() => {
         { type: "human", content: message as string },
       ];
       const conv_uuid = uuid();
-      const data = await getStreamableResponse(
-        message as string,
-        messages.value,
-      );
+      const data = await getStreamableResponse({
+        input: message as string,
+        history: messages.value,
+        systemPrompt: `You are an experienced language instructor fluent in ${selectedLanguage.value.name} and English. Help translate between languages naturally through conversation. When the user writes in English, respond in ${selectedLanguage.value.name} with translations and explanations. When they write in ${selectedLanguage.value.name}, respond in English with corrections and translations. Focus on helping them develop fluency in both languages through practical usage and clear explanations.`,
+      });
+
       const output = "";
       messages.value = [...messages.value, { type: "ai", content: output }];
       isRunning.value = true;
@@ -227,7 +233,7 @@ export default component$(() => {
 
           <Chat.ChatInput
             messages={0}
-            selectedLanguage={selectedLanguage}
+            language={selectedLanguage}
             remaining={remaining.value}
             onSubmit$={submit}
             isRunning={isErroring}

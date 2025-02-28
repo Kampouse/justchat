@@ -17,7 +17,15 @@ export type Message = {
   content: string;
 };
 
-export const getStreamableResponse = server$(async function (input, history) {
+export const getStreamableResponse = server$(async function ({
+  input,
+  history,
+  systemPrompt,
+}: {
+  input: string;
+  history: Message[];
+  systemPrompt: string;
+}) {
   const data = this.sharedMap.get("session");
 
   const result = await updateUserQueries(data);
@@ -25,7 +33,11 @@ export const getStreamableResponse = server$(async function (input, history) {
     throw new Error("User quotas exceeded or failed");
   }
 
-  return streamableResponse(input, history);
+  return streamableResponse({
+    input: input,
+    history: history,
+    systemPrompt: systemPrompt,
+  });
 });
 
 export const CreateConvo = server$(
@@ -38,7 +50,11 @@ export const CreateConvo = server$(
     const conv = createConvo(ctx, uuid);
     const drizzle = Drizzler();
 
-    const title = await createChatTitle(messages);
+    const title = await createChatTitle({
+      messages,
+      model: "gpt-3.5-turbo",
+      temperature: 0.7,
+    });
     await drizzle
       .update(conversations)
       .set({

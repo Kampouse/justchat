@@ -3,13 +3,18 @@ import { Form } from "@builder.io/qwik-city";
 import type { QRL, Signal } from "@builder.io/qwik";
 import { useSignal } from "@builder.io/qwik";
 
-interface Language {
+export interface Language {
   code: string;
   name: string;
   flag: string;
 }
+export type Message = {
+  id: string;
+  text: string;
+  role: string;
+};
 
-const languages: Language[] = [
+export const languages: Language[] = [
   { code: "ko", name: "Korean", flag: "🇰🇷" },
   { code: "ja", name: "Japanese", flag: "🇯🇵" },
   { code: "zh", name: "Chinese", flag: "🇨🇳" },
@@ -77,14 +82,17 @@ export const LoadingSpinner = component$(() => {
   );
 });
 
-export const ChatInput = component$<{
+export interface ChatInputProps {
   reset?: QRL<(e: Event) => void>;
   onSubmit$: QRL<(e: Event) => Promise<void>>;
   messages: number;
   remaining: number;
+  language: Signal<Language>;
   isRunning: Signal<boolean>;
-  onLanguageChange$?: QRL<(language: Language) => void>;
-}>(({ onSubmit$, isRunning, remaining, onLanguageChange$ }) => {
+}
+
+export const ChatInput = component$<ChatInputProps>((props) => {
+  const { onSubmit$, isRunning, remaining } = props;
   const selectedLanguage = useSignal<Language>(languages[languages.length - 1]);
 
   return (
@@ -137,9 +145,7 @@ export const ChatInput = component$<{
               class="cursor-pointer px-4 py-1 text-sm text-gray-100 hover:bg-gray-700"
               onClick$={async () => {
                 selectedLanguage.value = lang;
-                if (onLanguageChange$) {
-                  await onLanguageChange$(lang);
-                }
+                props.language.value = lang;
               }}
             >
               <span>

@@ -1,6 +1,6 @@
 import { type RequestHandler } from "@builder.io/qwik-city";
-import { getStreamableResponse } from "..";
-export const onGet: RequestHandler = async (ctx) => {
+export const onGet: RequestHandler = async () => {
+  /*
   const writableStream = ctx.getWritableStream();
   const writer = writableStream.getWriter();
   const encoder = new TextEncoder();
@@ -15,7 +15,9 @@ export const onGet: RequestHandler = async (ctx) => {
       await writer.write(encoder.encode("Error: invalid key"));
       return;
     }
-    const stream = await getStreamableResponse(
+    const stream = await getStreamableResponse({
+       input: ctx.url.searchParams.get("input") || "",
+      }
       ctx.url.searchParams.get("input") || "",
       [],
     );
@@ -32,4 +34,5 @@ export const onGet: RequestHandler = async (ctx) => {
   } finally {
     writer.close();
   }
+*/
 };

@@ -15,15 +15,14 @@ import { getUser, Session } from ".";
 
 
 
-export const AiChat = async (chat: Message[]) => {
+export const AiChat = async (chat: Message[], systemPrompt: string) => {
   const llm = new ChatOpenAI({
     model: "gpt-3.5-turbo",
     temperature: 0.5,
     streaming: true,
   });
 
-  const systemPrompt =
-    "write like a french professor, always speak french, always write but always help the user in a friendly way";
+  
 
   // Trim messages to keep last 10 messages to maintain context without overloading
   const trimmer = trimMessages({

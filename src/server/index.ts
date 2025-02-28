@@ -256,8 +256,20 @@ export const createMessages = async ({
     }
   }
 };
-export async function* streamableResponse(input: string, history: any[] = []) {
-  const data = await AiChat([...history, { type: "human", content: input }]);
+export type StreamableParams = {
+  input: string;
+  history?: Message[];
+  systemPrompt?: string;
+}
+
+export async function* streamableResponse(params: StreamableParams) {
+  const { input, history = [], systemPrompt = "Your a stressful french assistant. that only anser in french" } = params;
+
+  const data = await AiChat([
+    { type: "ai", content: systemPrompt },
+    ...history,
+    { type: "human", content: input }
+  ], params.systemPrompt  ?? "");
 
   let buffer = [];
   for await (const response of data) {
@@ -284,10 +296,21 @@ export async function* streamableResponse(input: string, history: any[] = []) {
 
   return history;
 }
-export const createChatTitle = async (messages: Message[]) => {
+
+export type ChatTitleParams = {
+  messages: Message[];
+  model?: string;
+  temperature?: number;
+}
+
+export const createChatTitle = async ({
+  messages,
+  model = "gpt-3.5-turbo",
+  temperature = 0.5
+}: ChatTitleParams) => {
   const llm = new ChatOpenAI({
-    model: "gpt-3.5-turbo",
-    temperature: 0,
+    model,
+    temperature,
   });
 
   if (messages.length === 0) return "Empty chat";

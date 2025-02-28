@@ -13,6 +13,7 @@ import {
   getStreamableResponse,
   type Message,
 } from "~/routes/api";
+import type { Language } from "~/components/chat-component";
 import {
   getAllMessages,
   getConvoByUuid,
@@ -86,6 +87,11 @@ export default component$(() => {
   const suspensed = useSignal(false);
   const isRunning = useSignal(false);
   const isErroring = useSignal(false);
+  const language = useSignal<Language>({
+    code: "fr",
+    name: "French",
+    flag: "🇫🇷",
+  });
   const len = useSignal(0);
 
   const convs = useConved();
@@ -135,10 +141,11 @@ export default component$(() => {
       ) as HTMLInputElement;
       if (inputElement) inputElement.value = "";
 
-      const streamData = await getStreamableResponse(
-        userMessage,
-        messages.value,
-      );
+      const streamData = await getStreamableResponse({
+        input: userMessage,
+        history: messages.value,
+        systemPrompt: `You are an annoyingly persistent translator who will always respond in ${language.value.name} ${language.value.flag}. You must always provide two parts in your responses - first the translation in ${language.value.name}, then the same text in English. Be extremely insistent about providing both languages. Show off your translation skills by pointing out nuances and subtleties between the languages. If the user doesn't write in ${language.value.name}, translate their text and explain the grammar rules they should follow. If they do write in ${language.value.name}, nitpick their grammar and suggest improvements while still praising their effort. Use plenty of exclamation points and emojis to maintain an enthusiastic but slightly overbearing tone!!`,
+      });
       // Append an empty AI response placeholder.
       messages.value = [...messages.value, { type: "ai", content: "" }];
       isRunning.value = true;
@@ -239,6 +246,7 @@ export default component$(() => {
 
         <div class="border-t border-gray-600 bg-gray-700 p-2">
           <Chat.ChatInput
+            language={language}
             remaining={remaining.value ?? 0}
             messages={messages.value.length}
             onSubmit$={submit}
