@@ -2,6 +2,7 @@ import { component$, useSignal, $, useTask$ } from "@builder.io/qwik";
 import type { Message } from "./api";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { useStore } from "@builder.io/qwik";
+import { Credentials } from "~/components/credentials";
 import { routeLoader$, useLocation, useNavigate } from "@builder.io/qwik-city";
 import Panel from "~/components/panel/index";
 import * as Chat from "~/components/chat-component";
@@ -132,6 +133,13 @@ export default component$(() => {
         convos={convos.value}
       />
       <div class="flex flex-1 flex-col">
+        {!user.value.session && (
+          <div class="fixed bottom-0 left-0 right-0 z-50 block w-full border-t border-gray-600 bg-gray-800 p-4 shadow-lg md:hidden">
+            <div class="mx-auto max-w-md">
+              <Credentials user={user.value.user as any} />
+            </div>
+          </div>
+        )}
         <div class="flex-1 overflow-y-auto bg-gray-700 p-4">
           {isBannerVisible.value && (
             <WarningBanner

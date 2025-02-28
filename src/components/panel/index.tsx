@@ -30,7 +30,7 @@ export default component$(
         {/* Hamburger button - only visible on mobile */}
         <button
           onClick$={() => (isMenuOpen.value = !isMenuOpen.value)}
-          class="fixed left-2  top-0 z-50 w-fit   p-4  md:hidden"
+          class="fixed left-2  top-4 z-50 w-fit   p-4  md:hidden"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
