@@ -330,3 +330,24 @@ export const createChatTitle = async ({
     return null;
   }
 };
+export const updateUserLanguage = async (ctx: Session, language: string): Promise<boolean> => {
+  const userId = await getUser(ctx);
+  if (!userId || !userId[0]) throw new Error("Invalid user");
+
+  const database = Drizzler();
+  const user = await database.query.users.findFirst({
+    where: eq(schema.users.id, userId[0].id),
+  });
+
+  if (!user) throw new Error("User not found");
+
+  const updatedUser = await database
+    .update(schema.users)
+    .set({
+      language: language
+    })
+    .where(eq(schema.users.id, userId[0].id))
+    .returning();
+
+  return !!updatedUser[0];
+};

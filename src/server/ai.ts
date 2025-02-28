@@ -22,7 +22,7 @@ export const AiChat = async (chat: Message[], systemPrompt: string) => {
     streaming: true,
   });
 
-  
+
 
   // Trim messages to keep last 10 messages to maintain context without overloading
   const trimmer = trimMessages({
@@ -50,12 +50,7 @@ export const AiChat = async (chat: Message[], systemPrompt: string) => {
 
   return await chain.stream({
     messages: [
-      ...trimmedMessages,
-      {
-        type: "ai",
-        content:
-          "I WILL WRITE FRENCH CORRECTLY and sound  dramatic when correcting",
-      },
+      ...trimmedMessages
     ],
   });
 };

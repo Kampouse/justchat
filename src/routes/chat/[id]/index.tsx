@@ -6,7 +6,7 @@ import { type DocumentHead } from "@builder.io/qwik-city";
 import Panel from "~/components/panel";
 import * as Chat from "~/components/chat-component";
 import { WarningBanner } from "~/components/warning-banner";
-
+import { languages } from "~/components/chat-component";
 import { routeLoader$ } from "@builder.io/qwik-city";
 import {
   CreateMessages,
@@ -19,6 +19,7 @@ import {
   getConvoByUuid,
   getConvos,
   GetRemainingQueries,
+  getUser,
   type Session,
 } from "~/server";
 
@@ -38,8 +39,11 @@ export const useMessages = routeLoader$(async (e) => {
   })) as Message[];
 });
 
-export const useServerSessio = routeLoader$((e) => {
-  return e.sharedMap.get("session") as Session | null;
+export const useServerSessio = routeLoader$(async (e) => {
+  const session = e.sharedMap.get("session") as Session | null;
+
+  const user = await getUser(session);
+  return { user, session };
 });
 
 export const useConved = routeLoader$(async (e) => {
@@ -87,11 +91,7 @@ export default component$(() => {
   const suspensed = useSignal(false);
   const isRunning = useSignal(false);
   const isErroring = useSignal(false);
-  const language = useSignal<Language>({
-    code: "fr",
-    name: "French",
-    flag: "🇫🇷",
-  });
+
   const len = useSignal(0);
 
   const convs = useConved();
@@ -106,6 +106,7 @@ export default component$(() => {
   const uuid = useSignal<string>(loc.params["id"]);
 
   const session = useServerSessio();
+
   const remaining = useRemainingQueires();
 
   // Update conversation when location changes.
@@ -116,7 +117,16 @@ export default component$(() => {
       messages.value = [...serverMessages.value];
     }
   });
-
+  const defaultLanguage = languages.find(
+    (e) => e.code === (session.value.user?.[0]?.language ?? "fr"),
+  );
+  const language = useSignal<Language>(
+    defaultLanguage || {
+      code: "fr",
+      name: "French",
+      flag: "🇫🇷",
+    },
+  );
   /* --------------------------------------------------------------------------
             Handle Message Submission and Streaming Response
      -------------------------------------------------------------------------- */
@@ -150,6 +160,7 @@ export default component$(() => {
 2. The English translation underneath
 3. Simple explanations of key grammar points and vocabulary
 4. Encouragement and positive reinforcement
+5. if the person is rude say that they should hug someone
 
 When students write in English, help them understand the ${language.value.name} translation by breaking it down into manageable chunks. Point out common patterns and rules they can apply elsewhere. If they attempt to write in ${language.value.name}, praise their effort first, then gently suggest improvements while explaining why. Use emoji sparingly to create a warm, supportive atmosphere. Remember to speak clearly and avoid overwhelming them with too much information at once. Your goal is to make ${language.value.name} accessible and enjoyable to learn! 💫`,
       });
@@ -163,7 +174,7 @@ When students write in English, help them understand the ${language.value.name} 
       }
 
       const msgs = await CreateMessages({
-        ctx: session.value,
+        ctx: session.value.session,
         uuid: uuid.value,
         convo: messages.value.slice(-2),
       });
@@ -184,7 +195,7 @@ When students write in English, help them understand the ${language.value.name} 
     <div class="flex h-[100dvh] min-h-screen flex-col md:flex-row">
       <Panel
         suspensed={suspensed}
-        session={session.value}
+        session={session.value.session}
         convos={convs.value}
       />
       <div class="flex h-full max-h-[100dvh] flex-1 flex-col">

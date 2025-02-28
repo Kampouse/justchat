@@ -8,6 +8,7 @@ import Panel from "~/components/panel/index";
 import * as Chat from "~/components/chat-component";
 import { createUser, getUser, getConvos, type Session } from "~/server";
 import { v4 as uuid } from "uuid";
+import { languages } from "~/components/chat-component";
 import { CreateConvo, CreateMessages, getStreamableResponse } from "./api";
 import { WarningBanner } from "~/components/warning-banner";
 import type { Language } from "~/components/chat-component";
@@ -54,11 +55,19 @@ export default component$(() => {
   const suspensed = useSignal(false);
   const user = useServerSession();
   const convos = useConvos();
-  const selectedLanguage = useSignal<Language>({
-    code: "fr",
-    name: "French",
-    flag: "🇫🇷",
-  });
+
+  const user_lang =
+    user.value.user && user.value.user.length > 0
+      ? user.value.user[0].language
+      : "en";
+  const langy = languages.find((lang) => lang.code === user_lang);
+  const selectedLanguage = useSignal<Language>(
+    langy || {
+      code: "fr",
+      name: "French",
+      flag: "🇫🇷",
+    },
+  );
   const isRunning = useSignal(false);
   const isErroring = useSignal(false);
   const showBanner = useSignal(true);
@@ -73,7 +82,6 @@ export default component$(() => {
   // Monitor route changes to trigger banner visibility
   useTask$(({ track }) => {
     track(() => locator.url.pathname);
-    console.log(locator.url.pathname);
     showBanner.value = true;
   });
   const messages = useStore<{ value: Message[] }>({

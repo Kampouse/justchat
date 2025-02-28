@@ -21,6 +21,7 @@ export const users = sqliteTable("users", {
   queriesRemaining: integer("queries_remaining", { mode: "number" }).default(
     50,
   ),
+  language: text("language").default("en"),
   queriesUsed: integer("queries_used", { mode: "number" }).default(0),
   totalQueries: integer("total_queries", { mode: "number" }).default(50),
   lastQueryReset: integer("last_query_reset", { mode: "timestamp" }).default(

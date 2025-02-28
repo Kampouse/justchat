@@ -1,8 +1,14 @@
 import { component$ } from "@builder.io/qwik";
+import { server$ } from "@builder.io/qwik-city";
 import { Form } from "@builder.io/qwik-city";
 import type { QRL, Signal } from "@builder.io/qwik";
 import { useSignal } from "@builder.io/qwik";
+import { updateUserLanguage } from "~/server";
 
+const UpdateUserLanguage = server$(async function (languageCode: string) {
+  const session = this.sharedMap.get("session");
+  return await updateUserLanguage(session, languageCode);
+});
 export interface Language {
   code: string;
   name: string;
@@ -92,8 +98,10 @@ export interface ChatInputProps {
 }
 
 export const ChatInput = component$<ChatInputProps>((props) => {
-  const { onSubmit$, isRunning, remaining } = props;
-  const selectedLanguage = useSignal<Language>(languages[languages.length - 1]);
+  const { onSubmit$, isRunning, remaining, language } = props;
+  const selectedLanguage = useSignal<Language>(
+    languages.find((lang) => lang.code === language.value.code) || languages[0],
+  );
 
   return (
     <div class=" flex flex-row rounded-lg  border-t border-gray-800 bg-gray-900 p-4">
@@ -144,6 +152,7 @@ export const ChatInput = component$<ChatInputProps>((props) => {
               key={lang.code}
               class="cursor-pointer px-4 py-1 text-sm text-gray-100 hover:bg-gray-700"
               onClick$={async () => {
+                await UpdateUserLanguage(lang.code);
                 selectedLanguage.value = lang;
                 props.language.value = lang;
               }}
