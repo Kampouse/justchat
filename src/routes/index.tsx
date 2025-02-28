@@ -33,13 +33,18 @@ export const useRemainingQueries = routeLoader$(async (e) => {
 
 export const useServerSession = routeLoader$(async (e) => {
   const session = e.sharedMap.get("session") as Session | null;
-  let user = await getUser(session);
-  if (user?.length === 0) {
+
+  let user = (await getUser(session)) || [];
+  if (user.length === 0 && session) {
     await createUser(session);
-    user = await getUser(session);
+    user = (await getUser(session)) || [];
   }
 
-  return { user, session };
+  return {
+    user,
+    session,
+    remaining: user.length > 0 ? user[0]?.queriesRemaining || 0 : 0,
+  };
 });
 
 export default component$(() => {
@@ -49,7 +54,6 @@ export default component$(() => {
   const suspensed = useSignal(false);
   const user = useServerSession();
   const convos = useConvos();
-  const remaining = useRemainingQueries();
   const selectedLanguage = useSignal<Language>({
     code: "fr",
     name: "French",
@@ -234,7 +238,7 @@ export default component$(() => {
           <Chat.ChatInput
             messages={0}
             language={selectedLanguage}
-            remaining={remaining.value}
+            remaining={user.value.remaining}
             onSubmit$={submit}
             isRunning={isErroring}
           />
