@@ -240,9 +240,14 @@ export const head: DocumentHead = {
   title: "Just Chat",
   meta: [
     {
-      name: "description",
-      content: "Just chatting",
+      property: "og:image:width",
+      content: "1200",
     },
+    {
+      property: "og:image:height",
+      content: "630",
+    },
+
     {
       property: "og:image",
       content:
@@ -254,7 +259,7 @@ export const head: DocumentHead = {
     },
     {
       property: "og:description",
-      content: "Experience intelligent conversations with   AI ",
+      content: "Experience intelligent conversations with AI",
     },
     {
       property: "og:type",
