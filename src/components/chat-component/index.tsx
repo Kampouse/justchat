@@ -1,6 +1,26 @@
 import { component$ } from "@builder.io/qwik";
 import { Form } from "@builder.io/qwik-city";
 import type { QRL, Signal } from "@builder.io/qwik";
+import { useSignal } from "@builder.io/qwik";
+
+interface Language {
+  code: string;
+  name: string;
+  flag: string;
+}
+
+const languages: Language[] = [
+  { code: "ko", name: "Korean", flag: "🇰🇷" },
+  { code: "ja", name: "Japanese", flag: "🇯🇵" },
+  { code: "zh", name: "Chinese", flag: "🇨🇳" },
+  { code: "ru", name: "Russian", flag: "🇷🇺" },
+  { code: "pt", name: "Portuguese", flag: "🇵🇹" },
+  { code: "it", name: "Italian", flag: "🇮🇹" },
+  { code: "de", name: "German", flag: "🇩🇪" },
+  { code: "fr", name: "French", flag: "🇫🇷" },
+  { code: "es", name: "Spanish", flag: "🇪🇸" },
+  { code: "en", name: "English", flag: "🇺🇸" },
+];
 
 // Components
 export const AiAvatar = component$(() => {
@@ -63,10 +83,17 @@ export const ChatInput = component$<{
   messages: number;
   remaining: number;
   isRunning: Signal<boolean>;
-}>(({ onSubmit$, isRunning, remaining }) => {
+  onLanguageChange$?: QRL<(language: Language) => void>;
+}>(({ onSubmit$, isRunning, remaining, onLanguageChange$ }) => {
+  const selectedLanguage = useSignal<Language>(languages[languages.length - 1]);
+
   return (
-    <div class="rounded-lg  border-t border-gray-800 bg-gray-900 p-4">
-      <Form preventdefault:submit onSubmit$={onSubmit$} class="flex space-x-2">
+    <div class=" flex flex-row rounded-lg  border-t border-gray-800 bg-gray-900 p-4">
+      <Form
+        preventdefault:submit
+        onSubmit$={onSubmit$}
+        class="flex flex-1 space-x-2"
+      >
         <input
           type="text"
           name="message"
@@ -77,7 +104,7 @@ export const ChatInput = component$<{
           minLength={1}
           autoComplete="off"
           disabled={remaining <= 0}
-          class={`h-auto min-h-[40px] w-full flex-1 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:border-blue-500 focus:outline-none sm:w-3/4 md:w-4/5 lg:w-5/6 ${remaining <= 0 ? "cursor-not-allowed opacity-50" : ""}`}
+          class={`h-auto min-h-[40px] w-full flex-1 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:border-blue-500 focus:outline-none ${remaining <= 0 ? "cursor-not-allowed opacity-50" : ""}`}
           style="height: auto; min-height: 40px; resize: vertical;"
         />
 
@@ -95,6 +122,33 @@ export const ChatInput = component$<{
           )}
         </button>
       </Form>
+      <div class="group relative ml-1 px-2">
+        <button
+          name="language"
+          class="flex items-center justify-center rounded-lg border border-gray-700 bg-gray-800 p-2 text-gray-100 hover:border-blue-500 focus:outline-none"
+        >
+          <span class="text-lg">{selectedLanguage.value.flag}</span>
+        </button>
+
+        <div class="absolute bottom-full right-0 z-10 hidden min-w-[120px] rounded-lg border border-gray-700 bg-gray-800 py-2 shadow-lg group-hover:block">
+          {languages.map((lang) => (
+            <div
+              key={lang.code}
+              class="cursor-pointer px-4 py-1 text-sm text-gray-100 hover:bg-gray-700"
+              onClick$={async () => {
+                selectedLanguage.value = lang;
+                if (onLanguageChange$) {
+                  await onLanguageChange$(lang);
+                }
+              }}
+            >
+              <span>
+                {lang.flag} {lang.name}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 });

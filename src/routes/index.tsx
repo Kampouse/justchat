@@ -49,7 +49,7 @@ export default component$(() => {
   const user = useServerSession();
   const convos = useConvos();
   const remaining = useRemainingQueries();
-
+  const selectedLanguage = useSignal("french");
   const isRunning = useSignal(false);
   const isErroring = useSignal(false);
   const showBanner = useSignal(true);
@@ -227,6 +227,7 @@ export default component$(() => {
 
           <Chat.ChatInput
             messages={0}
+            selectedLanguage={selectedLanguage}
             remaining={remaining.value}
             onSubmit$={submit}
             isRunning={isErroring}
