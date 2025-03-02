@@ -13,6 +13,7 @@ export default component$(
   (props: {
     session: Session | null;
     convos: Convos;
+    isMenuOpen: Signal<boolean>;
     suspensed: Signal<boolean>;
   }) => {
     const loc = useLocation();
@@ -23,14 +24,13 @@ export default component$(
       uuid.value = loc.params["id"];
       props.suspensed.value = false;
     });
-    const isMenuOpen = useSignal(false);
     const isPanelHidden = useSignal(false);
     const session = useSession();
     return (
       <>
         {/* Hamburger button - only visible on mobile */}
         <button
-          onClick$={() => (isMenuOpen.value = !isMenuOpen.value)}
+          onClick$={() => (props.isMenuOpen.value = !props.isMenuOpen.value)}
           class="fixed left-2 top-4 z-50 w-fit p-4 md:hidden"
         >
           <svg
@@ -76,7 +76,7 @@ export default component$(
         {/* Sidebar panel */}
         <div
           class={`fixed inset-y-0 left-0 transform ${
-            isMenuOpen.value ? "translate-x-0" : "-translate-x-full"
+            props.isMenuOpen.value ? "translate-x-0" : "-translate-x-full"
           } z-40 flex w-full flex-col justify-between overflow-y-auto border-gray-800 bg-gray-900 p-2 transition duration-200 ease-in-out md:relative md:w-72 ${
             isPanelHidden.value ? "md:-translate-x-full" : "md:translate-x-0"
           }`}
@@ -123,7 +123,7 @@ export default component$(
                 <Link
                   href="/"
                   onClick$={() => {
-                    isMenuOpen.value = false;
+                    props.isMenuOpen.value = false;
                   }}
                   class="flex items-center justify-center gap-2 rounded-lg bg-blue-600 p-4 text-white transition-colors duration-200 hover:bg-blue-700"
                 >
@@ -153,7 +153,7 @@ export default component$(
                       prefetch={false}
                       href={"/chat/" + chat.uuid}
                       onClick$={() => {
-                        isMenuOpen.value = false;
+                        props.isMenuOpen.value = false;
                         if (chat.uuid !== uuid.value) {
                           props.suspensed.value = true;
                         }
@@ -195,10 +195,10 @@ export default component$(
         </div>
 
         {/* Overlay when menu is open on mobile */}
-        {isMenuOpen.value && (
+        {props.isMenuOpen.value && (
           <div
             class="fixed inset-0 z-30 bg-black bg-opacity-50 md:hidden"
-            onClick$={() => (isMenuOpen.value = false)}
+            onClick$={() => (props.isMenuOpen.value = false)}
           />
         )}
       </>

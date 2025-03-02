@@ -113,6 +113,7 @@ export interface ChatInputProps {
   onSubmit$: QRL<(e: Event) => Promise<void>>;
   messages: number;
   remaining: number;
+  isMenuOpen: Signal<boolean>;
   language: Signal<Language>;
   isRunning: Signal<boolean>;
 }
@@ -144,7 +145,7 @@ export const ChatInput = component$<ChatInputProps>((props) => {
 
   return (
     <>
-      {isAtBottom.value && (
+      {!props.isMenuOpen.value && isAtBottom.value && (
         <button
           onClick$={scrollToB}
           class="fixed bottom-24 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-gray-800/90 shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:bg-gray-700/90 hover:shadow-xl sm:right-8"

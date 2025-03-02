@@ -83,7 +83,7 @@ export default component$(() => {
   const suspensed = useSignal(false);
   const isRunning = useSignal(false);
   const isErroring = useSignal(false);
-
+  const isMenuOpen = useSignal(false);
   const len = useSignal(0);
 
   const convs = useConved();
@@ -201,6 +201,7 @@ export default component$(() => {
   return (
     <div class="flex h-[100dvh] min-h-screen flex-col md:flex-row">
       <Panel
+        isMenuOpen={isMenuOpen}
         suspensed={suspensed}
         session={session.value.session}
         convos={convs.value}
@@ -276,6 +277,7 @@ export default component$(() => {
         <div class="border-t border-gray-600 bg-gray-700 p-2 ">
           <Chat.ChatInput
             language={language}
+            isMenuOpen={isMenuOpen}
             remaining={remaining.value ?? 0}
             messages={messages.value.length}
             onSubmit$={submit}

@@ -52,6 +52,7 @@ export default component$(() => {
   // Navigation hook
   const nav = useNavigate();
 
+  const isMenuOpen = useSignal(false);
   const suspensed = useSignal(false);
   const user = useServerSession();
   const convos = useConvos();
@@ -146,6 +147,7 @@ export default component$(() => {
   return (
     <div class="flex h-screen">
       <Panel
+        isMenuOpen={isMenuOpen}
         suspensed={suspensed}
         session={user.value.session}
         convos={convos.value}
@@ -248,6 +250,7 @@ export default component$(() => {
             language={selectedLanguage}
             remaining={user.value.remaining}
             onSubmit$={submit}
+            isMenuOpen={isMenuOpen}
             isRunning={isErroring}
           />
         </div>
