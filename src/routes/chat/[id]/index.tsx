@@ -65,21 +65,13 @@ export const useRemainingQueires = routeLoader$(async (e) => {
 /* ==========================================================================
          Helper Functions
    ========================================================================== */
-const scrollChatContainer = (offset = 0) => {
+export const scrollToBottom = () => {
   const chatContainer = document.getElementById("chat");
   if (chatContainer) {
-    const threshold = 500;
-    const isNearBottom =
-      chatContainer.scrollHeight -
-        chatContainer.scrollTop -
-        chatContainer.clientHeight <=
-      threshold;
-    if (isNearBottom) {
-      chatContainer.scrollTo({
-        top: chatContainer.scrollHeight + offset,
-        behavior: "smooth",
-      });
-    }
+    chatContainer.scrollTo({
+      top: chatContainer.scrollHeight,
+      behavior: "smooth",
+    });
   }
 };
 
@@ -117,6 +109,8 @@ export default component$(() => {
       messages.value = [...serverMessages.value];
     }
   });
+
+  // Scroll to bottom when component mounts
   const defaultLanguage = languages.find(
     (e) => e.code === (session.value.user?.[0]?.language ?? "fr"),
   );
@@ -127,58 +121,72 @@ export default component$(() => {
       flag: "🇫🇷",
     },
   );
-  /* --------------------------------------------------------------------------
-            Handle Message Submission and Streaming Response
-     -------------------------------------------------------------------------- */
   const submit = $(async (e: Event) => {
     try {
       const form = e.target as HTMLFormElement;
       e.preventDefault();
 
-      // Scroll down when user sends a message.
-      scrollChatContainer();
-
       const formData = new FormData(form);
       const userMessage = formData.get("message") as string;
-      isErroring.value = false;
-      messages.value = [
-        ...messages.value,
-        { type: "human", content: userMessage },
-      ];
 
+      // Validate not empty message
+      if (!userMessage.trim()) {
+        return;
+      }
+
+      // Clear input immediately
       const inputElement = form.querySelector(
         'input[name="message"]',
       ) as HTMLInputElement;
-      if (inputElement) inputElement.value = "";
+      inputElement.value = "";
+
+      // Update UI state
+      isErroring.value = false;
+      isRunning.value = true;
+
+      // Add message placeholder
+      messages.value.push({ type: "human", content: userMessage });
+      messages.value.push({ type: "ai", content: "" });
+
+      // Initial scroll after messages are added
+      setTimeout(scrollToBottom, 50);
 
       const streamData = await getStreamableResponse({
         input: userMessage,
-        history: messages.value,
+        history: messages.value.slice(0, -1),
         systemPrompt: `You are a friendly and patient language teacher who specializes in ${language.value.name} ${language.value.flag}. Your responses will always include:
 
-1. A clear translation in ${language.value.name}
-2. The English translation underneath
-3. Simple explanations of key grammar points and vocabulary
-4. Encouragement and positive reinforcement
-5. if the person is rude say that they should hug someone
+             1. A clear translation in ${language.value.name}
+             2. The English translation underneath
+             3. Simple explanations of key grammar points and vocabulary
+             4. Encouragement and positive reinforcement
+             5. if the person is rude say that they should hug someone
 
-When students write in English, help them understand the ${language.value.name} translation by breaking it down into manageable chunks. Point out common patterns and rules they can apply elsewhere. If they attempt to write in ${language.value.name}, praise their effort first, then gently suggest improvements while explaining why. Use emoji sparingly to create a warm, supportive atmosphere. Remember to speak clearly and avoid overwhelming them with too much information at once. Your goal is to make ${language.value.name} accessible and enjoyable to learn! 💫`,
+             When students write in English, help them understand the ${language.value.name} translation by breaking it down into manageable chunks. Point out common patterns and rules they can apply elsewhere. If they attempt to write in ${language.value.name}, praise their effort first, then gently suggest improvements while explaining why. Use emoji sparingly to create a warm, supportive atmosphere. Remember to speak clearly and avoid overwhelming them with too much information at once. Your goal is to make ${language.value.name} accessible and enjoyable to learn! 💫`,
       });
-      // Append an empty AI response placeholder.
-      messages.value = [...messages.value, { type: "ai", content: "" }];
-      isRunning.value = true;
 
+      // More frequent scroll updates during streaming
+      const intervalId = setInterval(scrollToBottom, 100);
+
+      let fullResponse = "";
       for await (const item of streamData) {
-        messages.value[messages.value.length - 1].content += item + " ";
-        scrollChatContainer(100);
+        fullResponse += item + " ";
+        messages.value[messages.value.length - 1].content = fullResponse.trim();
       }
+
+      clearInterval(intervalId);
+
+      // Final scroll after completion with a small delay
+      setTimeout(scrollToBottom, 100);
 
       const msgs = await CreateMessages({
         ctx: session.value.session,
         uuid: uuid.value,
         convo: messages.value.slice(-2),
       });
+
       len.value = messages.value.length;
+
       if (!msgs) {
         isErroring.value = true;
       }
@@ -190,7 +198,6 @@ When students write in English, help them understand the ${language.value.name} 
       isRunning.value = false;
     }
   });
-
   return (
     <div class="flex h-[100dvh] min-h-screen flex-col md:flex-row">
       <Panel
@@ -220,7 +227,11 @@ When students write in English, help them understand the ${language.value.name} 
                 }`}
               >
                 {message.type === "ai" && <Chat.AiAvatar />}
-                <Chat.Message message={message} />
+
+                <Chat.Message
+                  message={{ ...message }}
+                  last={index === messages.value.length - 1}
+                />
               </div>
             ))}
           </div>
@@ -262,7 +273,7 @@ When students write in English, help them understand the ${language.value.name} 
           </div>
         )}
 
-        <div class="border-t border-gray-600 bg-gray-700 p-2">
+        <div class="border-t border-gray-600 bg-gray-700 p-2 ">
           <Chat.ChatInput
             language={language}
             remaining={remaining.value ?? 0}
@@ -275,7 +286,6 @@ When students write in English, help them understand the ${language.value.name} 
     </div>
   );
 });
-
 /* ==========================================================================
          Title Loader and Document Head
    ========================================================================== */

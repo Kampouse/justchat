@@ -1,9 +1,12 @@
 import { component$ } from "@builder.io/qwik";
+import { $ } from "@builder.io/qwik";
+import { useVisibleTask$ } from "@builder.io/qwik";
 import { server$ } from "@builder.io/qwik-city";
 import { Form } from "@builder.io/qwik-city";
 import type { QRL, Signal } from "@builder.io/qwik";
 import { useSignal } from "@builder.io/qwik";
 import { updateUserLanguage } from "~/server";
+import { scrollToBottom } from "~/routes/chat/[id]";
 
 const UpdateUserLanguage = server$(async function (languageCode: string) {
   const session = this.sharedMap.get("session");
@@ -37,7 +40,7 @@ export const languages: Language[] = [
 export const AiAvatar = component$(() => {
   return (
     <div class="flex-shrink-0">
-      <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-800">
+      <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-800/50 backdrop-blur-sm">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
@@ -50,15 +53,32 @@ export const AiAvatar = component$(() => {
     </div>
   );
 });
-
 export const Message = component$<{
   message: { type: string; content: string };
-}>(({ message }) => {
+  last: boolean;
+}>(({ message, last }) => {
   return (
     <div
-      class={`${message.type === "ai" ? "ml-3" : ""} max-w-md rounded-lg ${message.type === "human" ? "bg-blue-600" : "bg-gray-800"} p-3 shadow-sm`}
+      id="message"
+      class={`flex ${message.type === "ai" ? "w-full justify-start" : "justify-end"} ${last ? "mb-24" : "mb-6"}`}
     >
-      <p class="text-gray-100">{message.content}</p>
+      <div
+        class={`${
+          message.type === "ai"
+            ? "prose prose-invert max-w-[85%] rounded-lg bg-gray-900/90 px-6 py-4 shadow-lg backdrop-blur-sm"
+            : "max-w-[85%] rounded-2xl bg-blue-700 px-4 py-2 shadow-lg backdrop-blur-sm md:max-w-[75%]"
+        }`}
+      >
+        <p
+          class={`${
+            message.type === "ai"
+              ? "mx-auto max-w-4xl text-lg font-normal leading-relaxed tracking-wide text-gray-50"
+              : "text-sm font-medium leading-relaxed text-white md:text-base"
+          }`}
+        >
+          {message.content}
+        </p>
+      </div>
     </div>
   );
 });
@@ -66,7 +86,7 @@ export const Message = component$<{
 export const LoadingSpinner = component$(() => {
   return (
     <svg
-      class="-ml-1 mr-3 h-5 w-5 animate-spin text-gray-100"
+      class="-ml-1 mr-3 h-4 w-4 animate-spin text-gray-100"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
@@ -96,74 +116,115 @@ export interface ChatInputProps {
   language: Signal<Language>;
   isRunning: Signal<boolean>;
 }
-
 export const ChatInput = component$<ChatInputProps>((props) => {
   const { onSubmit$, isRunning, remaining, language } = props;
   const selectedLanguage = useSignal<Language>(
     languages.find((lang) => lang.code === language.value.code) || languages[0],
   );
+  const isAtBottom = useSignal(true);
+
+  const scrollToB = $(() => {
+    scrollToBottom();
+  });
+
+  // Check if user has scrolled up
+  useVisibleTask$(() => {
+    const chat = document.getElementById("chat");
+
+    console.log(chat);
+
+    const handleScroll = () => {
+      isAtBottom.value =
+        !chat || chat.scrollTop + chat.clientHeight < chat.scrollHeight - 200;
+    };
+    chat?.addEventListener("scroll", handleScroll);
+
+    return () => chat?.removeEventListener("scroll", handleScroll);
+  });
 
   return (
-    <div class=" flex flex-row rounded-lg  border-t border-gray-800 bg-gray-900 p-4">
-      <Form
-        preventdefault:submit
-        onSubmit$={onSubmit$}
-        class="flex flex-1 space-x-2"
-      >
-        <input
-          type="text"
-          name="message"
-          placeholder={
-            remaining <= 0 ? "Query limit reached" : "Type a message..."
-          }
-          required
-          minLength={1}
-          autoComplete="off"
-          disabled={remaining <= 0}
-          class={`h-auto min-h-[40px] w-full flex-1 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:border-blue-500 focus:outline-none ${remaining <= 0 ? "cursor-not-allowed opacity-50" : ""}`}
-          style="height: auto; min-height: 40px; resize: vertical;"
-        />
-
+    <>
+      {isAtBottom.value && (
         <button
-          type="submit"
-          class={`flex w-28 items-center justify-center rounded-lg bg-blue-600 py-2 text-gray-100 transition-colors duration-500 hover:bg-blue-700 ${remaining <= 0 ? "cursor-not-allowed opacity-50" : ""}`}
-          disabled={isRunning.value || remaining <= 0}
+          onClick$={scrollToB}
+          class="fixed bottom-24 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-gray-800/90 shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:bg-gray-700/90 hover:shadow-xl sm:right-8"
         >
-          {isRunning.value ? (
-            <div class="flex w-5 justify-center transition duration-500">
-              <LoadingSpinner />
-            </div>
-          ) : (
-            <h1 class="flex justify-center px-2 text-center">Send</h1>
-          )}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="mx-auto h-6 w-6 text-white"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L10 15.586l3.293-3.293a1 1 0 011.414 0z"
+              clip-rule="evenodd"
+            />
+          </svg>
         </button>
-      </Form>
-      <div class="group relative ml-1 px-2">
-        <button
-          name="language"
-          class="flex items-center justify-center rounded-lg border border-gray-700 bg-gray-800 p-2 text-gray-100 hover:border-blue-500 focus:outline-none"
-        >
-          <span class="text-lg">{selectedLanguage.value.flag}</span>
-        </button>
+      )}
 
-        <div class="absolute bottom-full right-0 z-10 hidden min-w-[120px] rounded-lg border border-gray-700 bg-gray-800 py-2 shadow-lg group-hover:block">
-          {languages.map((lang) => (
-            <div
-              key={lang.code}
-              class="cursor-pointer px-4 py-1 text-sm text-gray-100 hover:bg-gray-700"
-              onClick$={async () => {
-                await UpdateUserLanguage(lang.code);
-                selectedLanguage.value = lang;
-                props.language.value = lang;
-              }}
-            >
-              <span>
-                {lang.flag} {lang.name}
-              </span>
+      <div class="fixed bottom-0 left-0 right-0 mx-2 rounded-full border border-transparent backdrop-blur-md sm:left-72 sm:mx-4 md:mx-8 lg:mx-32">
+        <div class="mx-auto max-w-3xl px-4 pb-4 pt-2">
+          <Form
+            preventdefault:submit
+            onSubmit$={onSubmit$}
+            class="mx-auto flex max-w-2xl items-center justify-center space-x-2"
+          >
+            <div class="flex w-full justify-center space-x-2">
+              <input
+                type="text"
+                name="message"
+                placeholder={
+                  remaining <= 0 ? "Query limit reached" : "Type a message..."
+                }
+                required
+                minLength={1}
+                autoComplete="off"
+                disabled={remaining <= 0}
+                class={`w-full rounded-full border border-gray-700/50 bg-gray-800/50 px-6 py-3 text-base text-gray-100 placeholder-gray-400 backdrop-blur-sm transition-colors duration-200 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/25 ${remaining <= 0 ? "cursor-not-allowed opacity-50" : ""}`}
+              />
+
+              <button
+                type="submit"
+                class={`flex items-center justify-center rounded-full bg-blue-600/90 px-6 py-3 text-base font-medium text-gray-100 backdrop-blur-sm transition-all duration-200 hover:bg-blue-700/90 focus:outline-none focus:ring-2 focus:ring-blue-500/25 ${remaining <= 0 ? "cursor-not-allowed opacity-50" : ""}`}
+                disabled={isRunning.value || remaining <= 0}
+              >
+                {isRunning.value ? <LoadingSpinner /> : <span>Send</span>}
+              </button>
+
+              <div class="group relative">
+                <button
+                  name="language"
+                  class="flex items-center justify-center rounded-full border border-gray-700/50 bg-gray-800/50 p-3 text-gray-100 backdrop-blur-sm transition-colors duration-200 hover:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/25"
+                >
+                  <span class="text-lg leading-none">
+                    {selectedLanguage.value.flag}
+                  </span>
+                </button>
+
+                <div class="absolute bottom-full right-0 z-10 hidden min-w-[140px] rounded-xl border border-gray-700/50 bg-gray-800/90 py-2 shadow-lg backdrop-blur-sm group-hover:block">
+                  {languages.map((lang) => (
+                    <div
+                      key={lang.code}
+                      class="cursor-pointer px-4 py-1.5 text-sm text-gray-100 transition-colors duration-150 hover:bg-gray-700/50"
+                      onClick$={async () => {
+                        await UpdateUserLanguage(lang.code);
+                        selectedLanguage.value = lang;
+                        props.language.value = lang;
+                      }}
+                    >
+                      <span>
+                        {lang.flag} {lang.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          ))}
+          </Form>
         </div>
       </div>
-    </div>
+    </>
   );
 });
