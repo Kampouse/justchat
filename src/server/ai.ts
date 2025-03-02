@@ -28,7 +28,7 @@ export type LanguageLessonResponse = z.infer<typeof LanguageLessonSchema>;
 export const GenerateLanguageLesson = async (input: string) => {
   //@ts-ignore
   const llm = new ChatOpenAI({
-    model: "gpt-4",
+    model: "gpt-3.5-turbo",
     temperature: 0.5
   }).withStructuredOutput(LanguageLessonSchema);
   const response = await llm.invoke(input);
@@ -43,7 +43,7 @@ export const GenerateLanguageLesson = async (input: string) => {
 
 export const AiChat = async (chat: Message[], systemPrompt: string) => {
   const llm = new ChatOpenAI({
-    model: "gpt-4o-2024-08-06",
+    model: "gpt-3.5-turbo",
     temperature: 0.5,
     streaming: true,
   });

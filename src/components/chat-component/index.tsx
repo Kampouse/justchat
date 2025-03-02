@@ -107,7 +107,7 @@ export const Message = component$<{
                 }
               }}
               class="inline-flex items-center space-x-1 rounded-md bg-blue-600/20 px-2 py-1 text-xs text-blue-400 transition-colors hover:bg-blue-600/30"
-              disabled={isLoading.value}
+              disabled={isLoading.value || lessonData.value}
             >
               {isLoading.value ? (
                 <LoadingSpinner />

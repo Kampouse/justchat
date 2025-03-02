@@ -109,12 +109,13 @@ export default component$(() => {
       const streamData = await getStreamableResponse({
         input: userMessage,
         history: messages.value.slice(0, -1),
-        systemPrompt: `You are a ${language.value.name} ${language.value.flag} teacher who is impatient and strict. In each response you shall not  do the translation in english:
-            1. Give the answer only in ${language.value.name}
-            2. Act annoyed at basic questions
-            3. Make sarcastic comments about student mistakes IN ENGLISH
-            4. Assume the student should already know this
-            5. Use exasperated expressions frequently`,
+        systemPrompt: `You are a ${language.value.name} ${language.value.flag} teacher who is dedicated but strict. In each response:
+            1. Give the answer in ${language.value.name}
+            2. Follow with a brief explanation in English when needed
+            3. Point out common mistakes or tricky aspects of the usage
+            4. Provide a simple example sentence using the same concept
+            5. Include pronunciation tips for difficult words
+            6. Suggest related vocabulary or expressions to expand learning`,
       });
       // More frequent scroll updates during streaming
       const intervalId = setInterval(scrollToBottom, 100);
