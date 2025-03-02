@@ -152,13 +152,15 @@ export const ChatInput = component$<ChatInputProps>((props) => {
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="mx-auto h-6 w-6 text-white"
-            viewBox="0 0 20 20"
-            fill="currentColor"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
             <path
-              fill-rule="evenodd"
-              d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L10 15.586l3.293-3.293a1 1 0 011.414 0z"
-              clip-rule="evenodd"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 14l-7 7m0 0l-7-7m7 7V3"
             />
           </svg>
         </button>
@@ -184,10 +186,9 @@ export const ChatInput = component$<ChatInputProps>((props) => {
                 disabled={remaining <= 0}
                 class={`w-full rounded-full border border-gray-700/50 bg-gray-800/50 px-6 py-3 text-base text-gray-100 placeholder-gray-400 backdrop-blur-sm transition-colors duration-200 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/25 ${remaining <= 0 ? "cursor-not-allowed opacity-50" : ""}`}
               />
-
               <button
                 type="submit"
-                class={`flex items-center justify-center rounded-full bg-blue-600/90 px-6 py-3 text-base font-medium text-gray-100 backdrop-blur-sm transition-all duration-200 hover:bg-blue-700/90 focus:outline-none focus:ring-2 focus:ring-blue-500/25 ${remaining <= 0 ? "cursor-not-allowed opacity-50" : ""}`}
+                class={`hidden items-center justify-center rounded-full bg-blue-600/90 px-6 py-3 text-base font-medium text-gray-100 backdrop-blur-sm transition-all duration-200 hover:bg-blue-700/90 focus:outline-none focus:ring-2 focus:ring-blue-500/25 sm:flex ${remaining <= 0 ? "cursor-not-allowed opacity-50" : ""}`}
                 disabled={isRunning.value || remaining <= 0}
               >
                 {isRunning.value ? <LoadingSpinner /> : <span>Send</span>}
@@ -209,9 +210,9 @@ export const ChatInput = component$<ChatInputProps>((props) => {
                       key={lang.code}
                       class="cursor-pointer px-4 py-1.5 text-sm text-gray-100 transition-colors duration-150 hover:bg-gray-700/50"
                       onClick$={async () => {
-                        await UpdateUserLanguage(lang.code);
                         selectedLanguage.value = lang;
                         props.language.value = lang;
+                        await UpdateUserLanguage(lang.code);
                       }}
                     >
                       <span>

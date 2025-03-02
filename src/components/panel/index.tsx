@@ -24,13 +24,14 @@ export default component$(
       props.suspensed.value = false;
     });
     const isMenuOpen = useSignal(false);
+    const isPanelHidden = useSignal(false);
     const session = useSession();
     return (
       <>
         {/* Hamburger button - only visible on mobile */}
         <button
           onClick$={() => (isMenuOpen.value = !isMenuOpen.value)}
-          class="fixed left-2  top-4 z-50 w-fit   p-4  md:hidden"
+          class="fixed left-2 top-4 z-50 w-fit p-4 md:hidden"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -47,14 +48,43 @@ export default component$(
           </svg>
         </button>
 
+        {/* Toggle panel button - only visible on desktop */}
+        <button
+          onClick$={() => (isPanelHidden.value = !isPanelHidden.value)}
+          class="fixed left-2 top-4 z-50 hidden w-fit rounded-lg p-4 transition-colors duration-200 hover:bg-gray-800 md:block"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6 text-white transition-transform duration-200"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            style={{
+              transform: isPanelHidden.value
+                ? "rotate(180deg)"
+                : "rotate(0deg)",
+            }}
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+        </button>
+
         {/* Sidebar panel */}
         <div
-          class={`fixed inset-y-0 left-0 transform ${isMenuOpen.value ? "translate-x-0" : "-translate-x-full"} z-40 flex w-full flex-col justify-between overflow-y-auto border-gray-800 bg-gray-900 p-2 transition duration-200 ease-in-out md:relative md:w-72 md:translate-x-0`}
+          class={`fixed inset-y-0 left-0 transform ${
+            isMenuOpen.value ? "translate-x-0" : "-translate-x-full"
+          } z-40 flex w-full flex-col justify-between overflow-y-auto border-gray-800 bg-gray-900 p-2 transition duration-200 ease-in-out md:relative md:w-72 ${
+            isPanelHidden.value ? "md:-translate-x-full" : "md:translate-x-0"
+          }`}
         >
           <div class="flex h-full flex-col">
             <div class="items-center justify-between pb-2 md:pl-2 ">
-              {(session.value && (
-                <div class="flex flex-row items-center justify-between rounded-lg bg-gray-800 p-4  pl-32 md:pl-4">
+              {session.value && (
+                <div class="flex flex-row items-center justify-end gap-6 rounded-lg bg-gray-800 p-4  pl-32 md:pl-4">
                   <h2 class="text-center text-xl font-bold text-white">
                     Chat History
                   </h2>
@@ -65,8 +95,6 @@ export default component$(
                       if (loc.url.pathname === "/") {
                         return;
                       }
-
-                      //isMenuOpen.value = false;
                       props.suspensed.value = true;
                     }}
                     class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors duration-200 hover:bg-blue-700"
@@ -87,14 +115,35 @@ export default component$(
                     </svg>
                   </Link>
                 </div>
-              )) || (
-                <h2 class="text-lg font-semibold text-white">
-                  You chat history is waiting
-                </h2>
               )}
             </div>
             <div class="scrollbar-hide flex flex-grow flex-col gap-2 overflow-y-scroll rounded-xl px-2">
-              {props.convos &&
+              {!props.convos ||
+              (props.session != null && props.convos.length) === 0 ? (
+                <Link
+                  href="/"
+                  onClick$={() => {
+                    isMenuOpen.value = false;
+                  }}
+                  class="flex items-center justify-center gap-2 rounded-lg bg-blue-600 p-4 text-white transition-colors duration-200 hover:bg-blue-700"
+                >
+                  <span>Start Chatting</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="h-5 w-5"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M12 4.5v15m7.5-7.5h-15"
+                    />
+                  </svg>
+                </Link>
+              ) : (
                 props.convos.map((chat, index) => (
                   <div
                     key={index}
@@ -138,7 +187,8 @@ export default component$(
                       </p>
                     </Link>
                   </div>
-                ))}
+                ))
+              )}
             </div>
             <Credentials user={props.session?.user as any} />
           </div>
