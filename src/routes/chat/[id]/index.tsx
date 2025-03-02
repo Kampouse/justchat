@@ -7,7 +7,6 @@ import Panel from "~/components/panel";
 import * as Chat from "~/components/chat-component";
 import { WarningBanner } from "~/components/warning-banner";
 import { languages } from "~/components/chat-component";
-import { routeLoader$ } from "@builder.io/qwik-city";
 import {
   CreateMessages,
   getStreamableResponse,
@@ -15,52 +14,12 @@ import {
 } from "~/routes/api";
 import type { Language } from "~/components/chat-component";
 import {
-  getAllMessages,
-  getConvoByUuid,
-  getConvos,
-  GetRemainingQueries,
-  getUser,
-  type Session,
-} from "~/server";
-
-/* ==========================================================================
-         Data Loaders
-   ========================================================================== */
-export const useMessages = routeLoader$(async (e) => {
-  const ctx = e.sharedMap.get("session") as Session | null;
-  const uuid = e.params.id;
-
-  const messages = await getAllMessages({ ctx, uuid });
-  if (!messages) throw e.redirect(302, "/");
-
-  return messages.map((el) => ({
-    type: el.type,
-    content: el.content,
-  })) as Message[];
-});
-
-export const useServerSessio = routeLoader$(async (e) => {
-  const session = e.sharedMap.get("session") as Session | null;
-
-  const user = await getUser(session);
-  return { user, session };
-});
-
-export const useConved = routeLoader$(async (e) => {
-  const session = e.sharedMap.get("session") as Session | null;
-  return (await getConvos(session)) ?? [];
-});
-
-export const useRemainingQueires = routeLoader$(async (e) => {
-  const session = e.sharedMap.get("session") as Session | null;
-
-  if (!session) return 0;
-  const data = await GetRemainingQueries(session);
-  if (data == null) {
-    return 0;
-  }
-  return data;
-});
+  useMessages,
+  useServerSessio,
+  useConved,
+  useRemainingQueires,
+  useTitle,
+} from "./layout";
 
 /* ==========================================================================
          Helper Functions
@@ -85,10 +44,8 @@ export default component$(() => {
   const isErroring = useSignal(false);
   const isMenuOpen = useSignal(false);
   const len = useSignal(0);
-
   const convs = useConved();
   const serverMessages = useMessages();
-
   const messages = useStore<{ value: Message[] }>({
     value: [...serverMessages.value],
   });
@@ -96,9 +53,7 @@ export default component$(() => {
     value: [],
   });
   const uuid = useSignal<string>(loc.params["id"]);
-
   const session = useServerSessio();
-
   const remaining = useRemainingQueires();
 
   // Update conversation when location changes.
@@ -287,14 +242,6 @@ export default component$(() => {
       </div>
     </div>
   );
-});
-/* ==========================================================================
-         Title Loader and Document Head
-   ========================================================================== */
-export const useTitle = routeLoader$(async (e) => {
-  const ctx = e.sharedMap.get("session") as Session;
-  const uuid = e.params["id"];
-  return await getConvoByUuid({ ctx, uuid });
 });
 
 export const head: DocumentHead = ({ resolveValue }) => {
