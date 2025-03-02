@@ -5,18 +5,25 @@ import { server$ } from "@builder.io/qwik-city";
 import { Form } from "@builder.io/qwik-city";
 import type { QRL, Signal } from "@builder.io/qwik";
 import { useSignal } from "@builder.io/qwik";
-import { updateUserLanguage } from "~/server";
+import { updateUserLanguage, generateLanguageLesson } from "~/server";
 import { scrollToBottom } from "~/routes/chat/[id]";
 
 const UpdateUserLanguage = server$(async function (languageCode: string) {
   const session = this.sharedMap.get("session");
   return await updateUserLanguage(session, languageCode);
 });
+
+const GenerateLesson = server$(async function (message: string) {
+  const session = this.sharedMap.get("session");
+  return await generateLanguageLesson(session, message);
+});
+
 export interface Language {
   code: string;
   name: string;
   flag: string;
 }
+
 export type Message = {
   id: string;
   text: string;
@@ -53,10 +60,15 @@ export const AiAvatar = component$(() => {
     </div>
   );
 });
+
 export const Message = component$<{
   message: { type: string; content: string };
   last: boolean;
 }>(({ message, last }) => {
+  const isLessonModalOpen = useSignal(false);
+  const lessonData = useSignal<any>(null);
+  const isLoading = useSignal(false);
+
   return (
     <div
       id="message"
@@ -78,6 +90,100 @@ export const Message = component$<{
         >
           {message.content}
         </p>
+        {message.type === "ai" && (
+          <div class="mt-2 flex justify-end space-x-2">
+            <button
+              onClick$={async () => {
+                if (!isLoading.value) {
+                  isLoading.value = true;
+                  try {
+                    lessonData.value = await GenerateLesson(message.content);
+                    isLessonModalOpen.value = true;
+                  } catch (error) {
+                    console.error("Failed to generate lesson:", error);
+                  } finally {
+                    isLoading.value = false;
+                  }
+                }
+              }}
+              class="inline-flex items-center space-x-1 rounded-md bg-blue-600/20 px-2 py-1 text-xs text-blue-400 transition-colors hover:bg-blue-600/30"
+              disabled={isLoading.value}
+            >
+              {isLoading.value ? (
+                <LoadingSpinner />
+              ) : (
+                <>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  <span>Analyze</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
+        {isLessonModalOpen.value && lessonData.value && (
+          <div class="mt-4 border-t border-gray-800/50 pt-4">
+            <div class="space-y-3 text-sm">
+              <div class="flex flex-col space-y-1">
+                <span class="font-medium text-blue-400">Translation</span>
+                <span class="text-gray-300">
+                  {lessonData.value.translation}
+                </span>
+              </div>
+
+              <div class="flex flex-col space-y-1">
+                <span class="font-medium text-blue-400">Context</span>
+                <span class="text-gray-300">
+                  {lessonData.value.contextExplanation}
+                </span>
+              </div>
+
+              <div class="flex flex-wrap gap-3">
+                <div class="flex-1">
+                  <span class="font-medium text-blue-400">Formality</span>
+                  <p class="text-gray-300">{lessonData.value.formalityLevel}</p>
+                </div>
+
+                <div class="flex-1">
+                  <span class="font-medium text-blue-400">Pronunciation</span>
+                  <p class="text-gray-300">{lessonData.value.pronunciation}</p>
+                </div>
+              </div>
+
+              {lessonData.value.alternatives.length > 0 && (
+                <div class="flex flex-col space-y-1">
+                  <span class="font-medium text-blue-400">Alternatives</span>
+                  <div class="flex flex-wrap gap-2">
+                    {lessonData.value.alternatives.map((alt: string) => (
+                      <span
+                        key={alt}
+                        class="rounded bg-gray-800/50 px-2 py-1 text-gray-300"
+                      >
+                        {alt}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {lessonData.value.culturalNotes && (
+                <div class="flex flex-col space-y-1">
+                  <span class="font-medium text-blue-400">Cultural Notes</span>
+                  <span class="text-gray-300">
+                    {lessonData.value.culturalNotes}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -117,6 +223,7 @@ export interface ChatInputProps {
   language: Signal<Language>;
   isRunning: Signal<boolean>;
 }
+
 export const ChatInput = component$<ChatInputProps>((props) => {
   const { onSubmit$, isRunning, remaining, language } = props;
   const selectedLanguage = useSignal<Language>(

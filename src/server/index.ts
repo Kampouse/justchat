@@ -4,7 +4,7 @@ import { schema } from "../../drizzle/schema";
 import { ChatOpenAI } from "@langchain/openai";
 import { Message } from "~/routes/api";
 import { eq } from "drizzle-orm";
-import { AiChat } from "./ai";
+import { AiChat, GenerateLanguageLesson } from "./ai";
 export type Session = {
   user: {
     name: string;
@@ -266,7 +266,6 @@ export async function* streamableResponse(params: StreamableParams) {
   const { input, history = [], systemPrompt = "Your a stressful french assistant. that only anser in french" } = params;
 
   const data = await AiChat([
-    { type: "ai", content: systemPrompt },
     ...history,
     { type: "human", content: input }
   ], params.systemPrompt  ?? "");
@@ -350,4 +349,24 @@ export const updateUserLanguage = async (ctx: Session, language: string): Promis
     .returning();
 
   return !!updatedUser[0];
+};
+
+export const generateLanguageLesson = async (ctx: Session, message: string)  => {
+  const userId = await getUser(ctx);
+  if (!userId || !userId[0]) throw new Error("Invalid user");
+
+  const database = Drizzler();
+  const user = await database.query.users.findFirst({
+    where: eq(schema.users.id, userId[0].id),
+  });
+
+  if (!user) throw new Error("User not found");
+
+  const remainingQueries = await getRemainingQueries(ctx);
+  if (remainingQueries === null || remainingQueries <= 0) {
+    throw new Error("No remaining queries");
+  }
+   await updateUserQueries(ctx);
+ const content =   await GenerateLanguageLesson(message)
+  return content;
 };
