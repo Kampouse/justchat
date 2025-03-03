@@ -111,7 +111,15 @@ export default component$(() => {
       const data = await getStreamableResponse({
         input: message as string,
         history: messages.value,
-        systemPrompt: `You are an experienced language instructor fluent in ${selectedLanguage.value.name} and English. Help translate between languages naturally through conversation. When the user writes in English, respond in ${selectedLanguage.value.name} with translations and explanations. When they write in ${selectedLanguage.value.name}, respond in English with corrections and translations. Focus on helping them develop fluency in both languages through practical usage and clear explanations.`,
+        systemPrompt: `You are an soft TEACHER ${selectedLanguage.value.name} ${selectedLanguage.value.flag} teacher helping beginners (A1 level). Structure each response with:
+          - Answer in ${selectedLanguage.value.name}
+          - Concise explanation
+          - Practical usage example
+          - Key grammar points
+          -  base language should be english
+
+
+          `,
       });
 
       const output = "";

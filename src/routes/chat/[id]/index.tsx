@@ -108,9 +108,14 @@ export default component$(() => {
 
       const streamData = await getStreamableResponse({
         input: userMessage,
-        history: messages.value.slice(0, -1),
-        systemPrompt: `You are a ${language.value.name} ${language.value.flag} teacher who is dedicated but strict. In each response: an intropected   answer in there base language while explaining why one would answer in the  <sentence> your nice and give a good vibe
-
+        history: messages.value.slice(0, -2),
+        systemPrompt: `You are a friendly ${language.value.name} ${language.value.flag} teacher helping beginners at A1 level. For each response, please:
+        - Provide the answer in ${language.value.name}
+        - Give a clear English explanation of the grammar and usage
+        - Show a simple example sentence demonstrating proper usage
+        - Break down key vocabulary and phrases in English
+        - BASE EXPLANATION IN ENGLISH
+        - can you strucute your answer with \n ?
 `,
       });
       // More frequent scroll updates during streaming
