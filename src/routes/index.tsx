@@ -47,6 +47,19 @@ export const useServerSession = routeLoader$(async (e) => {
     remaining: user.length > 0 ? user[0]?.queriesRemaining || 0 : 0,
   };
 });
+export const BasePrompt = (language: Language) => {
+  return `You are an soft TEACHER ${language.name} ${language.flag} teacher helping beginners (A1 level). Structure each response with:
+          - Answer in ${language.name}
+          - do not explain the meaning of the base <sentence>
+          - Practical usage example with optional person1/person2 dialogue
+          - Key grammar points broken down into a readable format that is nice to read and understandable,
+          - Base language should be English,
+          - prononciation of the answer in ${language.name} PLEASE
+          - make the answer segmented into CHUCKS
+          - DO NOT GIVE MEANING ONLY GRAMMAR PLEAES
+          - END WITH PRONOUNCIATION
+          `;
+};
 
 export default component$(() => {
   // Navigation hook
@@ -108,18 +121,11 @@ export default component$(() => {
         { type: "human", content: message as string },
       ];
       const conv_uuid = uuid();
+
       const data = await getStreamableResponse({
         input: message as string,
         history: messages.value,
-        systemPrompt: `You are an soft TEACHER ${selectedLanguage.value.name} ${selectedLanguage.value.flag} teacher helping beginners (A1 level). Structure each response with:
-          - Answer in ${selectedLanguage.value.name}
-          - Concise explanation
-          - Practical usage example
-          - Key grammar points
-          -  base language should be english
-
-
-          `,
+        systemPrompt: BasePrompt(selectedLanguage.value),
       });
 
       const output = "";

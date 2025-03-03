@@ -7,6 +7,7 @@ import Panel from "~/components/panel";
 import * as Chat from "~/components/chat-component";
 import { WarningBanner } from "~/components/warning-banner";
 import { languages } from "~/components/chat-component";
+import { BasePrompt } from "~/routes";
 import {
   CreateMessages,
   getStreamableResponse,
@@ -109,14 +110,7 @@ export default component$(() => {
       const streamData = await getStreamableResponse({
         input: userMessage,
         history: messages.value.slice(0, -2),
-        systemPrompt: `You are a friendly ${language.value.name} ${language.value.flag} teacher helping beginners at A1 level. For each response, please:
-        - Provide the answer in ${language.value.name}
-        - Give a clear English explanation of the grammar and usage
-        - Show a simple example sentence demonstrating proper usage
-        - Break down key vocabulary and phrases in English
-        - BASE EXPLANATION IN ENGLISH
-        - can you strucute your answer with \n ?
-`,
+        systemPrompt: BasePrompt(language.value),
       });
       // More frequent scroll updates during streaming
       const intervalId = setInterval(scrollToBottom, 100);
