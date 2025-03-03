@@ -109,13 +109,9 @@ export default component$(() => {
       const streamData = await getStreamableResponse({
         input: userMessage,
         history: messages.value.slice(0, -1),
-        systemPrompt: `You are a ${language.value.name} ${language.value.flag} teacher who is dedicated but strict. In each response:
-            1. Give the answer in ${language.value.name}
-            2. Follow with a brief explanation in English when needed
-            3. Point out common mistakes or tricky aspects of the usage
-            4. Provide a simple example sentence using the same concept
-            5. Include pronunciation tips for difficult words
-            6. Suggest related vocabulary or expressions to expand learning`,
+        systemPrompt: `You are a ${language.value.name} ${language.value.flag} teacher who is dedicated but strict. In each response: an intropected   answer in there base language while explaining why one would answer in the  <sentence> your nice and give a good vibe
+
+`,
       });
       // More frequent scroll updates during streaming
       const intervalId = setInterval(scrollToBottom, 100);

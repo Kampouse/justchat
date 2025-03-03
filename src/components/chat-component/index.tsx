@@ -7,6 +7,7 @@ import type { QRL, Signal } from "@builder.io/qwik";
 import { useSignal } from "@builder.io/qwik";
 import { updateUserLanguage, generateLanguageLesson } from "~/server";
 import { scrollToBottom } from "~/routes/chat/[id]";
+import type { LanguageLessonSchema } from "~/server/ai";
 
 const UpdateUserLanguage = server$(async function (languageCode: string) {
   const session = this.sharedMap.get("session");
@@ -66,7 +67,8 @@ export const Message = component$<{
   last: boolean;
 }>(({ message, last }) => {
   const isLessonModalOpen = useSignal(false);
-  const lessonData = useSignal<any>(null);
+  type Language = typeof LanguageLessonSchema._type;
+  const lessonData = useSignal<Language | null>(null);
   const isLoading = useSignal(false);
 
   return (
@@ -107,7 +109,7 @@ export const Message = component$<{
                 }
               }}
               class="inline-flex items-center space-x-1 rounded-md bg-blue-600/20 px-2 py-1 text-xs text-blue-400 transition-colors hover:bg-blue-600/30"
-              disabled={isLoading.value || lessonData.value}
+              disabled={isLoading.value || lessonData.value != null}
             >
               {isLoading.value ? (
                 <LoadingSpinner />
@@ -132,6 +134,11 @@ export const Message = component$<{
           <div class="mt-4 border-t border-gray-800/50 pt-4">
             <div class="space-y-3 text-sm">
               <div class="flex flex-col space-y-1">
+                <span class="font-medium text-blue-400">Phrase</span>
+                <span class="text-gray-300">{lessonData.value.phrase}</span>
+              </div>
+
+              <div class="flex flex-col space-y-1">
                 <span class="font-medium text-blue-400">Translation</span>
                 <span class="text-gray-300">
                   {lessonData.value.translation}
@@ -139,48 +146,167 @@ export const Message = component$<{
               </div>
 
               <div class="flex flex-col space-y-1">
-                <span class="font-medium text-blue-400">Context</span>
-                <span class="text-gray-300">
-                  {lessonData.value.contextExplanation}
-                </span>
-              </div>
-
-              <div class="flex flex-wrap gap-3">
-                <div class="flex-1">
-                  <span class="font-medium text-blue-400">Formality</span>
-                  <p class="text-gray-300">{lessonData.value.formalityLevel}</p>
-                </div>
-
-                <div class="flex-1">
-                  <span class="font-medium text-blue-400">Pronunciation</span>
-                  <p class="text-gray-300">{lessonData.value.pronunciation}</p>
+                <span class="font-medium text-blue-400">Pronunciation</span>
+                <div class="flex flex-col text-gray-300">
+                  <span>IPA: {lessonData.value.pronunciation?.IPA}</span>
+                  <span>
+                    Simplified: {lessonData.value.pronunciation?.simplified}
+                  </span>
                 </div>
               </div>
 
-              {lessonData.value.alternatives.length > 0 && (
+              <div class="flex flex-col space-y-1">
+                <span class="font-medium text-blue-400">Grammar</span>
+                <div class="grid grid-cols-2 gap-2 text-gray-300">
+                  <span>Word: {lessonData.value.grammar?.word}</span>
+                  <span>Type: {lessonData.value.grammar?.type}</span>
+                  <span>Gender: {lessonData.value.grammar?.gender}</span>
+                  <span>Case: {lessonData.value.grammar?.case}</span>
+
+                  {lessonData.value.grammar?.article && (
+                    <>
+                      <span>
+                        Article Type: {lessonData.value.grammar.article.type}
+                      </span>
+                      <span>
+                        Declension:{" "}
+                        {lessonData.value.grammar.article.declension}
+                      </span>
+                    </>
+                  )}
+
+                  {lessonData.value.grammar?.verb && (
+                    <>
+                      <span>Verb: {lessonData.value.grammar.verb.word}</span>
+                      <span>Tense: {lessonData.value.grammar.verb.tense}</span>
+                      <span>
+                        Conjugation: {lessonData.value.grammar.verb.conjugation}
+                      </span>
+                      <span>
+                        Infinitive: {lessonData.value.grammar.verb.infinitive}
+                      </span>
+                    </>
+                  )}
+
+                  {lessonData.value.grammar?.content && (
+                    <>
+                      <span>
+                        Object: {lessonData.value.grammar.content.word}
+                      </span>
+                      <span>
+                        Object Type: {lessonData.value.grammar.content.type}
+                      </span>
+                      <span>
+                        Object Gender: {lessonData.value.grammar.content.gender}
+                      </span>
+                      <span>
+                        Object Case: {lessonData.value.grammar.content.case}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {lessonData.value.sentence_structure && (
                 <div class="flex flex-col space-y-1">
-                  <span class="font-medium text-blue-400">Alternatives</span>
+                  <span class="font-medium text-blue-400">
+                    Sentence Structure
+                  </span>
+                  <div class="flex flex-col text-gray-300">
+                    <span>
+                      Word Order:{" "}
+                      {lessonData.value.sentence_structure.word_order}
+                    </span>
+                    <span>
+                      Type: {lessonData.value.sentence_structure.sentence_type}
+                    </span>
+                    <span>
+                      Position Rules:{" "}
+                      {lessonData.value.sentence_structure.position_rule}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {lessonData.value.variations &&
+                lessonData.value.variations.length > 0 && (
+                  <div class="flex flex-col space-y-1">
+                    <span class="font-medium text-blue-400">Variations</span>
+                    <div class="grid grid-cols-2 gap-2">
+                      {lessonData.value.variations.map((variation, index) => (
+                        <div
+                          key={index}
+                          class="rounded bg-gray-800/50 p-2 text-gray-300"
+                        >
+                          {variation.formal && (
+                            <div>Formal: {variation.formal}</div>
+                          )}
+                          {variation.informal && (
+                            <div>Informal: {variation.informal}</div>
+                          )}
+                          {variation.question && (
+                            <div>Question: {variation.question}</div>
+                          )}
+                          {variation.negative && (
+                            <div>Negative: {variation.negative}</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              {lessonData.value.common_contexts && (
+                <div class="flex flex-col space-y-1">
+                  <span class="font-medium text-blue-400">Common Contexts</span>
                   <div class="flex flex-wrap gap-2">
-                    {lessonData.value.alternatives.map((alt: string) => (
+                    {lessonData.value.common_contexts.map((context, index) => (
                       <span
-                        key={alt}
+                        key={index}
                         class="rounded bg-gray-800/50 px-2 py-1 text-gray-300"
                       >
-                        {alt}
+                        {context}
                       </span>
                     ))}
                   </div>
                 </div>
               )}
 
-              {lessonData.value.culturalNotes && (
+              {lessonData.value.cultural_notes && (
                 <div class="flex flex-col space-y-1">
                   <span class="font-medium text-blue-400">Cultural Notes</span>
                   <span class="text-gray-300">
-                    {lessonData.value.culturalNotes}
+                    {lessonData.value.cultural_notes}
                   </span>
                 </div>
               )}
+
+              {lessonData.value.example_dialogues &&
+                lessonData.value.example_dialogues.length > 0 && (
+                  <div class="flex flex-col space-y-1">
+                    <span class="font-medium text-blue-400">
+                      Example Dialogues
+                    </span>
+                    <div class="space-y-2">
+                      {lessonData.value.example_dialogues.map(
+                        (dialogue, index) => (
+                          <div
+                            key={index}
+                            class="rounded bg-gray-800/50 p-2 text-gray-300"
+                          >
+                            {dialogue.situation && (
+                              <div class="mb-1 italic">
+                                Situation: {dialogue.situation}
+                              </div>
+                            )}
+                            {dialogue.A && <div>A: {dialogue.A}</div>}
+                            {dialogue.B && <div>B: {dialogue.B}</div>}
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  </div>
+                )}
             </div>
           </div>
         )}
