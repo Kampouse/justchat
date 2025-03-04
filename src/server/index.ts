@@ -272,26 +272,16 @@ export async function* streamableResponse(params: StreamableParams) {
 
   let buffer = [];
   for await (const response of data) {
-    let token = response.content.toString();
-    if (token.startsWith(" ") && buffer.length > 0) {
-      buffer[buffer.length - 1] += token;
-    } else {
-      buffer.push(token);
-    }
-    if (
-      token.endsWith(" ") ||
-      token.endsWith(".") ||
-      token.endsWith("!") ||
-      token.endsWith("?")
-    ) {
-      const content = buffer.join("");
-      buffer = [];
-      yield content;
-    }
+    const { context, primaryLanguage, secondaryLanguage } = response;
+
+    yield {
+      context,
+      primaryLanguage,
+      secondaryLanguage,
+    };
+
   }
-  if (buffer.length > 0) {
-    yield buffer.join("");
-  }
+
 
   return history;
 }

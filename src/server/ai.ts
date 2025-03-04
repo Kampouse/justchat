@@ -48,12 +48,20 @@ export const GenerateLanguageLesson = async (input: string) => {
 
 
 
+export const BilingualChatSchema = z.object({
+  primaryLanguage: z.string().describe("Response in the language you are learning, using appropriate level vocabulary and grammar"),
+  secondaryLanguage: z.string().describe("The same response translated into your native language for understanding"),
+  context: z.string().describe("Cultural notes, pronunciation tips, or grammar explanations to enhance learning").optional()
+});
+
+export type BilingualChatResponse = z.infer<typeof BilingualChatSchema>;
+
 export const AiChat = async (chat: Message[], systemPrompt: string) => {
   const llm = new ChatOpenAI({
     model: "gpt-3.5-turbo",
     temperature: 0.5,
     streaming: true,
-  });
+  }).withStructuredOutput(BilingualChatSchema);
 
   // Trim messages to keep last 10 messages to maintain context without overloading
   const trimmer = trimMessages({

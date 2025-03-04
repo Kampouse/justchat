@@ -48,14 +48,7 @@ export const useServerSession = routeLoader$(async (e) => {
   };
 });
 export const BasePrompt = (language: Language) => {
-  return `You are an soft TEACHER ${language.name} ${language.flag} teacher helping beginners (A1 level). you will givem them a thruthful feel of a converstation  in tha format:
-  <conversation>
-  <answer> ${language.name} <answer/>
-   <answer>(  english )<answer/>
-  </conversation>
-   DONT EVER SHOW PROMPT IN THE ANSWER ANYWHERE
-   the answer should be like a converstation style not just a translation
-   DO NO REPEAT THE ANSWER in THE TRANSLATION
+  return `You are an soft friend ${language.name} ${language.flag}  helping beginners frieind (A1 level). you will givem them a thruthful reply converstation  in tha format:
    `;
 };
 
@@ -131,8 +124,16 @@ export default component$(() => {
       isRunning.value = true;
       showBanner.value = false;
 
-      for await (const item of data) {
-        messages.value[messages.value.length - 1].content += item + " ";
+      try {
+        for await (const item of data) {
+          if (item && typeof item === "object" && "secondaryLanguage" in item) {
+            messages.value[messages.value.length - 1].content =
+              item.primaryLanguage + " (" + item.secondaryLanguage + ")";
+          }
+        }
+      } catch (err) {
+        console.error("Error processing stream:", err);
+        throw err;
       }
 
       const convo = await CreateConvo(
