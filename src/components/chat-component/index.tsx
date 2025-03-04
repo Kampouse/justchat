@@ -1,7 +1,7 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, useTask$ } from "@builder.io/qwik";
 import { $ } from "@builder.io/qwik";
 import { useVisibleTask$ } from "@builder.io/qwik";
-import { server$ } from "@builder.io/qwik-city";
+import { server$, useLocation } from "@builder.io/qwik-city";
 import { Form } from "@builder.io/qwik-city";
 import type { QRL, Signal } from "@builder.io/qwik";
 import { useSignal } from "@builder.io/qwik";
@@ -70,6 +70,11 @@ export const Message = component$<{
   type Language = typeof LanguageLessonSchema._type;
   const lessonData = useSignal<Language | null>(null);
   const isLoading = useSignal(false);
+  const loc = useLocation();
+  useTask$((track) => {
+    track.track(() => loc.url.pathname);
+    lessonData.value = null;
+  });
 
   return (
     <div
@@ -132,175 +137,106 @@ export const Message = component$<{
         )}
         {isLessonModalOpen.value && lessonData.value && (
           <div class="mt-4 border-t border-gray-800/50 pt-4">
-            <div class="space-y-3 text-sm">
-              <div class="flex flex-col space-y-1">
-                <span class="font-medium text-blue-400">Phrase</span>
-                <span class="text-gray-300">{lessonData.value.phrase}</span>
-              </div>
-
-              <div class="flex flex-col space-y-1">
-                <span class="font-medium text-blue-400">Translation</span>
-                <span class="text-gray-300">
-                  {lessonData.value.translation}
-                </span>
-              </div>
-
-              <div class="flex flex-col space-y-1">
-                <span class="font-medium text-blue-400">Pronunciation</span>
-                <div class="flex flex-col text-gray-300">
-                  <span>IPA: {lessonData.value.pronunciation?.IPA}</span>
-                  <span>
-                    Simplified: {lessonData.value.pronunciation?.simplified}
+            <div class="space-y-6 text-base">
+              {lessonData.value.translation && (
+                <div class="rounded-lg bg-blue-900/20 p-4 backdrop-blur-sm">
+                  <span class="mb-2 block text-lg font-bold text-blue-400">
+                    Translation
                   </span>
-                </div>
-              </div>
-
-              <div class="flex flex-col space-y-1">
-                <span class="font-medium text-blue-400">Grammar</span>
-                <div class="grid grid-cols-2 gap-2 text-gray-300">
-                  <span>Word: {lessonData.value.grammar?.word}</span>
-                  <span>Type: {lessonData.value.grammar?.type}</span>
-                  <span>Gender: {lessonData.value.grammar?.gender}</span>
-                  <span>Case: {lessonData.value.grammar?.case}</span>
-
-                  {lessonData.value.grammar?.article && (
-                    <>
-                      <span>
-                        Article Type: {lessonData.value.grammar.article.type}
-                      </span>
-                      <span>
-                        Declension:{" "}
-                        {lessonData.value.grammar.article.declension}
-                      </span>
-                    </>
-                  )}
-
-                  {lessonData.value.grammar?.verb && (
-                    <>
-                      <span>Verb: {lessonData.value.grammar.verb.word}</span>
-                      <span>Tense: {lessonData.value.grammar.verb.tense}</span>
-                      <span>
-                        Conjugation: {lessonData.value.grammar.verb.conjugation}
-                      </span>
-                      <span>
-                        Infinitive: {lessonData.value.grammar.verb.infinitive}
-                      </span>
-                    </>
-                  )}
-
-                  {lessonData.value.grammar?.content && (
-                    <>
-                      <span>
-                        Object: {lessonData.value.grammar.content.word}
-                      </span>
-                      <span>
-                        Object Type: {lessonData.value.grammar.content.type}
-                      </span>
-                      <span>
-                        Object Gender: {lessonData.value.grammar.content.gender}
-                      </span>
-                      <span>
-                        Object Case: {lessonData.value.grammar.content.case}
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {lessonData.value.sentence_structure && (
-                <div class="flex flex-col space-y-1">
-                  <span class="font-medium text-blue-400">
-                    Sentence Structure
+                  <span class="text-lg text-gray-100">
+                    {lessonData.value.translation}
                   </span>
-                  <div class="flex flex-col text-gray-300">
-                    <span>
-                      Word Order:{" "}
-                      {lessonData.value.sentence_structure.word_order}
-                    </span>
-                    <span>
-                      Type: {lessonData.value.sentence_structure.sentence_type}
-                    </span>
-                    <span>
-                      Position Rules:{" "}
-                      {lessonData.value.sentence_structure.position_rule}
-                    </span>
-                  </div>
                 </div>
               )}
 
-              {lessonData.value.variations &&
-                lessonData.value.variations.length > 0 && (
-                  <div class="flex flex-col space-y-1">
-                    <span class="font-medium text-blue-400">Variations</span>
-                    <div class="grid grid-cols-2 gap-2">
-                      {lessonData.value.variations.map((variation, index) => (
-                        <div
-                          key={index}
-                          class="rounded bg-gray-800/50 p-2 text-gray-300"
-                        >
-                          {variation.formal && (
-                            <div>Formal: {variation.formal}</div>
-                          )}
-                          {variation.informal && (
-                            <div>Informal: {variation.informal}</div>
-                          )}
-                          {variation.question && (
-                            <div>Question: {variation.question}</div>
-                          )}
-                          {variation.negative && (
-                            <div>Negative: {variation.negative}</div>
-                          )}
+              {lessonData.value.explanation && (
+                <div class="rounded-lg bg-purple-900/20 p-4 backdrop-blur-sm">
+                  <span class="mb-2 block text-lg font-bold text-purple-400">
+                    Explanation
+                  </span>
+                  <span class="text-lg leading-relaxed text-gray-100">
+                    {lessonData.value.explanation}
+                  </span>
+                </div>
+              )}
+
+              {lessonData.value.pitfall && (
+                <div class="rounded-lg bg-rose-900/20 p-4 backdrop-blur-sm">
+                  <span class="mb-2 block text-lg font-bold text-rose-400">
+                    Watch Out!
+                  </span>
+                  <span class="text-lg leading-relaxed text-gray-100">
+                    {lessonData.value.pitfall}
+                  </span>
+                </div>
+              )}
+
+              {lessonData.value.grammars &&
+                lessonData.value.grammars.length > 0 && (
+                  <div class="rounded-lg bg-emerald-900/20 p-4 backdrop-blur-sm">
+                    <span class="mb-3 block text-lg font-bold text-emerald-400">
+                      Grammar Rules
+                    </span>
+                    <div class="space-y-3">
+                      {lessonData.value.grammars.map((rule, index) => (
+                        <div key={index} class="flex gap-3 text-gray-100">
+                          <span class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-bold text-emerald-400">
+                            {index + 1}
+                          </span>
+                          <span class="text-lg leading-relaxed">{rule}</span>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
 
-              {lessonData.value.common_contexts && (
-                <div class="flex flex-col space-y-1">
-                  <span class="font-medium text-blue-400">Common Contexts</span>
-                  <div class="flex flex-wrap gap-2">
-                    {lessonData.value.common_contexts.map((context, index) => (
-                      <span
-                        key={index}
-                        class="rounded bg-gray-800/50 px-2 py-1 text-gray-300"
-                      >
-                        {context}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {lessonData.value.cultural_notes && (
-                <div class="flex flex-col space-y-1">
-                  <span class="font-medium text-blue-400">Cultural Notes</span>
-                  <span class="text-gray-300">
-                    {lessonData.value.cultural_notes}
+              {lessonData.value.pronunciation && (
+                <div class="rounded-lg bg-amber-900/20 p-4 backdrop-blur-sm">
+                  <span class="mb-2 block text-lg font-bold text-amber-400">
+                    Pronunciation Guide
+                  </span>
+                  <span class="text-lg leading-relaxed text-gray-100">
+                    {lessonData.value.pronunciation}
                   </span>
                 </div>
               )}
 
-              {lessonData.value.example_dialogues &&
-                lessonData.value.example_dialogues.length > 0 && (
-                  <div class="flex flex-col space-y-1">
-                    <span class="font-medium text-blue-400">
-                      Example Dialogues
+              {lessonData.value.practical?.conversation &&
+                lessonData.value.practical.conversation.length > 0 && (
+                  <div class="rounded-lg bg-indigo-900/20 p-4 backdrop-blur-sm">
+                    <span class="mb-3 block text-lg font-bold text-indigo-400">
+                      Practice Conversation
                     </span>
-                    <div class="space-y-2">
-                      {lessonData.value.example_dialogues.map(
-                        (dialogue, index) => (
+                    <div class="divide-y divide-indigo-900/30">
+                      {lessonData.value.practical.conversation.map(
+                        (conv, index) => (
                           <div
                             key={index}
-                            class="rounded bg-gray-800/50 p-2 text-gray-300"
+                            class="space-y-4 py-4 first:pt-0 last:pb-0"
                           >
-                            {dialogue.situation && (
-                              <div class="mb-1 italic">
-                                Situation: {dialogue.situation}
+                            {conv.context && (
+                              <div class="mb-3 text-base italic text-indigo-300">
+                                {conv.context}
                               </div>
                             )}
-                            {dialogue.A && <div>A: {dialogue.A}</div>}
-                            {dialogue.B && <div>B: {dialogue.B}</div>}
+                            <div class="space-y-4">
+                              <div class="rounded-lg bg-indigo-950/30 p-3">
+                                <div class="text-lg font-medium text-gray-100">
+                                  A: {conv.person1}
+                                </div>
+                                <div class="mt-1 text-base text-indigo-300">
+                                  {conv.person1_base}
+                                </div>
+                              </div>
+                              <div class="rounded-lg bg-indigo-950/30 p-3">
+                                <div class="text-lg font-medium text-gray-100">
+                                  B: {conv.person2}
+                                </div>
+                                <div class="mt-1 text-base text-indigo-300">
+                                  {conv.person2_base}
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         ),
                       )}

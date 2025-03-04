@@ -66,13 +66,31 @@ export const  LanguageLessonSchema = z.object({
     situation: z.string().optional()
   })).describe("Example dialogues").optional()
 })
-export type LanguageLessonResponse = z.infer<typeof LanguageLessonSchema>;
+
+export const TranslationObjectSchema = z.object({
+  translation: z.string().describe("the litteral translation").optional(),
+  explanation: z.string().describe("grammatical explanation of the translation").optional(),
+  pitfall : z.string().describe("A potential pitfall to avoid").optional(),
+  grammars : z.array(z.string()).optional().describe("Grammatical rules with translation"),
+  pronunciation: z.string().describe("Pronunciation guide").optional(),
+  practical: z.object({
+     conversation: z.array(z.object({
+      person1: z.string().describe("First speaker's line"),
+      person1_base: z.string().describe("First speaker's line in the base language"),
+    person2: z.string().describe("Second speaker's line"),
+    person2_base: z.string().describe("Second speaker's line in the base language"),
+
+    context: z.string().describe("Conversational context").optional()
+      })).describe("Example dialogue  easy to follow"),
+  })
+})
+export type LanguageLessonResponse = z.infer<typeof TranslationObjectSchema>;
 export const GenerateLanguageLesson = async (input: string) => {
   //@ts-ignore
   const llm = new ChatOpenAI({
     model: "gpt-4o",
     temperature: 0.5
-  }).withStructuredOutput(LanguageLessonSchema);
+  }).withStructuredOutput(TranslationObjectSchema);
   console.log("Generating language lesson...");
   const response = await llm.invoke(input);
   console.log(response);

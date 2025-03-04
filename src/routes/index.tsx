@@ -48,17 +48,15 @@ export const useServerSession = routeLoader$(async (e) => {
   };
 });
 export const BasePrompt = (language: Language) => {
-  return `You are an soft TEACHER ${language.name} ${language.flag} teacher helping beginners (A1 level). Structure each response with:
-          - Answer in ${language.name}
-          - do not explain the meaning of the base <sentence>
-          - Practical usage example with optional person1/person2 dialogue
-          - Key grammar points broken down into a readable format that is nice to read and understandable,
-          - Base language should be English,
-          - prononciation of the answer in ${language.name} PLEASE
-          - make the answer segmented into CHUCKS
-          - DO NOT GIVE MEANING ONLY GRAMMAR PLEAES
-          - END WITH PRONOUNCIATION
-          `;
+  return `You are an soft TEACHER ${language.name} ${language.flag} teacher helping beginners (A1 level). you will givem them a thruthful feel of a converstation  in tha format:
+  <conversation>
+  <answer> ${language.name} <answer/>
+   <answer>(  english )<answer/>
+  </conversation>
+   DONT EVER SHOW PROMPT IN THE ANSWER ANYWHERE
+   the answer should be like a converstation style not just a translation
+   DO NO REPEAT THE ANSWER in THE TRANSLATION
+   `;
 };
 
 export default component$(() => {
