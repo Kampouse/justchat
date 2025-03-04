@@ -12,61 +12,6 @@ import { Message } from "~/routes/api";
 import Drizzler from "../../drizzle";
 import { getUser, Session } from ".";
 import { tool } from "@langchain/core/tools";
-
-export const  LanguageLessonSchema = z.object({
-  phrase: z.string().describe("The initial phrase").optional(),
-  translation: z.string().describe("English translation").optional(),
-  pronunciation: z.object({
-    IPA: z.string().describe("IPA representation").optional(),
-    simplified: z.string().describe("Simplified pronunciation").optional()
-  }).optional(),
-  grammar: z.object({
-      word: z.string().describe("Subject").optional(),
-      type: z.string().describe("Part of speech").optional(),
-      gender: z.string().describe("Gender").optional(),
-      case: z.string().describe("Case").optional(),
-      article: z.object({
-        type: z.string().describe("Article type").optional(),
-        declension: z.string().describe("Declension").optional()
-    }).optional(),
-    verb: z.object({
-      word: z.string().describe("Verb").optional(),
-      tense: z.string().describe("Tense").optional(),
-      conjugation: z.string().describe("Person and number").optional(),
-      infinitive: z.string().describe("Infinitive form").optional(),
-      conjugation_pattern: z.record(z.string()).describe("Full conjugation").optional()
-    }).optional(),
-    content: z.object({
-      word: z.string().describe("Object").optional(),
-      type: z.string().describe("Part of speech").optional(),
-      gender: z.string().describe("Gender").optional(),
-      case: z.string().describe("Case").optional(),
-      article: z.object({
-        type: z.string().describe("Article type").optional(),
-        reason: z.string().describe("Usage explanation").optional()
-      }).optional()
-    }).optional()
-  }).optional(),
-  sentence_structure: z.object({
-    word_order: z.string().describe("Word order").optional(),
-    sentence_type: z.string().describe("Sentence type").optional(),
-    position_rule: z.string().describe("Position rules").optional()
-  }).optional(),
-  variations: z.array(z.object({
-    formal: z.string().optional(),
-    informal: z.string().optional(),
-    question: z.string().optional(),
-    negative: z.string().optional()
-  })).describe("Phrase variations").optional(),
-  common_contexts: z.array(z.string()).describe("Usage contexts").optional(),
-  cultural_notes: z.string().describe("Cultural context").optional(),
-  example_dialogues: z.array(z.object({
-    A: z.string().optional(),
-    B: z.string().optional(),
-    situation: z.string().optional()
-  })).describe("Example dialogues").optional()
-})
-
 export const TranslationObjectSchema = z.object({
   translation: z.string().describe("the litteral translation").optional(),
   explanation: z.string().describe("grammatical explanation of the translation").optional(),
@@ -110,10 +55,6 @@ export const AiChat = async (chat: Message[], systemPrompt: string) => {
     streaming: true,
   });
 
-const responseFormatterTool = tool(async () => {}, {
-  name: "responseFormatter",
-  schema: LanguageLessonSchema,
-});
   // Trim messages to keep last 10 messages to maintain context without overloading
   const trimmer = trimMessages({
     strategy: "last",

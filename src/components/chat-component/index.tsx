@@ -7,7 +7,7 @@ import type { QRL, Signal } from "@builder.io/qwik";
 import { useSignal } from "@builder.io/qwik";
 import { updateUserLanguage, generateLanguageLesson } from "~/server";
 import { scrollToBottom } from "~/routes/chat/[id]";
-import type { LanguageLessonSchema } from "~/server/ai";
+import type { TranslationObjectSchema } from "~/server/ai";
 
 const UpdateUserLanguage = server$(async function (languageCode: string) {
   const session = this.sharedMap.get("session");
@@ -67,7 +67,7 @@ export const Message = component$<{
   last: boolean;
 }>(({ message, last }) => {
   const isLessonModalOpen = useSignal(false);
-  type Language = typeof LanguageLessonSchema._type;
+  type Language = typeof TranslationObjectSchema._type;
   const lessonData = useSignal<Language | null>(null);
   const isLoading = useSignal(false);
   const loc = useLocation();
