@@ -20,8 +20,8 @@
     "deploy": "echo 'Run \"npm run qwik add\" to install a server adapter'",
     "dev": "vite --mode ssr",
     "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
-    "drizzle:generate": "drizzle-kit generate:sqlite",
-    "drizzle:migrate": "drizzle-kit push:sqlite",
+    "drizzle:generate": "drizzle-kit generate",
+    "drizzle:migrate": "drizzle-kit push",
     "drizzle:studio": "drizzle-kit studio --host 127.0.0.1",
     "fmt": "prettier --write .",
     "fmt.check": "prettier --check .",
@@ -29,6 +29,7 @@
     "postinstall": "drizzle-kit generate:sqlite",
     "preview": "qwik build preview && vite preview --open",
     "serve": "node server/entry.express",
+    "prod:db": "NODE_ENV=production drizzle-kit studio",
     "start": "vite --open --mode ssr",
     "qwik": "qwik"
   },
