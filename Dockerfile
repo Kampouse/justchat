@@ -12,7 +12,7 @@ WORKDIR /usr/src/app
 FROM base as deps
 
 # Install pnpm
-RUN npm install -g @oven/bun-linux-x64 pnpm drizzle-kit
+RUN npm install -g pnpm drizzle-kit
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.pnpm-store to speed up subsequent builds.
@@ -22,7 +22,7 @@ COPY package.json .
 COPY pnpm-lock.yaml .
 COPY drizzle.config.ts .
 COPY drizzle drizzle
-RUN npm install
+RUN pnpm install --frozen-lockfile
 
 ################################################################################
 # Create a stage for building the application.
@@ -34,11 +34,11 @@ COPY . .
 
 COPY  drizzle.config.ts .
 COPY  drizzle drizzle
-RUN npm install -g bun  @oven/bun-linux-x64  pnpm drizzle-kit @libsql/client
+RUN npm install -g pnpm drizzle-kit @libsql/client
 # Ensure local.db is writable
 
 # Run the build script.
-RUN npx bun run build
+RUN pnpm run build
 
 ################################################################################
 # Create a new stage to run the application with minimal runtime dependencies
@@ -47,7 +47,7 @@ FROM base as final
 
 
 
-RUN npm install -g @oven/bun-linux-x64 pnpm drizzle-kit
+RUN npm install -g pnpm drizzle-kit
 
 # Use production node environment by default.
 ENV NODE_ENV production
@@ -79,4 +79,4 @@ EXPOSE 3000
 
 
 # Run the application.
-CMD ["sh", "-c", "npx drizzle-kit --config drizzle.config.ts  push; npx bun serve"]
+CMD ["sh", "-c", "npx drizzle-kit --config drizzle.config.ts  push; pnpm serve"]
