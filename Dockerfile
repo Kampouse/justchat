@@ -34,7 +34,7 @@ COPY . .
 
 COPY  drizzle.config.ts .
 COPY  drizzle drizzle
-RUN npm install -g  @oven/bun-linux-x64  pnpm drizzle-kit @libsql/client
+RUN npm install -g bun  @oven/bun-linux-x64  pnpm drizzle-kit @libsql/client
 # Ensure local.db is writable
 
 # Run the build script.
