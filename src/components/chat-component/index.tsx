@@ -41,9 +41,9 @@ export const languages: Language[] = [
   { code: "de", name: "German", flag: "🇩🇪" },
   { code: "fr", name: "French", flag: "🇫🇷" },
   { code: "es", name: "Spanish", flag: "🇪🇸" },
+  { code: "uk", name: "Ukrainian", flag: "🇺🇦" },
   { code: "en", name: "English", flag: "🇺🇸" },
 ];
-
 // Components
 export const AiAvatar = component$(() => {
   return (
