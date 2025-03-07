@@ -1,8 +1,8 @@
-ARG NODE_VERSION=latest
+ARG NODE_VERSION=23.9.0
 
 ################################################################################
 # Use node image for base image for all stages.
-FROM oven/bun:1 as base
+FROM node:${NODE_VERSION}-alpine as base
 
 # Set working directory for all build stages.
 WORKDIR /usr/src/app
@@ -39,7 +39,7 @@ RUN bun install -g pnpm drizzle-kit @libsql/client
 # Ensure local.db is writable
 
 # Run the build script.
-RUN pnpm run build
+RUN bun run build
 
 ################################################################################
 # Create a new stage to run the application with minimal runtime dependencies
