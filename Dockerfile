@@ -1,4 +1,4 @@
-ARG NODE_VERSION=18.18.2
+ARG NODE_VERSION=latest
 
 ################################################################################
 # Use node image for base image for all stages.
@@ -11,18 +11,19 @@ WORKDIR /usr/src/app
 # Create a stage for installing production dependencies.
 FROM base as deps
 
-# Install pnpm
-RUN npm install -g pnpm drizzle-kit
+# Install bun
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/root/.bun/bin:${PATH}"
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.pnpm-store to speed up subsequent builds.
 # Leverage bind mounts to package.json and pnpm-lock.yaml to avoid having to copy them
 # into this layer.
 COPY package.json .
-COPY pnpm-lock.yaml .
+COPY bun.lockb .
 COPY drizzle.config.ts .
 COPY drizzle drizzle
-RUN pnpm install --frozen-lockfile
+RUN bun install --frozen-lockfile
 
 ################################################################################
 # Create a stage for building the application.
@@ -34,11 +35,11 @@ COPY . .
 
 COPY  drizzle.config.ts .
 COPY  drizzle drizzle
-RUN npm install -g pnpm drizzle-kit @libsql/client
+RUN bun install -g pnpm drizzle-kit @libsql/client
 # Ensure local.db is writable
 
 # Run the build script.
-RUN pnpm run build
+RUN bun run build
 
 ################################################################################
 # Create a new stage to run the application with minimal runtime dependencies
@@ -47,7 +48,7 @@ FROM base as final
 
 
 
-RUN npm install -g pnpm drizzle-kit
+RUN bun install -g pnpm drizzle-kit
 
 # Use production node environment by default.
 ENV NODE_ENV production
@@ -79,4 +80,4 @@ EXPOSE 3000
 
 
 # Run the application.
-CMD ["sh", "-c", "npx drizzle-kit --config drizzle.config.ts  push; pnpm serve"]
+CMD ["sh", "-c", "bunx drizzle-kit --config drizzle.config.ts  push; bun run serve"]
