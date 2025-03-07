@@ -2,7 +2,7 @@ ARG NODE_VERSION=latest
 
 ################################################################################
 # Use node image for base image for all stages.
-FROM node:${NODE_VERSION}-alpine as base
+FROM oven/bun as base
 
 # Set working directory for all build stages.
 WORKDIR /usr/src/app
