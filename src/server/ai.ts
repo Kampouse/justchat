@@ -47,13 +47,11 @@ export const GenerateLanguageLesson = async (input: string) => {
 
 
 
-
 export const BilingualChatSchema = z.object({
-  primaryLanguage: z.string().describe("Response in the language you are learning, using appropriate level vocabulary and grammar"),
-  secondaryLanguage: z.string().describe("The same response translated into your native language for understanding"),
-  context: z.string().describe("Cultural notes, pronunciation tips, or grammar explanations to enhance learning").optional()
+  primaryLanguage: z.string().describe("Natural conversational response in the target language, reflecting authentic speech patterns"),
+  secondaryLanguage: z.string().describe("Equivalent conversational response in learner's native language, preserving natural flow"),
+  context: z.string().describe("Cultural context, pronunciation tips for authentic speaking, and natural dialogue patterns").optional()
 });
-
 export type BilingualChatResponse = z.infer<typeof BilingualChatSchema>;
 
 export const AiChat = async (chat: Message[], systemPrompt: string) => {

@@ -61,10 +61,8 @@ export default component$(() => {
   const user = useServerSession();
   const convos = useConvos();
 
-  const user_lang =
-    user.value.user && user.value.user.length > 0
-      ? user.value.user[0].language
-      : "en";
+  const user_lang = user.value.user[0].language;
+  console.log(user_lang);
   const langy = languages.find((lang) => lang.code === user_lang);
   const selectedLanguage = useSignal<Language>(
     langy || {
