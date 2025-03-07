@@ -22,7 +22,7 @@ COPY package.json .
 COPY pnpm-lock.yaml .
 COPY drizzle.config.ts .
 COPY drizzle drizzle
-RUN bun install --frozen-lockfile
+RUN npx bun install --frozen-lockfile
 
 ################################################################################
 # Create a stage for building the application.
