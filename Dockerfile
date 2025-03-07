@@ -38,7 +38,7 @@ RUN npm install -g  @oven/bun-linux-x64  pnpm drizzle-kit @libsql/client
 # Ensure local.db is writable
 
 # Run the build script.
-RUN bun run build
+RUN npx bun run build
 
 ################################################################################
 # Create a new stage to run the application with minimal runtime dependencies
@@ -79,4 +79,4 @@ EXPOSE 3000
 
 
 # Run the application.
-CMD ["sh", "-c", "bunx drizzle-kit --config drizzle.config.ts  push; bun serve"]
+CMD ["sh", "-c", "npx drizzle-kit --config drizzle.config.ts  push; npx bun serve"]
