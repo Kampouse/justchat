@@ -12,7 +12,7 @@ WORKDIR /usr/src/app
 FROM base as deps
 
 # Install pnpm
-RUN npm install -g bun pnpm drizzle-kit
+RUN npm install -g @oven/bun-linux-x64 pnpm drizzle-kit
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.pnpm-store to speed up subsequent builds.
@@ -34,7 +34,7 @@ COPY . .
 
 COPY  drizzle.config.ts .
 COPY  drizzle drizzle
-RUN npm install -g  bun pnpm drizzle-kit @libsql/client
+RUN npm install -g  @oven/bun-linux-x64  pnpm drizzle-kit @libsql/client
 # Ensure local.db is writable
 
 # Run the build script.
@@ -47,7 +47,7 @@ FROM base as final
 
 
 
-RUN npm install -g bun pnpm drizzle-kit
+RUN npm install -g @oven/bun-linux-x64 pnpm drizzle-kit
 
 # Use production node environment by default.
 ENV NODE_ENV production
