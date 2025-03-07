@@ -12,9 +12,6 @@ WORKDIR /usr/src/app
 FROM base as deps
 
 # Install bun
-RUN curl -fsSL https://bun.sh/install | bash
-ENV PATH="/root/.bun/bin:${PATH}"
-
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.pnpm-store to speed up subsequent builds.
 # Leverage bind mounts to package.json and pnpm-lock.yaml to avoid having to copy them
@@ -23,7 +20,7 @@ COPY package.json .
 COPY bun.lockb .
 COPY drizzle.config.ts .
 COPY drizzle drizzle
-RUN bun install --frozen-lockfile
+RUN  npm install --frozen-lockfile
 
 ################################################################################
 # Create a stage for building the application.
@@ -35,7 +32,7 @@ COPY . .
 
 COPY  drizzle.config.ts .
 COPY  drizzle drizzle
-RUN bun install -g pnpm drizzle-kit @libsql/client
+RUN bun install -g  bun pnpm drizzle-kit @libsql/client
 # Ensure local.db is writable
 
 # Run the build script.
