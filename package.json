@@ -50,7 +50,6 @@
     "@typescript-eslint/eslint-plugin": "7.16.1",
     "@typescript-eslint/parser": "7.16.1",
     "autoprefixer": "^10.4.19",
-    "better-sqlite3": "^9.4.3",
     "compression": "^1.7.4",
     "dotenv": "^16.3.2",
     "drizzle-kit": "^0.30.1",
