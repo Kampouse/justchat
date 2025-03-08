@@ -36,9 +36,7 @@ export const GenerateLanguageLesson = async (input: string) => {
     model: "gpt-4o",
     temperature: 0.5
   }).withStructuredOutput(TranslationObjectSchema);
-  console.log("Generating language lesson...");
   const response = await llm.invoke(input);
-  console.log(response);
   return response as LanguageLessonResponse;
 };
 
