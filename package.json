@@ -28,7 +28,7 @@
     "lint": "eslint \"src/**/*.ts*\"",
     "postinstall": "drizzle-kit generate:sqlite",
     "preview": "qwik build preview && vite preview --open",
-    "serve": "bun server/entry.bun.js",
+    "serve": "npx bun server/entry.bun.js",
     "start": "vite --open --mode ssr",
     "qwik": "qwik"
   },
