@@ -248,7 +248,7 @@ export default component$(
                         onClick$={async () => {
                           start.value += 3;
                           let stuff = [] as Convos;
-                          if (!isPanelHidden.value && session.value) {
+                          if (props.isMenuOpen.value && session.value) {
                             // Create signal objects to match expected function signature
                             stuff = await GetConvos(props.session, start, end);
                           }
