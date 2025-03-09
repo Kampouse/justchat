@@ -250,31 +250,19 @@ export default component$(
                             "Fetching conversations...",
                             props.isMenuOpen.value,
                           );
-                          let stuff = [] as Convos;
                           if (props.isMenuOpen.value == true && session.value) {
                             start.value += 3;
                             console.log("Fetching  in panel ...");
-                            stuff = await GetConvos(props.session, start, end);
+                            baseConvos.value = [
+                              ...baseConvos.value,
+                              ...(await GetConvos(props.session, start, end)),
+                            ];
                           }
                           if (
                             props.isMenuOpen.value == false &&
                             session.value
                           ) {
                             start.value += 3;
-                          }
-
-                          if (stuff && stuff.length > 0) {
-                            const existingUUIDSet = new Set(
-                              baseConvos.value.map((c) => c.uuid),
-                            );
-                            const newConversations = stuff.filter(
-                              (convo) => !existingUUIDSet.has(convo.uuid),
-                            );
-
-                            baseConvos.value = [
-                              ...baseConvos.value,
-                              ...newConversations,
-                            ];
                           }
                         }}
                         class="mt-4 w-full rounded-lg bg-gray-800 py-2 text-sm text-white transition-colors duration-200 hover:bg-gray-700"
