@@ -246,10 +246,18 @@ export default component$(
                       ))}
                       <button
                         onClick$={() => {
+                          const existingUUIDSet = new Set(
+                            baseConvos.value.map((c) => c.uuid),
+                          );
+                          const newConversations = resolvedConvos.filter(
+                            (convo) => !existingUUIDSet.has(convo.uuid),
+                          );
+
                           baseConvos.value = [
                             ...baseConvos.value,
-                            ...resolvedConvos,
+                            ...newConversations,
                           ];
+
                           start.value += 3;
                         }}
                         class="mt-4 w-full rounded-lg bg-gray-800 py-2 text-sm text-white transition-colors duration-200 hover:bg-gray-700"
