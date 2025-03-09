@@ -246,11 +246,21 @@ export default component$(
                       ))}
                       <button
                         onClick$={async () => {
-                          start.value += 3;
+                          console.log(
+                            "Fetching conversations...",
+                            props.isMenuOpen.value,
+                          );
                           let stuff = [] as Convos;
-                          if (props.isMenuOpen.value && session.value) {
-                            // Create signal objects to match expected function signature
+                          if (props.isMenuOpen.value == true && session.value) {
+                            start.value += 3;
+                            console.log("Fetching  in panel ...");
                             stuff = await GetConvos(props.session, start, end);
+                          }
+                          if (
+                            props.isMenuOpen.value == false &&
+                            session.value
+                          ) {
+                            start.value += 3;
                           }
 
                           if (stuff && stuff.length > 0) {
