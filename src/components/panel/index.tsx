@@ -246,6 +246,7 @@ export default component$(
                       ))}
                       <button
                         onClick$={() => {
+                          start.value += 3;
                           const existingUUIDSet = new Set(
                             baseConvos.value.map((c) => c.uuid),
                           );
@@ -257,8 +258,6 @@ export default component$(
                             ...baseConvos.value,
                             ...newConversations,
                           ];
-
-                          start.value += 3;
                         }}
                         class="mt-4 w-full rounded-lg bg-gray-800 py-2 text-sm text-white transition-colors duration-200 hover:bg-gray-700"
                       >
