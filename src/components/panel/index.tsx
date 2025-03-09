@@ -172,7 +172,7 @@ export default component$(
                   }
 
                   if (!baseConvos.value.length) {
-                    return (
+                    return session.value ? (
                       <Link
                         href="/"
                         onClick$={() => {
@@ -196,7 +196,7 @@ export default component$(
                           />
                         </svg>
                       </Link>
-                    );
+                    ) : null;
                   }
                   return (
                     <>
@@ -245,19 +245,27 @@ export default component$(
                         </div>
                       ))}
                       <button
-                        onClick$={() => {
+                        onClick$={async () => {
                           start.value += 3;
-                          const existingUUIDSet = new Set(
-                            baseConvos.value.map((c) => c.uuid),
-                          );
-                          const newConversations = resolvedConvos.filter(
-                            (convo) => !existingUUIDSet.has(convo.uuid),
-                          );
+                          let stuff = [] as Convos;
+                          if (!isPanelHidden.value && session.value) {
+                            // Create signal objects to match expected function signature
+                            stuff = await GetConvos(props.session, start, end);
+                          }
 
-                          baseConvos.value = [
-                            ...baseConvos.value,
-                            ...newConversations,
-                          ];
+                          if (stuff && stuff.length > 0) {
+                            const existingUUIDSet = new Set(
+                              baseConvos.value.map((c) => c.uuid),
+                            );
+                            const newConversations = stuff.filter(
+                              (convo) => !existingUUIDSet.has(convo.uuid),
+                            );
+
+                            baseConvos.value = [
+                              ...baseConvos.value,
+                              ...newConversations,
+                            ];
+                          }
                         }}
                         class="mt-4 w-full rounded-lg bg-gray-800 py-2 text-sm text-white transition-colors duration-200 hover:bg-gray-700"
                       >
