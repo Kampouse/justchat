@@ -1,14 +1,16 @@
 import { component$, useTask$ } from "@builder.io/qwik";
 import { Credentials } from "../credentials";
-import type { getConvos } from "~/server";
 import type { Signal } from "@builder.io/qwik";
 import { Link } from "@builder.io/qwik-city";
 type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
-type Convos = Awaited<ReturnType<typeof getConvos>>;
+type Convos = Awaited<ReturnType<typeof GetConvos>>;
 import { useLocation } from "@builder.io/qwik-city";
 import type { Session } from "~/server";
 import { useSignal } from "@builder.io/qwik";
 import { useSession } from "~/routes/plugin@auth";
+import { useResource$ } from "@builder.io/qwik";
+import { GetConvos } from "~/server";
+import { Resource } from "@builder.io/qwik";
 export default component$(
   (props: {
     session: Session | null;
@@ -17,7 +19,18 @@ export default component$(
     suspensed: Signal<boolean>;
   }) => {
     const loc = useLocation();
+    const end = useSignal(7);
+    const start = useSignal(0);
     const uuid = useSignal<string>(loc.params["id"]);
+    const convos = useResource$<Convos | []>(async (track) => {
+      if (!props.session) {
+        return [];
+      }
+      track.track(() => start.value);
+
+      return (await GetConvos(props.session, start, end)) ?? [];
+    });
+    const baseConvos = useSignal<Convos>([]);
 
     useTask$(({ track }) => {
       track(() => loc.params);
@@ -26,6 +39,7 @@ export default component$(
     });
     const isPanelHidden = useSignal(false);
     const session = useSession();
+
     return (
       <>
         {/* Hamburger button - only visible on mobile */}
@@ -117,78 +131,135 @@ export default component$(
                 </div>
               )}
             </div>
-            <div class="scrollbar-hide flex flex-grow flex-col gap-2 overflow-y-scroll rounded-xl px-2">
-              {!props.convos ||
-              (props.session != null && props.convos.length) === 0 ? (
-                <Link
-                  href="/"
-                  onClick$={() => {
-                    props.isMenuOpen.value = false;
-                  }}
-                  class="flex items-center justify-center gap-2 rounded-lg bg-blue-600 p-4 text-white transition-colors duration-200 hover:bg-blue-700"
-                >
-                  <span>Start Chatting</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    class="h-5 w-5"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M12 4.5v15m7.5-7.5h-15"
-                    />
-                  </svg>
-                </Link>
-              ) : (
-                props.convos.map((chat, index) => (
-                  <div
-                    key={index}
-                    class={`relative cursor-pointer rounded bg-gray-800 p-3 px-4 transition-all duration-300 ease-in-out hover:bg-gray-700 ${chat.uuid === uuid.value ? "scale-[1.02] border-2 border-blue-500 bg-gray-700 shadow-lg" : "border-2 border-gray-800"}`}
-                  >
-                    <Link
-                      prefetch={false}
-                      href={"/chat/" + chat.uuid}
-                      onClick$={() => {
-                        props.isMenuOpen.value = false;
-                        if (chat.uuid !== uuid.value) {
-                          props.suspensed.value = true;
-                        }
-                      }}
-                      class="relative block"
-                    >
-                      <h3 class="truncate text-sm font-medium text-white">
-                        {chat.name ?? "no name yet"}
-                      </h3>
-                      <p class="flex items-center gap-2 truncate text-xs text-gray-400">
+            <div
+              class="scrollbar-hide flex flex-grow flex-col gap-2 overflow-y-scroll rounded-xl px-2"
+              onScroll$={(event) => {
+                const target = event.target as HTMLElement;
+                const scrollTop = target.scrollTop;
+                const scrollHeight = target.scrollHeight;
+                const clientHeight = target.clientHeight;
+
+                if (scrollTop + clientHeight >= scrollHeight) {
+                  start.value += 15;
+                }
+              }}
+            >
+              <Resource
+                value={convos}
+                onRejected={(error) => <div>Error: {error.message}</div>}
+                onResolved={(resolvedConvos) => {
+                  // Keep track of all unique conversations by uuid
+                  // Convert map back to array and filter out any undefined
+                  if (!resolvedConvos) {
+                    resolvedConvos = [] as Convos;
+                  }
+
+                  // Only add conversations that don't already exist in baseConvos
+                  // Filter out conversations that already exist in baseConvos
+                  // Use a Set to efficiently track existing UUIDs
+                  const existingUUIDs = new Set(
+                    baseConvos.value.map((c) => c.uuid),
+                  );
+
+                  // Filter out conversations that already exist in baseConvos
+                  const newConvos = resolvedConvos.filter(
+                    (convo) => !existingUUIDs.has(convo.uuid),
+                  );
+
+                  // Add only unique conversations to baseConvos
+                  if (newConvos.length > 0) {
+                    baseConvos.value = [...baseConvos.value, ...newConvos];
+                  }
+
+                  if (!baseConvos.value.length) {
+                    return (
+                      <Link
+                        href="/"
+                        onClick$={() => {
+                          props.isMenuOpen.value = false;
+                        }}
+                        class="flex items-center justify-center gap-2 rounded-lg bg-blue-600 p-4 text-white transition-colors duration-200 hover:bg-blue-700"
+                      >
+                        <span>Start Chatting</span>
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          class="h-3 w-3"
                           fill="none"
                           viewBox="0 0 24 24"
+                          stroke-width="1.5"
                           stroke="currentColor"
+                          class="h-5 w-5"
                         >
-                          <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M12 4.5v15m7.5-7.5h-15"
+                          />
                         </svg>
-                        {new Date(chat.createdAt).toLocaleDateString(
-                          undefined,
-                          {
-                            month: "long",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hourCycle: "h23",
-                            localeMatcher: "best fit",
-                          },
-                        )}
-                      </p>
-                    </Link>
-                  </div>
-                ))
-              )}
+                      </Link>
+                    );
+                  }
+                  return (
+                    <>
+                      {baseConvos.value.map((chat, index) => (
+                        <div
+                          key={index}
+                          class={`relative cursor-pointer rounded bg-gray-800 p-3 px-4 transition-all duration-300 ease-in-out hover:bg-gray-700 ${chat.uuid === uuid.value ? "scale-[1.02] border-2 border-blue-500 bg-gray-700 shadow-lg" : "border-2 border-gray-800"}`}
+                        >
+                          <Link
+                            prefetch={false}
+                            href={"/chat/" + chat.uuid}
+                            onClick$={() => {
+                              props.isMenuOpen.value = false;
+                              if (chat.uuid !== uuid.value) {
+                                props.suspensed.value = true;
+                              }
+                            }}
+                            class="relative block"
+                          >
+                            <h3 class="truncate text-sm font-medium text-white">
+                              {chat.name ?? "no name yet"}
+                            </h3>
+                            <p class="flex items-center gap-2 truncate text-xs text-gray-400">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-3 w-3"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              {new Date(chat.createdAt).toLocaleDateString(
+                                undefined,
+                                {
+                                  month: "long",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hourCycle: "h23",
+                                  localeMatcher: "best fit",
+                                },
+                              )}
+                            </p>
+                          </Link>
+                        </div>
+                      ))}
+                      <button
+                        onClick$={() => {
+                          baseConvos.value = [
+                            ...baseConvos.value,
+                            ...resolvedConvos,
+                          ];
+                          start.value += 3;
+                        }}
+                        class="mt-4 w-full rounded-lg bg-gray-800 py-2 text-sm text-white transition-colors duration-200 hover:bg-gray-700"
+                      >
+                        Load More
+                      </button>
+                    </>
+                  );
+                }}
+              />
             </div>
             <Credentials user={props.session?.user as any} />
           </div>

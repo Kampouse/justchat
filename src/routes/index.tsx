@@ -54,14 +54,20 @@ export const BasePrompt = (language: Language) => {
 
 export default component$(() => {
   // Navigation hook
+
   const nav = useNavigate();
 
   const isMenuOpen = useSignal(false);
   const suspensed = useSignal(false);
+
   const user = useServerSession();
+
   const convos = useConvos();
 
-  const user_lang = user.value.user && user.value.user[0] && user.value.user[0].language ? user.value.user[0].language : 'fr';
+  const user_lang =
+    user.value.user[0] && user.value.user[0].language
+      ? user.value.user[0].language
+      : "fr";
 
   console.log(user_lang);
   const langy = languages.find((lang) => lang.code === user_lang);
@@ -78,10 +84,9 @@ export default component$(() => {
   const locator = useLocation();
   const isVisible = useSignal(user.value.session ? false : true);
   const isBannerVisible = useSignal(
-    user.value.user &&
     user.value.user.length > 0 &&
-    user.value.user[0].queriesRemaining &&
-    user.value.user[0].queriesRemaining <= 0,
+      user.value.user[0].queriesRemaining &&
+      user.value.user[0].queriesRemaining <= 0,
   );
   // Monitor route changes to trigger banner visibility
   useTask$(({ track }) => {

@@ -1,5 +1,7 @@
 import Drizzler from "../../drizzle";
-
+import type { Signal } from "@builder.io/qwik";
+import { server$ } from "@builder.io/qwik-city";
+import { desc } from "drizzle-orm";
 import { schema } from "../../drizzle/schema";
 import { ChatOpenAI } from "@langchain/openai";
 import { Message } from "~/routes/api";
@@ -172,7 +174,7 @@ export const getConvoByUuid = async ({
 export const getConvos = async (ctx: Session | null) => {
   if (ctx) {
     const user = await getUser(ctx);
-    if (!user || user.length == 0) return;
+    if (!user || user.length == 0) return [];
     const db = Drizzler();
     if (user) {
       const data = await db
@@ -190,6 +192,28 @@ export const getConvos = async (ctx: Session | null) => {
     }
   }
 };
+
+export const GetConvos = server$( async  (ctx: Session | null, start: Signal<number>, end: Signal<number>) => {
+  if (ctx) {
+    const user = await getUser(ctx);
+    if (!user || user.length == 0) return [];
+    const db = Drizzler();
+    if (user) {
+
+      const data = await db
+        .select()
+        .from(schema.conversations)
+        .where(eq(schema.conversations.createdBy, user[0].id))
+        .orderBy(desc(schema.conversations.createdAt))
+        .limit(end.value)
+        .offset(start.value)
+        .execute();
+
+      return data;
+    }
+  }
+  return [];
+});
 
 export const getAllMessages = async ({
   ctx,
