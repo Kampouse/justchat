@@ -181,16 +181,13 @@ export const getConvos = async (ctx: Session | null) => {
         .select()
         .from(schema.conversations)
         .where(eq(schema.conversations.createdBy, user[0].id))
+        .orderBy(desc(schema.conversations.createdAt))
         .execute();
 
-      data.sort((a, b) => {
-        return (
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-      });
       return data;
     }
   }
+  return []
 };
 
 export const GetConvos = server$( async  (ctx: Session | null, start: Signal<number>, end: Signal<number>) => {

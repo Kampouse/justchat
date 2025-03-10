@@ -1,7 +1,7 @@
 import { component$, useTask$ } from "@builder.io/qwik";
 import { Credentials } from "../credentials";
 import type { Signal } from "@builder.io/qwik";
-import { Link } from "@builder.io/qwik-city";
+import { Link, useNavigate } from "@builder.io/qwik-city";
 type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
 type Convos = Awaited<ReturnType<typeof GetConvos>>;
 import { useLocation } from "@builder.io/qwik-city";
@@ -20,6 +20,7 @@ export default component$(
   }) => {
     const loc = useLocation();
     const end = useSignal(7);
+    const nav = useNavigate();
     const start = useSignal(0);
     const uuid = useSignal<string>(loc.params["id"]);
     const convos = useResource$<Convos | []>(async (track) => {
@@ -251,12 +252,7 @@ export default component$(
                             props.isMenuOpen.value,
                           );
                           if (props.isMenuOpen.value == true && session.value) {
-                            start.value += 3;
-                            console.log("Fetching  in panel ...");
-                            baseConvos.value = [
-                              ...baseConvos.value,
-                              ...(await GetConvos(props.session, start, end)),
-                            ];
+                            nav("/list");
                           }
                           if (
                             props.isMenuOpen.value == false &&
