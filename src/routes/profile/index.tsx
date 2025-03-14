@@ -1,5 +1,6 @@
 import { component$ } from "@builder.io/qwik";
 import { customerPortalSubscriptionsCancel } from "@polar-sh/sdk/funcs/customerPortalSubscriptionsCancel";
+import { customerPortalSubscriptionsUpdate } from "@polar-sh/sdk/funcs/customerPortalSubscriptionsUpdate.js";
 import { Form } from "@builder.io/qwik-city";
 import { routeAction$ } from "@builder.io/qwik-city";
 import { routeLoader$, useNavigate } from "@builder.io/qwik-city";
@@ -58,6 +59,63 @@ export const useCheckout = routeAction$(async (data, { env }) => {
   }
 });
 
+export const useResumeSubscription = routeAction$(
+  async (data, { env, sharedMap }) => {
+    const polar = new PolarCore({
+      accessToken: env.get("POLAR_ID_TEST"),
+      server: "sandbox",
+    });
+
+    const db = DB();
+    const sesh = await sharedMap.get("session");
+
+    if (!sesh?.user?.email) {
+      return null;
+    }
+
+    const user = await db.query.users.findFirst({
+      where: eq(users.email, sesh.user.email),
+    });
+
+    if (!user || !user.polarCustomerId) {
+      throw new Error("User not found");
+    }
+
+    const session = await customerSessionsCreate(polar, {
+      customerId: user.polarCustomerId as string,
+    });
+
+    if (!session.ok) {
+      throw session.error;
+    }
+
+    const res = await customerPortalSubscriptionsUpdate(
+      polar,
+      {
+        customerSession: session.value.token,
+      },
+      {
+        id: user.subscriptionId as string,
+        customerSubscriptionUpdate: {
+          cancelAtPeriodEnd: false,
+        },
+      },
+    );
+
+    await SyncCustomer(user.email);
+
+    if (!res.ok) {
+      throw res.error;
+    }
+
+    return res.value;
+  },
+);
+
+export const useSubscription = routeLoader$(async (ctx) => {
+  const sesh = await ctx.sharedMap.get("session");
+  return await SyncCustomer(sesh.user.email);
+});
 export const useCancelSubscription = routeAction$(
   async (data, { env, sharedMap }) => {
     const polar = new PolarCore({
@@ -92,7 +150,7 @@ export const useCancelSubscription = routeAction$(
         customerSession: session.value.token,
       },
       {
-        id: user.subscriptionId,
+        id: user.subscriptionId as string,
       },
     );
     await SyncCustomer(user.email);
@@ -107,8 +165,11 @@ export const useCancelSubscription = routeAction$(
 
 export default component$(() => {
   const user = useProfile();
+  const customer = useSubscription();
   const checkout = useCheckout();
   const cancelSubscription = useCancelSubscription();
+  const resumeSubscription = useResumeSubscription();
+
   const nav = useNavigate();
 
   if (!user.value) {
@@ -153,24 +214,36 @@ export default component$(() => {
               <p class="text-gray-400">{user.value.email}</p>
               {user.value.subscription && (
                 <div class="mt-2">
-                  <span class="text-green 400 text-sm">
-                    Current Plan: {user.value.subscriptionPlan}
-                  </span>
-                  <br />
-                  <span class="text-xs text-gray-400">
-                    Started:{" "}
-                    {new Date(
-                      user.value.subscriptionStartDate || "",
-                    ).toLocaleDateString()}
-                  </span>
-                  <br />
-                  <span class="text-xs text-gray-400">
-                    Valid until:{" "}
-                    {new Date(
-                      user.value.nextPaymentDate || "",
-                    ).toLocaleDateString()}
-                  </span>
-                  <br />
+                  {user.value.subscriptionPlan && (
+                    <>
+                      <span class="text-green 400 text-sm">
+                        Current Plan: {user.value.subscriptionPlan}
+                      </span>
+                      <br />
+                    </>
+                  )}
+                  {user.value.subscriptionStartDate && (
+                    <>
+                      <span class="text-xs text-gray-400">
+                        Started:{" "}
+                        {new Date(
+                          user.value.subscriptionStartDate,
+                        ).toLocaleDateString()}
+                      </span>
+                      <br />
+                    </>
+                  )}
+                  {user.value.nextPaymentDate && (
+                    <>
+                      <span class="text-xs text-gray-400">
+                        Valid until:{" "}
+                        {new Date(
+                          user.value.nextPaymentDate,
+                        ).toLocaleDateString()}
+                      </span>
+                      <br />
+                    </>
+                  )}
                   {user.value.subscriptionEndDate && (
                     <span class="text-xs text-gray-400">
                       Cancellation takes effect:{" "}
@@ -222,7 +295,7 @@ export default component$(() => {
               </div>
             </div>
 
-            {!user.value.subscription ? (
+            {user.value.subscriptionId == null ? (
               <div class="mt-6 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 p-6 text-center">
                 <h3 class="mb-4 text-2xl font-bold">Upgrade to Premium</h3>
                 <p class="mb-6 text-gray-200">
@@ -310,25 +383,24 @@ export default component$(() => {
                   )}
                 </p>
                 {user.value.subscriptionEndDate ? (
-                  <Form
-                    action={checkout}
-                    onSubmitCompleted$={(data) => {
-                      window.location.href = data.detail.value as string;
-                    }}
-                  >
-                    <input type="hidden" name="plan" value="advanced" />
-                    <input
-                      type="hidden"
-                      name="email"
-                      value={user.value.email}
-                    />
-                    <button
-                      type="submit"
-                      class="mt-4 rounded-full bg-green-500 px-6 py-2 font-semibold text-white hover:bg-green-600"
+                  <div>
+                    <Form
+                      action={resumeSubscription}
+                      onSubmitCompleted$={() => {
+                        window.location.reload();
+                      }}
                     >
-                      Resubscribe
-                    </button>
-                  </Form>
+                      <button
+                        type="submit"
+                        class="mt-4 rounded-full bg-green-500 px-6 py-2 font-semibold text-white hover:bg-green-600"
+                      >
+                        Resume Subscription
+                      </button>
+                    </Form>
+                    <p class="mt-2 text-sm text-gray-400">
+                      Resume your subscription to continue uninterrupted service
+                    </p>
+                  </div>
                 ) : (
                   <Form
                     action={cancelSubscription}
