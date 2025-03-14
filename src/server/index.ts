@@ -401,6 +401,7 @@ export const SyncCustomer = async (email: string) => {
       subscription: customer.value.activeSubscriptions[0].status || 'none',
       subscriptionStatus: customer.value.activeSubscriptions[0].status,
       subscriptionPlan: customer.value.activeSubscriptions[0].productId,
+      subscriptionId: customer.value.activeSubscriptions[0].id,
       subscriptionStartDate: customer.value.activeSubscriptions[0].startedAt,
       subscriptionEndDate: customer.value.activeSubscriptions[0].endsAt,
       lastPaymentDate: customer.value.activeSubscriptions[0].currentPeriodStart,

@@ -1,4 +1,5 @@
 import { component$ } from "@builder.io/qwik";
+import { customerPortalSubscriptionsCancel } from "@polar-sh/sdk/funcs/customerPortalSubscriptionsCancel";
 import { Form } from "@builder.io/qwik-city";
 import { routeAction$ } from "@builder.io/qwik-city";
 import { routeLoader$, useNavigate } from "@builder.io/qwik-city";
@@ -8,12 +9,10 @@ import { users } from "../../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { PolarCore } from "@polar-sh/sdk/core.js";
 import { checkoutsCreate } from "@polar-sh/sdk/funcs/checkoutsCreate.js";
-/*
-const polar = new Polar({
-  accessToken: process.env.POLAR_ID_TEST,
-});
+import { customerSessionsCreate } from "@polar-sh/sdk/funcs/customerSessionsCreate.js";
+import { server$ } from "@builder.io/qwik-city";
+import { SyncCustomer } from "~/server";
 
-*/
 export const useProfile = routeLoader$(async ({ sharedMap }) => {
   const db = DB();
   const session = await sharedMap.get("session");
@@ -28,6 +27,7 @@ export const useProfile = routeLoader$(async ({ sharedMap }) => {
 
   return user;
 });
+
 export const useCheckout = routeAction$(async (data, { env }) => {
   try {
     console.log(data);
@@ -58,9 +58,57 @@ export const useCheckout = routeAction$(async (data, { env }) => {
   }
 });
 
+export const useCancelSubscription = routeAction$(
+  async (data, { env, sharedMap }) => {
+    const polar = new PolarCore({
+      accessToken: env.get("POLAR_ID_TEST"),
+      server: "sandbox",
+    });
+
+    const db = DB();
+    const sesh = await sharedMap.get("session");
+
+    if (!sesh?.user?.email) {
+      return null;
+    }
+
+    const user = await db.query.users.findFirst({
+      where: eq(users.email, sesh.user.email),
+    });
+
+    if (!user || !user.polarCustomerId) {
+      throw new Error("User not found");
+    }
+    const session = await customerSessionsCreate(polar, {
+      customerId: user.polarCustomerId as string,
+    });
+    if (!session.ok) {
+      throw session.error;
+    }
+    console.log("session", session);
+    const res = await customerPortalSubscriptionsCancel(
+      polar,
+      {
+        customerSession: session.value.token,
+      },
+      {
+        id: user.subscriptionId,
+      },
+    );
+    await SyncCustomer(user.email);
+
+    if (!res.ok) {
+      throw res.error;
+    }
+
+    return res.value;
+  },
+);
+
 export default component$(() => {
   const user = useProfile();
   const checkout = useCheckout();
+  const cancelSubscription = useCancelSubscription();
   const nav = useNavigate();
 
   if (!user.value) {
@@ -103,6 +151,36 @@ export default component$(() => {
             <div>
               <h2 class="text-xl font-semibold">{user.value.name}</h2>
               <p class="text-gray-400">{user.value.email}</p>
+              {user.value.subscription && (
+                <div class="mt-2">
+                  <span class="text-green 400 text-sm">
+                    Current Plan: {user.value.subscriptionPlan}
+                  </span>
+                  <br />
+                  <span class="text-xs text-gray-400">
+                    Started:{" "}
+                    {new Date(
+                      user.value.subscriptionStartDate || "",
+                    ).toLocaleDateString()}
+                  </span>
+                  <br />
+                  <span class="text-xs text-gray-400">
+                    Valid until:{" "}
+                    {new Date(
+                      user.value.nextPaymentDate || "",
+                    ).toLocaleDateString()}
+                  </span>
+                  <br />
+                  {user.value.subscriptionEndDate && (
+                    <span class="text-xs text-gray-400">
+                      Cancellation takes effect:{" "}
+                      {new Date(
+                        user.value.subscriptionEndDate,
+                      ).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -113,7 +191,9 @@ export default component$(() => {
                 <div class="flex items-center justify-between">
                   <span class="text-gray-400">Queries Remaining:</span>
                   <span class="font-semibold text-white">
-                    {user.value.queriesRemaining ?? "Unlimited"}
+                    {user.value.subscription === "active"
+                      ? "Unlimited"
+                      : user.value.queriesRemaining}
                   </span>
                 </div>
                 <div class="flex items-center justify-between">
@@ -122,103 +202,162 @@ export default component$(() => {
                     {user.value.queriesUsed ?? 0}
                   </span>
                 </div>
-                <div class="mt-4">
-                  <div class="h-2 w-full rounded-full bg-gray-600">
-                    <div
-                      class="h-full rounded-full bg-blue-500"
-                      style={{
-                        width: `${Math.min(
-                          ((user.value.queriesUsed ?? 0) /
-                            (user.value.totalQueries ?? 100)) *
+                {user.value.subscription !== "active" && (
+                  <div class="mt-4">
+                    <div class="h-2 w-full rounded-full bg-gray-600">
+                      <div
+                        class="h-full rounded-full bg-blue-500"
+                        style={{
+                          width: `${Math.min(
+                            ((user.value.queriesUsed ?? 0) /
+                              (user.value.totalQueries ?? 100)) *
+                              100,
                             100,
-                          100,
-                        )}%`,
-                      }}
-                    ></div>
+                          )}%`,
+                        }}
+                      ></div>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
-            <div class="mt-6 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 p-6 text-center">
-              <h3 class="mb-4 text-2xl font-bold">Upgrade to Premium</h3>
-              <p class="mb-6 text-gray-200">
-                Get unlimited queries, priority support, and exclusive features
-              </p>
-              <ul class="mb-6 space-y-2 text-left">
-                <li class="flex items-center">
-                  <svg
-                    class="mr-2 h-5 w-5 text-green-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  Unlimited Queries
-                </li>
-                <li class="flex items-center">
-                  <svg
-                    class="mr-2 h-5 w-5 text-green-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  Priority Support
-                </li>
-                <li class="flex items-center">
-                  <svg
-                    class="mr-2 h-5 w-5 text-green-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  Advanced Features
-                </li>
-              </ul>
-              <Form
-                action={checkout}
-                onSubmitCompleted$={(data) => {
-                  console.log("Checkout result:", data.detail.value);
-
-                  window.location.href = data.detail.value as string;
-                }}
-              >
-                <input type="hidden" name="plan" value="advanced" />
-                <input type="hidden" name="email" value={user.value.email} />
-                <button
-                  type="submit"
-                  class="rounded-full bg-white px-8 py-3 font-bold text-purple-600 shadow-lg transition-all hover:bg-gray-100 hover:shadow-xl"
+            {!user.value.subscription ? (
+              <div class="mt-6 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 p-6 text-center">
+                <h3 class="mb-4 text-2xl font-bold">Upgrade to Premium</h3>
+                <p class="mb-6 text-gray-200">
+                  Get unlimited queries, priority support, and exclusive
+                  features
+                </p>
+                <ul class="mb-6 space-y-2 text-left">
+                  <li class="flex items-center">
+                    <svg
+                      class="mr-2 h-5 w-5 text-green-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Unlimited Queries
+                  </li>
+                  <li class="flex items-center">
+                    <svg
+                      class="mr-2 h-5 w-5 text-green-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Priority Support
+                  </li>
+                  <li class="flex items-center">
+                    <svg
+                      class="mr-2 h-5 w-5 text-green-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Advanced Features
+                  </li>
+                </ul>
+                <Form
+                  action={checkout}
+                  onSubmitCompleted$={(data) => {
+                    console.log("Checkout result:", data.detail.value);
+                    window.location.href = data.detail.value as string;
+                  }}
                 >
-                  Upgrade Now
-                </button>
-              </Form>{" "}
-            </div>
+                  <input type="hidden" name="plan" value="advanced" />
+                  <input type="hidden" name="email" value={user.value.email} />
+                  <button
+                    type="submit"
+                    class="rounded-full bg-white px-8 py-3 font-bold text-purple-600 shadow-lg transition-all hover:bg-gray-100 hover:shadow-xl"
+                  >
+                    Upgrade Now
+                  </button>
+                </Form>
+              </div>
+            ) : (
+              <div class="mt-6 rounded-lg bg-gray-700 p-6 text-center">
+                <h3 class="mb-4 text-xl font-bold">Subscription Management</h3>
+                <p class="text-gray-300">
+                  {!user.value.subscriptionEndDate && (
+                    <>
+                      Next payment:{" "}
+                      {new Date(
+                        user.value.nextPaymentDate || "",
+                      ).toLocaleDateString()}
+                    </>
+                  )}
+                </p>
+                {user.value.subscriptionEndDate ? (
+                  <Form
+                    action={checkout}
+                    onSubmitCompleted$={(data) => {
+                      window.location.href = data.detail.value as string;
+                    }}
+                  >
+                    <input type="hidden" name="plan" value="advanced" />
+                    <input
+                      type="hidden"
+                      name="email"
+                      value={user.value.email}
+                    />
+                    <button
+                      type="submit"
+                      class="mt-4 rounded-full bg-green-500 px-6 py-2 font-semibold text-white hover:bg-green-600"
+                    >
+                      Resubscribe
+                    </button>
+                  </Form>
+                ) : (
+                  <Form
+                    action={cancelSubscription}
+                    onSubmitCompleted$={() => {
+                      window.location.reload();
+                    }}
+                  >
+                    <input
+                      type="hidden"
+                      name="subscriptionId"
+                      value={user.value.subscription}
+                    />
+                    <button
+                      type="submit"
+                      class="mt-4 rounded-full bg-red-500 px-6 py-2 font-semibold text-white hover:bg-red-600"
+                    >
+                      Cancel Subscription
+                    </button>
+                  </Form>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
 });
+
 export const head: DocumentHead = {
   title: "Profile - Just Chat",
   meta: [

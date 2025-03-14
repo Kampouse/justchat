@@ -7,6 +7,7 @@ export const users = sqliteTable("users", {
   // Subscription fields
   polarCustomerId: text("polar_customer_id"),
   subscription: text("subscription").default("free"),
+  subscriptionId: text("subscription_id"),
   subscriptionStatus: text("subscription_status"),
   subscriptionPlan: text("subscription_plan"),
   subscriptionStartDate: integer("subscription_start_date", {

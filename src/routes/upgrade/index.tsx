@@ -1,6 +1,4 @@
 import { type RequestHandler } from "@builder.io/qwik-city";
-import { PolarCore } from "@polar-sh/sdk/core.js";
-import { customersGetExternal } from "@polar-sh/sdk/funcs/customersGetExternal.js";
 import { SyncCustomer } from "~/server";
 
 export const onGet: RequestHandler = async (ctx) => {
