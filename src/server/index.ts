@@ -1,4 +1,7 @@
 import Drizzler from "../../drizzle";
+
+import { customersGetExternal  } from "@polar-sh/sdk/funcs/customersGetExternal.js";
+import { PolarCore } from "@polar-sh/sdk/core.js";
 import type { Signal } from "@builder.io/qwik";
 import { server$ } from "@builder.io/qwik-city";
 import { desc } from "drizzle-orm";
@@ -7,6 +10,8 @@ import { ChatOpenAI } from "@langchain/openai";
 import { Message } from "~/routes/api";
 import { eq } from "drizzle-orm";
 import { AiChat, GenerateLanguageLesson } from "./ai";
+import { customersGetState } from "@polar-sh/sdk/funcs/customersGetState.js";
+import drizzle from "../../drizzle";
 export type Session = {
   user: {
     name: string;
@@ -361,6 +366,64 @@ export const updateUserLanguage = async (ctx: Session, language: string): Promis
 
   return !!updatedUser[0];
 };
+
+
+
+
+export const SyncCustomer = async (email: string) => {
+  const db = drizzle();
+
+  const polar = new PolarCore({
+    accessToken: process.env.POLAR_ID_TEST,
+    server: "sandbox",
+  });
+
+
+
+
+  const cus = await customersGetExternal(polar, {
+    externalId: email,
+  });
+
+  if (!cus.ok) return;
+
+   const customer = await customersGetState(polar,{
+     id: cus.value.id
+   })
+  if (!customer.ok) return;
+
+  // Update user record with full customer data
+  await db
+    .update(schema.users)
+    .set({
+      polarCustomerId: customer.value.id,
+      name: customer.value.name,
+      subscription: customer.value.activeSubscriptions[0].status || 'none',
+      subscriptionStatus: customer.value.activeSubscriptions[0].status,
+      subscriptionPlan: customer.value.activeSubscriptions[0].productId,
+      subscriptionStartDate: customer.value.activeSubscriptions[0].startedAt,
+      subscriptionEndDate: customer.value.activeSubscriptions[0].endsAt,
+      lastPaymentDate: customer.value.activeSubscriptions[0].currentPeriodStart,
+      nextPaymentDate: customer.value.activeSubscriptions[0].currentPeriodEnd,
+
+      accountStatus: customer.value.activeSubscriptions[0].status == "active" ? 'active' : 'deleted',
+      lastSubscriptionChange: customer.value.activeSubscriptions[0].modifiedAt
+    })
+    .where(eq(schema.users.email, email));
+
+  return customer.value;
+};
+
+
+
+
+
+
+
+
+
+
+
 
 export const generateLanguageLesson = async (ctx: Session, message: string)  => {
   const userId = await getUser(ctx);
