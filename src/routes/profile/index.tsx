@@ -1,10 +1,19 @@
 import { component$ } from "@builder.io/qwik";
+import { Form } from "@builder.io/qwik-city";
+import { routeAction$ } from "@builder.io/qwik-city";
 import { routeLoader$, useNavigate } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { DB } from "../../../drizzle";
 import { users } from "../../../drizzle/schema";
 import { eq } from "drizzle-orm";
+import { PolarCore } from "@polar-sh/sdk/core.js";
+import { checkoutsCreate } from "@polar-sh/sdk/funcs/checkoutsCreate.js";
+/*
+const polar = new Polar({
+  accessToken: process.env.POLAR_ID_TEST,
+});
 
+*/
 export const useProfile = routeLoader$(async ({ sharedMap }) => {
   const db = DB();
   const session = await sharedMap.get("session");
@@ -19,9 +28,39 @@ export const useProfile = routeLoader$(async ({ sharedMap }) => {
 
   return user;
 });
+export const useCheckout = routeAction$(async (data, { env }) => {
+  try {
+    console.log(data);
+    const polar = new PolarCore({
+      accessToken: env.get("POLAR_ID_TEST"),
+      server: "sandbox",
+    });
+    const checkout = await checkoutsCreate(polar, {
+      productPriceId: "177eb451-3f8d-413b-9a9f-6bd3084c1515",
+      customerEmail: data.email as string,
+      customerExternalId: data.email as string,
+      successUrl: `http://localhost:5173/upgrade?success=true`,
+      allowDiscountCodes: true,
+      customerBillingAddress: {
+        country: "CA",
+      },
+    });
+
+    if (!checkout.ok) {
+      throw checkout.error;
+    }
+    return checkout.value.url;
+  } catch (error) {
+    if (!(error instanceof Error && error.message.includes("redirect"))) {
+      console.error("Failed to create checkout:", error);
+      throw error;
+    }
+  }
+});
 
 export default component$(() => {
   const user = useProfile();
+  const checkout = useCheckout();
   const nav = useNavigate();
 
   if (!user.value) {
@@ -156,9 +195,23 @@ export default component$(() => {
                   Advanced Features
                 </li>
               </ul>
-              <button class="rounded-full bg-white px-8 py-3 font-bold text-purple-600 shadow-lg transition-all hover:bg-gray-100 hover:shadow-xl">
-                Upgrade Now
-              </button>
+              <Form
+                action={checkout}
+                onSubmitCompleted$={(data) => {
+                  console.log("Checkout result:", data.detail.value);
+
+                  window.location.href = data.detail.value as string;
+                }}
+              >
+                <input type="hidden" name="plan" value="advanced" />
+                <input type="hidden" name="email" value={user.value.email} />
+                <button
+                  type="submit"
+                  class="rounded-full bg-white px-8 py-3 font-bold text-purple-600 shadow-lg transition-all hover:bg-gray-100 hover:shadow-xl"
+                >
+                  Upgrade Now
+                </button>
+              </Form>{" "}
             </div>
           </div>
         </div>
@@ -166,7 +219,6 @@ export default component$(() => {
     </div>
   );
 });
-
 export const head: DocumentHead = {
   title: "Profile - Just Chat",
   meta: [
