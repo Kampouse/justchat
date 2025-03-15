@@ -107,6 +107,22 @@ export const GetRemainingQueries = async (ctx: Session): Promise<number | null> 
     where: eq(schema.users.id, userId[0].id)
   });
 
+  if (user?.lastQueryReset) {
+    const currentTime = new Date().getTime();
+    const lastResetTime = new Date(user.lastQueryReset).getTime();
+    const timeDiff = currentTime - lastResetTime;
+    const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+    if (timeDiff > thirtyDays) {
+      console.log('Resetting queries to 50 - more than 30 days since last reset');
+      await database.update(schema.users)
+        .set({
+          queriesRemaining: user.subscriptionStatus === 'active' ? 500 : 50,
+          lastQueryReset: new Date()
+        })
+        .where(eq(schema.users.id, userId[0].id));
+    }
+  }
+
   if (!user) return null;
 
   return user.queriesRemaining || 0;

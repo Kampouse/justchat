@@ -11,7 +11,6 @@ import { eq } from "drizzle-orm";
 import { PolarCore } from "@polar-sh/sdk/core.js";
 import { checkoutsCreate } from "@polar-sh/sdk/funcs/checkoutsCreate.js";
 import { customerSessionsCreate } from "@polar-sh/sdk/funcs/customerSessionsCreate.js";
-import { server$ } from "@builder.io/qwik-city";
 import { SyncCustomer } from "~/server";
 
 export const useProfile = routeLoader$(async ({ sharedMap }) => {
@@ -165,7 +164,7 @@ export const useCancelSubscription = routeAction$(
 
 export default component$(() => {
   const user = useProfile();
-  const customer = useSubscription();
+  useSubscription();
   const checkout = useCheckout();
   const cancelSubscription = useCancelSubscription();
   const resumeSubscription = useResumeSubscription();
