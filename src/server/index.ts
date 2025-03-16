@@ -1,6 +1,7 @@
 import Drizzler from "../../drizzle";
-
+import { customersCreate } from "@polar-sh/sdk/funcs/customersCreate.js";
 import { customersGetExternal  } from "@polar-sh/sdk/funcs/customersGetExternal.js";
+import { subscriptionsGet } from "@polar-sh/sdk/funcs/subscriptionsGet.js";
 import { PolarCore } from "@polar-sh/sdk/core.js";
 import type { Signal } from "@builder.io/qwik";
 import { server$ } from "@builder.io/qwik-city";
@@ -12,6 +13,10 @@ import { eq } from "drizzle-orm";
 import { AiChat, GenerateLanguageLesson } from "./ai";
 import { customersGetState } from "@polar-sh/sdk/funcs/customersGetState.js";
 import drizzle from "../../drizzle";
+
+const TRIAL_MONTHLY_QUERIES = 50;
+const PREMIUM_MONTHLY_QUERIES = 500;
+
 export type Session = {
   user: {
     name: string;
@@ -32,11 +37,15 @@ export const createUser = async (session: Session) => {
       .where(eq(schema.users.email, session.user.email));
 
     if (base.length == 0) {
+      // Set initial query count for new users
       return await db
         .insert(schema.users)
         .values({
           email: session.user.email,
           name: session.user.name,
+          queriesRemaining: TRIAL_MONTHLY_QUERIES,
+          lastQueryReset: new Date(),
+          subscriptionStatus: 'none'
         })
         .execute();
     }
@@ -46,6 +55,7 @@ export const createUser = async (session: Session) => {
     throw error;
   }
 };
+
 export const getUser = async (ctx: Session | null) => {
   if (ctx) {
     const db = Drizzler();
@@ -56,7 +66,10 @@ export const getUser = async (ctx: Session | null) => {
       .execute();
   }
 };
+
 export const updateUserQueries = async (ctx: Session): Promise<boolean> => {
+  if (!ctx) throw new Error("No session provided");
+
   const userId = await getUser(ctx);
   if (!userId || !userId[0]) throw new Error("Invalid user");
 
@@ -81,11 +94,14 @@ export const updateUserQueries = async (ctx: Session): Promise<boolean> => {
     })
     .where(eq(schema.users.id, userId[0].id))
     .returning();
+
   // Return true if user has remaining queries, otherwise false
   return updatedUser && updatedUser[0] && typeof updatedUser[0].queriesRemaining === 'number' && updatedUser[0].queriesRemaining > 0;
 };
 
 export const getRemainingQueries = async (ctx: Session): Promise<number | null> => {
+  if (!ctx) return null;
+
   const userId = await getUser(ctx);
   if (!userId || !userId[0]) return null;
 
@@ -98,7 +114,10 @@ export const getRemainingQueries = async (ctx: Session): Promise<number | null> 
 
   return user.queriesRemaining || 0;
 };
+
 export const GetRemainingQueries = async (ctx: Session): Promise<number | null> => {
+  if (!ctx) return null;
+
   const userId = await getUser(ctx);
   if (!userId || !userId[0]) return null;
 
@@ -107,27 +126,41 @@ export const GetRemainingQueries = async (ctx: Session): Promise<number | null> 
     where: eq(schema.users.id, userId[0].id)
   });
 
-  if (user?.lastQueryReset) {
+  if (!user) return null;
+  if (!user.lastSyncDate || (new Date().getTime() - new Date(user.lastSyncDate).getTime() > 24 * 60 * 60 * 1000)) {
+    await database.update(schema.users)
+      .set({ lastSyncDate: new Date() })
+      .where(eq(schema.users.id, userId[0].id)).execute();
+
+    await SyncCustomer(ctx.user.email);
+  }
+
+
+
+
+  // Handle query reset logic
+  if (user.lastQueryReset) {
     const currentTime = new Date().getTime();
     const lastResetTime = new Date(user.lastQueryReset).getTime();
     const timeDiff = currentTime - lastResetTime;
     const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+
     if (timeDiff > thirtyDays) {
-      console.log('Resetting queries to 50 - more than 30 days since last reset');
+      const queryLimit = user.subscriptionStatus === 'active' ? PREMIUM_MONTHLY_QUERIES : TRIAL_MONTHLY_QUERIES;
+
       await database.update(schema.users)
         .set({
-          queriesRemaining: user.subscriptionStatus === 'active' ? 500 : 50,
+          queriesRemaining: queryLimit,
           lastQueryReset: new Date()
         })
         .where(eq(schema.users.id, userId[0].id));
+
+      return queryLimit;
     }
   }
 
-  if (!user) return null;
-
   return user.queriesRemaining || 0;
 };
-
 
 export const createConvo = async (ctx: Session | null, uuid: string): Promise<{
   id: number;
@@ -173,6 +206,7 @@ export const createConvo = async (ctx: Session | null, uuid: string): Promise<{
   }
   return undefined;
 };
+
 export const getConvoByUuid = async ({
   ctx,
   uuid,
@@ -217,7 +251,6 @@ export const GetConvos = server$( async  (ctx: Session | null, start: Signal<num
     if (!user || user.length == 0) return [];
     const db = Drizzler();
     if (user) {
-
       const data = await db
         .select()
         .from(schema.conversations)
@@ -298,6 +331,7 @@ export const createMessages = async ({
     }
   }
 };
+
 export type StreamableParams = {
   input: string;
   history?: Message[];
@@ -312,7 +346,6 @@ export async function* streamableResponse(params: StreamableParams) {
     { type: "human", content: input }
   ], params.systemPrompt  ?? "");
 
-  let buffer = [];
   for await (const response of data) {
     const { context, primaryLanguage, secondaryLanguage } = response;
 
@@ -321,9 +354,7 @@ export async function* streamableResponse(params: StreamableParams) {
       primaryLanguage,
       secondaryLanguage,
     };
-
   }
-
 
   return history;
 }
@@ -361,7 +392,10 @@ export const createChatTitle = async ({
     return null;
   }
 };
+
 export const updateUserLanguage = async (ctx: Session, language: string): Promise<boolean> => {
+  if (!ctx) throw new Error("No session provided");
+
   const userId = await getUser(ctx);
   if (!userId || !userId[0]) throw new Error("Invalid user");
 
@@ -383,66 +417,114 @@ export const updateUserLanguage = async (ctx: Session, language: string): Promis
   return !!updatedUser[0];
 };
 
-
-
-
 export const SyncCustomer = async (email: string) => {
-  const db = drizzle();
+  if (!email) throw new Error("Email is required");
+  if (!process.env.POLAR_ID_TEST) throw new Error("Polar API key not configured");
 
+  const db = drizzle();
   const polar = new PolarCore({
     accessToken: process.env.POLAR_ID_TEST,
     server: "sandbox",
   });
 
+  try {
+    const cus = await customersGetExternal(polar, {
+      externalId: email,
+    });
+const user = await db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.email, email))
+      .limit(1);
 
-
-
-  const cus = await customersGetExternal(polar, {
+if (!cus.ok) {
+  console.log("Customer not found in Polar",cus.error.message);
+const customer = await customersCreate(polar, {
     externalId: email,
-  });
+    email: email,
+    name: user[0].name || 'Customer',
+  })
+if (!customer.ok) {
+  throw new Error("Failed to create customer in Polar");
+}
 
-  if (!cus.ok) return;
+await db.update(schema.users)
+  .set({
+    polarCustomerId: customer.value.id,
+    name: customer.value.name || user[0].name,
+    subscription: 'none',
+    subscriptionStatus: 'none',
+    queriesRemaining: TRIAL_MONTHLY_QUERIES
+  })
+  .where(eq(schema.users.email, email))
+  .execute();
 
-   const customer = await customersGetState(polar,{
-     id: cus.value.id
-   })
-  if (!customer.ok) return;
 
-  // Update user record with full customer data
-  await db
-    .update(schema.users)
-    .set({
-      polarCustomerId: customer.value.id,
-      name: customer.value.name,
-      subscription: customer.value.activeSubscriptions[0].status || 'none',
-      subscriptionStatus: customer.value.activeSubscriptions[0].status,
-      subscriptionPlan: customer.value.activeSubscriptions[0].productId,
-      subscriptionId: customer.value.activeSubscriptions[0].id,
-      subscriptionStartDate: customer.value.activeSubscriptions[0].startedAt,
-      subscriptionEndDate: customer.value.activeSubscriptions[0].endsAt,
-      lastPaymentDate: customer.value.activeSubscriptions[0].currentPeriodStart,
-      nextPaymentDate: customer.value.activeSubscriptions[0].currentPeriodEnd,
+  const error = cus.error.name
+return customer
+}
+    const customer = await customersGetState(polar, {
+      id: cus.value.id
+    });
 
-      accountStatus: customer.value.activeSubscriptions[0].status == "active" ? 'active' : 'deleted',
-      lastSubscriptionChange: customer.value.activeSubscriptions[0].modifiedAt
-    })
-    .where(eq(schema.users.email, email));
+    if (!customer.ok) {
+      throw new Error("Failed to fetch customer state from Polar");
+    }
 
-  return customer.value;
+    if (!customer.value.activeSubscriptions?.length) {
+      // Handle case where customer has no active subscriptions
+      await db.update(schema.users)
+        .set({
+          polarCustomerId: customer.value.id,
+          name: customer.value.name,
+          subscription: 'none',
+          subscriptionStatus: 'none',
+          queriesRemaining: TRIAL_MONTHLY_QUERIES
+        })
+        .where(eq(schema.users.email, email));
+
+      return customer.value;
+    }
+
+    const sub = await subscriptionsGet(polar, {
+      id: customer.value.activeSubscriptions[0].id
+    });
+
+    if (!sub.ok) {
+      throw new Error("Failed to fetch subscription details from Polar");
+    }
+
+    // Update user record with full customer data
+    await db
+      .update(schema.users)
+      .set({
+        polarCustomerId: customer.value.id,
+        name: customer.value.name,
+        subscription: customer.value.activeSubscriptions[0].status || 'none',
+        subscriptionStatus: customer.value.activeSubscriptions[0].status,
+        subscriptionPlan: customer.value.activeSubscriptions[0].productId,
+        subscriptionId: customer.value.activeSubscriptions[0].id,
+        subscriptionStartDate: customer.value.activeSubscriptions[0].startedAt,
+        subscriptionEndDate: customer.value.activeSubscriptions[0].endsAt,
+        lastPaymentDate: customer.value.activeSubscriptions[0].currentPeriodStart,
+        nextPaymentDate: customer.value.activeSubscriptions[0].currentPeriodEnd,
+        accountStatus: sub.value.status ?? 'none',
+        lastSubscriptionChange: customer.value.activeSubscriptions[0].modifiedAt,
+        queriesRemaining: customer.value.activeSubscriptions[0].status === 'active' ? PREMIUM_MONTHLY_QUERIES : TRIAL_MONTHLY_QUERIES
+      })
+      .where(eq(schema.users.email, email));
+
+    return customer.value;
+  } catch (error) {
+    console.error('Error syncing customer:', error);
+    throw error;
+  }
 };
 
-
-
-
-
-
-
-
-
-
-
-
 export const generateLanguageLesson = async (ctx: Session, message: string)  => {
+  if (!ctx) throw new Error("No session provided");
+  if (!message) throw new Error("No message provided");
+
   const userId = await getUser(ctx);
   if (!userId || !userId[0]) throw new Error("Invalid user");
 
@@ -457,7 +539,13 @@ export const generateLanguageLesson = async (ctx: Session, message: string)  => 
   if (remainingQueries === null || remainingQueries <= 0) {
     throw new Error("No remaining queries");
   }
-   await updateUserQueries(ctx);
- const content =   await GenerateLanguageLesson(message)
-  return content;
+
+  try {
+    await updateUserQueries(ctx);
+    const content = await GenerateLanguageLesson(message);
+    return content;
+  } catch (error) {
+    console.error('Error generating language lesson:', error);
+    throw error;
+  }
 };

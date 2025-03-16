@@ -99,8 +99,8 @@ export default component$(
           <div class="flex h-full flex-col">
             <div class="items-center justify-between pb-2 md:pl-2 ">
               {session.value && (
-                <div class="flex flex-row items-center justify-end gap-6 rounded-lg bg-gray-800 p-4  pl-32 md:pl-4">
-                  <h2 class="text-center text-xl font-bold text-white">
+                <div class="flex flex-row items-center justify-between gap-4 rounded-lg bg-gray-800 p-4">
+                  <h2 class="flex-1 text-center text-xl font-bold text-white">
                     Chat History
                   </h2>
                   <Link
@@ -108,6 +108,7 @@ export default component$(
                     href={"/"}
                     onClick$={() => {
                       if (loc.url.pathname === "/") {
+                        props.isMenuOpen.value = false;
                         return;
                       }
                       props.suspensed.value = true;

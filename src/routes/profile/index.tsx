@@ -17,38 +17,28 @@ export const useProfile = routeLoader$(async ({ sharedMap }) => {
   const db = DB();
   const session = await sharedMap.get("session");
 
-  if (!session?.user?.email) {
-    return null;
-  }
+  if (!session?.user?.email) return null;
 
-  const user = await db.query.users.findFirst({
+  return await db.query.users.findFirst({
     where: eq(users.email, session.user.email),
   });
-
-  return user;
 });
 
-export const useCheckout = routeAction$(async (data, { env }) => {
+export const useCheckout = routeAction$(async ({ email }, { env }) => {
   try {
-    console.log(data);
     const polar = new PolarCore({
       accessToken: env.get("POLAR_ID_TEST"),
       server: "sandbox",
     });
     const checkout = await checkoutsCreate(polar, {
       productPriceId: "177eb451-3f8d-413b-9a9f-6bd3084c1515",
-      customerEmail: data.email as string,
-      customerExternalId: data.email as string,
+      customerEmail: email as string,
+      customerExternalId: email as string,
       successUrl: `http://localhost:5173/upgrade?success=true`,
       allowDiscountCodes: true,
-      customerBillingAddress: {
-        country: "CA",
-      },
     });
 
-    if (!checkout.ok) {
-      throw checkout.error;
-    }
+    if (!checkout.ok) throw checkout.error;
     return checkout.value.url;
   } catch (error) {
     if (!(error instanceof Error && error.message.includes("redirect"))) {
@@ -59,7 +49,7 @@ export const useCheckout = routeAction$(async (data, { env }) => {
 });
 
 export const useResumeSubscription = routeAction$(
-  async (data, { env, sharedMap }) => {
+  async (_, { env, sharedMap }) => {
     const polar = new PolarCore({
       accessToken: env.get("POLAR_ID_TEST"),
       server: "sandbox",
@@ -68,31 +58,23 @@ export const useResumeSubscription = routeAction$(
     const db = DB();
     const sesh = await sharedMap.get("session");
 
-    if (!sesh?.user?.email) {
-      return null;
-    }
+    if (!sesh?.user?.email) return null;
 
     const user = await db.query.users.findFirst({
       where: eq(users.email, sesh.user.email),
     });
 
-    if (!user || !user.polarCustomerId) {
-      throw new Error("User not found");
-    }
+    if (!user?.polarCustomerId) throw new Error("User not found");
 
     const session = await customerSessionsCreate(polar, {
-      customerId: user.polarCustomerId as string,
+      customerId: user.polarCustomerId,
     });
 
-    if (!session.ok) {
-      throw session.error;
-    }
+    if (!session.ok) throw session.error;
 
     const res = await customerPortalSubscriptionsUpdate(
       polar,
-      {
-        customerSession: session.value.token,
-      },
+      { customerSession: session.value.token },
       {
         id: user.subscriptionId as string,
         customerSubscriptionUpdate: {
@@ -103,9 +85,7 @@ export const useResumeSubscription = routeAction$(
 
     await SyncCustomer(user.email);
 
-    if (!res.ok) {
-      throw res.error;
-    }
+    if (!res.ok) throw res.error;
 
     return res.value;
   },
@@ -115,8 +95,9 @@ export const useSubscription = routeLoader$(async (ctx) => {
   const sesh = await ctx.sharedMap.get("session");
   return await SyncCustomer(sesh.user.email);
 });
+
 export const useCancelSubscription = routeAction$(
-  async (data, { env, sharedMap }) => {
+  async (_, { env, sharedMap }) => {
     const polar = new PolarCore({
       accessToken: env.get("POLAR_ID_TEST"),
       server: "sandbox",
@@ -125,38 +106,29 @@ export const useCancelSubscription = routeAction$(
     const db = DB();
     const sesh = await sharedMap.get("session");
 
-    if (!sesh?.user?.email) {
-      return null;
-    }
+    if (!sesh?.user?.email) return null;
 
     const user = await db.query.users.findFirst({
       where: eq(users.email, sesh.user.email),
     });
 
-    if (!user || !user.polarCustomerId) {
-      throw new Error("User not found");
-    }
+    if (!user?.polarCustomerId) throw new Error("User not found");
+
     const session = await customerSessionsCreate(polar, {
-      customerId: user.polarCustomerId as string,
+      customerId: user.polarCustomerId,
     });
-    if (!session.ok) {
-      throw session.error;
-    }
-    console.log("session", session);
+
+    if (!session.ok) throw session.error;
+
     const res = await customerPortalSubscriptionsCancel(
       polar,
-      {
-        customerSession: session.value.token,
-      },
-      {
-        id: user.subscriptionId as string,
-      },
+      { customerSession: session.value.token },
+      { id: user.subscriptionId as string },
     );
+
     await SyncCustomer(user.email);
 
-    if (!res.ok) {
-      throw res.error;
-    }
+    if (!res.ok) throw res.error;
 
     return res.value;
   },
@@ -168,257 +140,217 @@ export default component$(() => {
   const checkout = useCheckout();
   const cancelSubscription = useCancelSubscription();
   const resumeSubscription = useResumeSubscription();
-
   const nav = useNavigate();
 
   if (!user.value) {
     return (
-      <div class="flex min-h-screen items-center justify-center bg-gray-700 p-4 text-white">
-        <p>Please sign in to view your profile</p>
+      <div class="grid min-h-screen place-items-center bg-gray-700 text-white">
+        <p class="text-lg">Please sign in to view your profile</p>
       </div>
     );
   }
 
   return (
-    <div class="min-h-screen bg-gray-700 p-4 text-white">
-      <div class="mx-auto max-w-3xl">
+    <div class="min-h-screen bg-gray-700 px-4 py-8 text-white">
+      <div class="mx-auto max-w-4xl">
         <div class="mb-8 flex items-center justify-between">
-          <h1 class="text-3xl font-bold">Profile</h1>
+          <h1 class="text-3xl font-bold text-white">Settings</h1>
           <button
             onClick$={() => nav("/")}
-            class="rounded-lg bg-gray-600 px-4 py-2 text-white transition-colors hover:bg-gray-500"
+            class="flex items-center space-x-2 rounded-lg bg-gray-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-500"
           >
-            <div class="flex items-center space-x-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              <span>Back</span>
-            </div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <span>Back to Chat</span>
           </button>
         </div>
 
-        <div class="rounded-lg bg-gray-800 p-6 shadow-lg">
-          <div class="mb-6 flex items-center space-x-4">
+        <div class="space-y-6 rounded-xl bg-gray-600 p-6">
+          <div class="flex items-center justify-between border-b border-gray-500 pb-6">
             <div>
-              <h2 class="text-xl font-semibold">{user.value.name}</h2>
-              <p class="text-gray-400">{user.value.email}</p>
-              {user.value.subscription && (
-                <div class="mt-2">
-                  {user.value.subscriptionPlan && (
-                    <>
-                      <span class="text-green 400 text-sm">
-                        Current Plan: {user.value.subscriptionPlan}
-                      </span>
-                      <br />
-                    </>
-                  )}
-                  {user.value.subscriptionStartDate && (
-                    <>
-                      <span class="text-xs text-gray-400">
-                        Started:{" "}
-                        {new Date(
-                          user.value.subscriptionStartDate,
-                        ).toLocaleDateString()}
-                      </span>
-                      <br />
-                    </>
-                  )}
-                  {user.value.nextPaymentDate && (
-                    <>
-                      <span class="text-xs text-gray-400">
-                        Valid until:{" "}
-                        {new Date(
-                          user.value.nextPaymentDate,
-                        ).toLocaleDateString()}
-                      </span>
-                      <br />
-                    </>
-                  )}
-                  {user.value.subscriptionEndDate && (
-                    <span class="text-xs text-gray-400">
-                      Cancellation takes effect:{" "}
-                      {new Date(
-                        user.value.subscriptionEndDate,
-                      ).toLocaleDateString()}
-                    </span>
-                  )}
-                </div>
-              )}
+              <h2 class="text-2xl font-bold">{user.value.name}</h2>
+              <p class="text-sm text-gray-300">{user.value.email}</p>
             </div>
           </div>
 
-          <div class="space-y-4">
-            <div class="rounded-md bg-gray-700 p-4">
-              <h3 class="mb-2 text-lg font-medium">Query Usage</h3>
-              <div class="space-y-2">
-                <div class="flex items-center justify-between">
-                  <span class="text-gray-400">Queries Remaining:</span>
-                  <span class="font-semibold text-white">
-                    {user.value.subscription === "active"
-                      ? "Unlimited"
-                      : user.value.queriesRemaining}
-                  </span>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="text-gray-400">Total Queries Used:</span>
-                  <span class="font-semibold text-white">
-                    {user.value.queriesUsed ?? 0}
-                  </span>
-                </div>
-                {user.value.subscription !== "active" && (
-                  <div class="mt-4">
-                    <div class="h-2 w-full rounded-full bg-gray-600">
-                      <div
-                        class="h-full rounded-full bg-blue-500"
-                        style={{
-                          width: `${Math.min(
-                            ((user.value.queriesUsed ?? 0) /
-                              (user.value.totalQueries ?? 100)) *
-                              100,
-                            100,
-                          )}%`,
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                )}
+          <div class="grid gap-6 md:grid-cols-2">
+            <div class="space-y-4 rounded-lg bg-gray-600 p-6">
+              <h3 class="font-medium text-white">Usage</h3>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-300">Available Queries</span>
+                <span class="font-mono text-lg font-medium">
+                  {user.value.subscription === "active"
+                    ? "∞"
+                    : user.value.queriesRemaining}
+                </span>
               </div>
+              {user.value.subscription !== "active" && (
+                <div class="mt-2">
+                  <div class="h-1.5 w-full overflow-hidden rounded-full bg-gray-500">
+                    <div
+                      class="h-full rounded-full bg-blue-500 transition-all duration-500"
+                      style={{
+                        width: `${Math.min(
+                          ((user.value.queriesUsed ?? 0) /
+                            (user.value.totalQueries ?? 100)) *
+                            100,
+                          100,
+                        )}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
-            {user.value.subscriptionId == null ? (
-              <div class="mt-6 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 p-6 text-center">
-                <h3 class="mb-4 text-2xl font-bold">Upgrade to Premium</h3>
-                <p class="mb-6 text-gray-200">
-                  Get unlimited queries, priority support, and exclusive
-                  features
-                </p>
-                <ul class="mb-6 space-y-2 text-left">
-                  <li class="flex items-center">
-                    <svg
-                      class="mr-2 h-5 w-5 text-green-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    Unlimited Queries
-                  </li>
-                  <li class="flex items-center">
-                    <svg
-                      class="mr-2 h-5 w-5 text-green-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    Priority Support
-                  </li>
-                  <li class="flex items-center">
-                    <svg
-                      class="mr-2 h-5 w-5 text-green-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    Advanced Features
-                  </li>
-                </ul>
-                <Form
-                  action={checkout}
-                  onSubmitCompleted$={(data) => {
-                    console.log("Checkout result:", data.detail.value);
-                    window.location.href = data.detail.value as string;
-                  }}
-                >
-                  <input type="hidden" name="plan" value="advanced" />
-                  <input type="hidden" name="email" value={user.value.email} />
-                  <button
-                    type="submit"
-                    class="rounded-full bg-white px-8 py-3 font-bold text-purple-600 shadow-lg transition-all hover:bg-gray-100 hover:shadow-xl"
-                  >
-                    Upgrade Now
-                  </button>
-                </Form>
-              </div>
-            ) : (
-              <div class="mt-6 rounded-lg bg-gray-700 p-6 text-center">
-                <h3 class="mb-4 text-xl font-bold">Subscription Management</h3>
-                <p class="text-gray-300">
-                  {!user.value.subscriptionEndDate && (
-                    <>
-                      Next payment:{" "}
-                      {new Date(
-                        user.value.nextPaymentDate || "",
-                      ).toLocaleDateString()}
-                    </>
-                  )}
-                </p>
-                {user.value.subscriptionEndDate ? (
-                  <div>
+            {!user.value.subscriptionId ? (
+              <div class="relative overflow-hidden rounded-lg bg-gray-600 p-8">
+                <div class="relative space-y-6">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h3 class="text-2xl font-bold text-white">
+                        Premium Plan
+                      </h3>
+                      <p class="mt-1 text-sm text-gray-300">
+                        Take your experience to the next level
+                      </p>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center space-x-2 rounded-full bg-gradient-to-r from-blue-500/20 to-blue-600/20 px-6 py-2 shadow-lg ring-1 ring-blue-500/50">
+                        <span class="text-xl font-bold tracking-tight text-blue-400">
+                          $9.99
+                        </span>
+                        <span class="text-sm font-medium text-blue-300">
+                          month
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <ul class="space-y-4">
+                    <li class="flex items-center space-x-3">
+                      <div class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/10">
+                        <svg
+                          class="h-5 w-5 text-blue-400"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                      <span class="text-base font-medium text-gray-200">
+                        Unlimited AI Queries
+                      </span>
+                    </li>
+                    <li class="flex items-center space-x-3">
+                      <div class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/10">
+                        <svg
+                          class="h-5 w-5 text-blue-400"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                      <span class="text-base font-medium text-gray-200">
+                        Priority Support
+                      </span>
+                    </li>
+                  </ul>
+
+                  <div class="mt-8">
                     <Form
-                      action={resumeSubscription}
-                      onSubmitCompleted$={() => {
-                        window.location.reload();
+                      action={checkout}
+                      onSubmitCompleted$={(data) => {
+                        window.location.href = data.detail.value as string;
                       }}
                     >
+                      <input
+                        type="hidden"
+                        name="email"
+                        value={user.value.email}
+                      />
                       <button
                         type="submit"
-                        class="mt-4 rounded-full bg-green-500 px-6 py-2 font-semibold text-white hover:bg-green-600"
+                        class="relative w-full overflow-hidden rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-3 text-base font-semibold text-white shadow-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-blue-500/25 active:scale-[0.98]"
+                      >
+                        <div class="relative z-10 flex items-center justify-center">
+                          <span>Upgrade Now</span>
+                          <svg
+                            class="ml-2 h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                      </button>
+                    </Form>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div class="space-y-4 rounded-lg bg-gray-600 p-6">
+                <h3 class="font-medium text-white">Subscription</h3>
+                {user.value.subscriptionEndDate ? (
+                  <>
+                    <p class="text-sm text-yellow-400">
+                      Active until{" "}
+                      {new Date(
+                        user.value.subscriptionEndDate,
+                      ).toLocaleDateString()}
+                    </p>
+                    <Form action={resumeSubscription}>
+                      <button
+                        type="submit"
+                        class="w-full rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
                       >
                         Resume Subscription
                       </button>
                     </Form>
-                    <p class="mt-2 text-sm text-gray-400">
-                      Resume your subscription to continue uninterrupted service
-                    </p>
-                  </div>
+                  </>
                 ) : (
-                  <Form
-                    action={cancelSubscription}
-                    onSubmitCompleted$={() => {
-                      window.location.reload();
-                    }}
-                  >
-                    <input
-                      type="hidden"
-                      name="subscriptionId"
-                      value={user.value.subscription}
-                    />
-                    <button
-                      type="submit"
-                      class="mt-4 rounded-full bg-red-500 px-6 py-2 font-semibold text-white hover:bg-red-600"
+                  <>
+                    <p class="text-sm text-gray-300">
+                      Next payment on{" "}
+                      {new Date(
+                        user.value.nextPaymentDate || "",
+                      ).toLocaleDateString()}
+                    </p>
+                    <Form
+                      action={cancelSubscription}
+                      onSubmitCompleted$={() => window.location.reload()}
                     >
-                      Cancel Subscription
-                    </button>
-                  </Form>
+                      <button
+                        type="submit"
+                        class="w-full rounded-lg border border-gray-500 px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-500"
+                      >
+                        Pause Subscription
+                      </button>
+                    </Form>
+                  </>
                 )}
               </div>
             )}
@@ -430,11 +362,8 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = {
-  title: "Profile - Just Chat",
+  title: "Settings",
   meta: [
-    {
-      name: "description",
-      content: "User profile page",
-    },
+    { name: "description", content: "Manage your subscription and features" },
   ],
 };

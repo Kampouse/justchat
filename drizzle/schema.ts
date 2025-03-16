@@ -14,6 +14,8 @@ export const users = sqliteTable("users", {
     mode: "timestamp",
   }),
   subscriptionEndDate: integer("subscription_end_date", { mode: "timestamp" }),
+
+  lastSyncDate: integer("last_sync_date", { mode: "timestamp" }),
   lastPaymentDate: integer("last_payment_date", { mode: "timestamp" }),
   nextPaymentDate: integer("next_payment_date", { mode: "timestamp" }),
   // Usage tracking
