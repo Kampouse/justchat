@@ -30,6 +30,16 @@ export const useCheckout = routeAction$(async ({ email }, { env }) => {
       accessToken: env.get("POLAR_ID_TEST"),
       server: "sandbox",
     });
+
+    const db = DB();
+    await db
+      .update(users)
+      .set({
+        lastSyncDate: null,
+      })
+      .where(eq(users.email, email as string))
+      .run();
+
     const checkout = await checkoutsCreate(polar, {
       productPriceId: "177eb451-3f8d-413b-9a9f-6bd3084c1515",
       customerEmail: email as string,
