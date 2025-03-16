@@ -160,7 +160,10 @@ export default component$(() => {
         convos={convs.value}
       />
       <div class="flex h-full max-h-[100dvh] flex-1 flex-col">
-        <div id="chat" class="flex-1 overflow-y-auto bg-gray-700 p-2 md:p-4">
+        <div
+          id="chat"
+          class="flex-1 overflow-y-auto bg-gray-700 p-2 md:p-4 [&::-webkit-scrollbar-thumb]:bg-gray-600 [&::-webkit-scrollbar]:bg-gray-700"
+        >
           {remaining.value <= 0 && (
             <WarningBanner
               title="Query Limit Reached"

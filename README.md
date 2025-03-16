@@ -111,34 +111,28 @@ MIT
 
 will not work without all the variables set in the .env file
 
-```
- docker compose up --build
-```
+### Development
+- `DATABASE_URL`: Local development database connection string
+- `POLAR_ID_TEST`: Polar API test environment ID
+- `OPENAI_API_KEY`: OpenAI API key for development
+- `APP_URL`: Development application URL (e.g. http://localhost:3000)
+- `POLAR_PRODUCT_PRICE_ID`: Polar product/price ID for test environment
+- `NODE_ENV`: Set to 'development'
+- `AUTH_SECRET`: Authentication secret key for dev
+- `GITHUB_ID`: GitHub OAuth app client ID
+- `GITHUB_SECRET`: GitHub OAuth app client secret
+- `GOOGLE_ID`: Google OAuth app client ID
+- `GOOGLE_SECRET`: Google OAuth app client secret
 
-Then visit [http://localhost:5173/](http://localhost:5173/)
-
-```
-npm run serve
-```
-
-Then visit [http://localhost:5173/](http://localhost:5173/)
-
-## Bun Server
-
-This app has a minimal [Bun server](https://bun.sh/docs/api/http) implementation. After running a full build, you can preview the build using the command:
-
-```
-bun run serve
-```
-
-Then visit [http://localhost:3000/](http://localhost:3000/)
-
-## Bun Server
-
-This app has a minimal [Bun server](https://bun.sh/docs/api/http) implementation. After running a full build, you can preview the build using the command:
-
-```
-bun run serve
-```
-
-Then visit [http://localhost:3000/](http://localhost:3000/)
+### Production
+- `DATABASE_URL`: Production database connection string
+- `POLAR_ID_PROD`: Polar API production environment ID
+- `OPENAI_API_KEY`: OpenAI API key for production
+- `APP_URL`: Production application URL
+- `POLAR_PRODUCT_PRICE_ID`: Polar product/price ID for production
+- `NODE_ENV`: Set to 'production'
+- `AUTH_SECRET`: Authentication secret key for prod
+- `GITHUB_ID`: GitHub OAuth app client ID
+- `GITHUB_SECRET`: GitHub OAuth app client secret
+- `GOOGLE_ID`: Google OAuth app client ID
+- `GOOGLE_SECRET`: Google OAuth app client secret

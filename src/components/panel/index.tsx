@@ -134,7 +134,7 @@ export default component$(
               )}
             </div>
             <div
-              class="scrollbar-hide flex flex-grow flex-col gap-2 overflow-y-scroll rounded-xl px-2"
+              class="scrollbar-hide flex flex-grow flex-col gap-2 overflow-y-scroll rounded-xl px-2 [&::-webkit-scrollbar]:bg-gray-900"
               onScroll$={(event) => {
                 const target = event.target as HTMLElement;
                 const scrollTop = target.scrollTop;

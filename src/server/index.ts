@@ -26,6 +26,13 @@ export type Session = {
   };
 } | null;
 
+const getPolarConfig = (env: string | undefined) => {
+  return {
+    server: env === 'production' ? 'production' : 'sandbox' as 'production' | 'sandbox',
+    accessToken: env === 'production' ? process.env.POLAR_ID_PROD : process.env.POLAR_ID_TEST,
+  };
+};
+
 export const createUser = async (session: Session) => {
   const db = Drizzler();
   if (!session) return;
@@ -134,9 +141,6 @@ export const GetRemainingQueries = async (ctx: Session): Promise<number | null> 
 
     await SyncCustomer(ctx.user.email);
   }
-
-
-
 
   // Handle query reset logic
   if (user.lastQueryReset) {
@@ -419,50 +423,51 @@ export const updateUserLanguage = async (ctx: Session, language: string): Promis
 
 export const SyncCustomer = async (email: string) => {
   if (!email) throw new Error("Email is required");
-  if (!process.env.POLAR_ID_TEST) throw new Error("Polar API key not configured");
+  const { accessToken, server } = getPolarConfig(process.env.NODE_ENV);
+  if (!accessToken) throw new Error("Polar API key not configured");
 
   const db = drizzle();
   const polar = new PolarCore({
-    accessToken: process.env.POLAR_ID_TEST,
-    server: "sandbox",
+    accessToken,
+    server,
   });
 
   try {
     const cus = await customersGetExternal(polar, {
       externalId: email,
     });
-const user = await db
+    const user = await db
       .select()
       .from(schema.users)
       .where(eq(schema.users.email, email))
       .limit(1);
 
-if (!cus.ok) {
-  console.log("Customer not found in Polar",cus.error.message);
-const customer = await customersCreate(polar, {
-    externalId: email,
-    email: email,
-    name: user[0].name || 'Customer',
-  })
-if (!customer.ok) {
-  throw new Error("Failed to create customer in Polar");
-}
+    if (!cus.ok) {
+      console.log("Customer not found in Polar",cus.error.message);
+      const customer = await customersCreate(polar, {
+        externalId: email,
+        email: email,
+        name: user[0].name || 'Customer',
+      })
+      if (!customer.ok) {
+        throw new Error("Failed to create customer in Polar");
+      }
 
-await db.update(schema.users)
-  .set({
-    polarCustomerId: customer.value.id,
-    name: customer.value.name || user[0].name,
-    subscription: 'none',
-    subscriptionStatus: 'none',
-    queriesRemaining: TRIAL_MONTHLY_QUERIES
-  })
-  .where(eq(schema.users.email, email))
-  .execute();
+      await db.update(schema.users)
+        .set({
+          polarCustomerId: customer.value.id,
+          name: customer.value.name || user[0].name,
+          subscription: 'none',
+          subscriptionStatus: 'none',
+          queriesRemaining: TRIAL_MONTHLY_QUERIES
+        })
+        .where(eq(schema.users.email, email))
+        .execute();
 
+      const error = cus.error.name
+      return customer
+    }
 
-  const error = cus.error.name
-return customer
-}
     const customer = await customersGetState(polar, {
       id: cus.value.id
     });
