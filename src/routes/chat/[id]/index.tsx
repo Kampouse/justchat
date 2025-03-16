@@ -17,7 +17,6 @@ import type { Language } from "~/components/chat-component";
 import {
   useMessages,
   useServerSessio,
-  useConved,
   useRemainingQueires,
   useTitle,
 } from "./layout";
@@ -45,7 +44,6 @@ export default component$(() => {
   const isErroring = useSignal(false);
   const isMenuOpen = useSignal(false);
   const len = useSignal(0);
-  const convs = useConved();
   const serverMessages = useMessages();
   const messages = useStore<{ value: Message[] }>({
     value: [...serverMessages.value],
@@ -157,7 +155,6 @@ export default component$(() => {
         isMenuOpen={isMenuOpen}
         suspensed={suspensed}
         session={session.value.session}
-        convos={convs.value}
       />
       <div class="flex h-full max-h-[100dvh] flex-1 flex-col">
         <div

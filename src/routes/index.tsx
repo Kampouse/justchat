@@ -6,19 +6,13 @@ import { Credentials } from "~/components/credentials";
 import { routeLoader$, useLocation, useNavigate } from "@builder.io/qwik-city";
 import Panel from "~/components/panel/index";
 import * as Chat from "~/components/chat-component";
-import { createUser, getUser, getConvos, type Session } from "~/server";
+import { createUser, getUser, type Session } from "~/server";
 import { v4 as uuid } from "uuid";
 import { languages } from "~/components/chat-component";
 import { CreateConvo, CreateMessages, getStreamableResponse } from "./api";
 import { WarningBanner } from "~/components/warning-banner";
 import type { Language } from "~/components/chat-component";
 import { GetRemainingQueries } from "~/server";
-
-export const useConvos = routeLoader$(async (e) => {
-  const session = e.sharedMap.get("session") as Session | null;
-  const convos = await getConvos(session);
-  return convos ?? [];
-});
 
 export const useRemainingQueries = routeLoader$(async (e) => {
   const session = e.sharedMap.get("session") as Session | null;
@@ -61,8 +55,6 @@ export default component$(() => {
   const suspensed = useSignal(false);
 
   const user = useServerSession();
-
-  const convos = useConvos();
 
   const user_lang =
     user.value.user[0] && user.value.user[0].language
@@ -167,7 +159,6 @@ export default component$(() => {
         isMenuOpen={isMenuOpen}
         suspensed={suspensed}
         session={user.value.session}
-        convos={convos.value}
       />
       <div class="flex flex-1 flex-col">
         {!user.value.session && (

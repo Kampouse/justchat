@@ -1,4 +1,5 @@
 import Drizzler from "../../drizzle";
+import {sql} from "drizzle-orm";
 import { customersCreate } from "@polar-sh/sdk/funcs/customersCreate.js";
 import { customersGetExternal  } from "@polar-sh/sdk/funcs/customersGetExternal.js";
 import { subscriptionsGet } from "@polar-sh/sdk/funcs/subscriptionsGet.js";
@@ -252,7 +253,10 @@ export const getConvos = async (ctx: Session | null) => {
 export const GetConvos = server$( async  (ctx: Session | null, start: Signal<number>, end: Signal<number>) => {
   if (ctx) {
     const user = await getUser(ctx);
-    if (!user || user.length == 0) return [];
+    if (!user || user.length == 0) return {
+      data: [],
+      total: 0
+    };
     const db = Drizzler();
     if (user) {
       const data = await db
@@ -264,10 +268,19 @@ export const GetConvos = server$( async  (ctx: Session | null, start: Signal<num
         .offset(start.value)
         .execute();
 
-      return data;
+      const count = await db
+        .select({ count: sql`count(*)` })
+        .from(schema.conversations)
+        .where(eq(schema.conversations.createdBy, user[0].id))
+        .execute();
+
+      return {
+        data,
+        total: Number(count[0].count)
+      };
     }
   }
-  return [];
+  return { data: [], total: 0 };
 });
 
 export const getAllMessages = async ({

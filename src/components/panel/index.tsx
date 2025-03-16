@@ -2,8 +2,6 @@ import { component$, useTask$ } from "@builder.io/qwik";
 import { Credentials } from "../credentials";
 import type { Signal } from "@builder.io/qwik";
 import { Link, useNavigate } from "@builder.io/qwik-city";
-type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
-type Convos = Awaited<ReturnType<typeof GetConvos>>;
 import { useLocation } from "@builder.io/qwik-city";
 import type { Session } from "~/server";
 import { useSignal } from "@builder.io/qwik";
@@ -11,10 +9,19 @@ import { useSession } from "~/routes/plugin@auth";
 import { useResource$ } from "@builder.io/qwik";
 import { GetConvos } from "~/server";
 import { Resource } from "@builder.io/qwik";
+
+type ConvoData = {
+  type: string | null;
+  id: number;
+  name: string | null;
+  uuid: string;
+  createdAt: Date;
+  createdBy: number | null;
+};
+
 export default component$(
   (props: {
     session: Session | null;
-    convos: Convos;
     isMenuOpen: Signal<boolean>;
     suspensed: Signal<boolean>;
   }) => {
@@ -23,15 +30,15 @@ export default component$(
     const nav = useNavigate();
     const start = useSignal(0);
     const uuid = useSignal<string>(loc.params["id"]);
-    const convos = useResource$<Convos | []>(async (track) => {
+    const convos = useResource$(async (track) => {
       if (!props.session) {
-        return [];
+        return { data: [], total: 0 };
       }
       track.track(() => start.value);
 
-      return (await GetConvos(props.session, start, end)) ?? [];
+      return GetConvos(props.session, start, end);
     });
-    const baseConvos = useSignal<Convos>([]);
+    const baseConvos = useSignal<ConvoData[]>([]);
 
     useTask$(({ track }) => {
       track(() => loc.params);
@@ -150,30 +157,7 @@ export default component$(
                 value={convos}
                 onRejected={(error) => <div>Error: {error.message}</div>}
                 onResolved={(resolvedConvos) => {
-                  // Keep track of all unique conversations by uuid
-                  // Convert map back to array and filter out any undefined
-                  if (!resolvedConvos) {
-                    resolvedConvos = [] as Convos;
-                  }
-
-                  // Only add conversations that don't already exist in baseConvos
-                  // Filter out conversations that already exist in baseConvos
-                  // Use a Set to efficiently track existing UUIDs
-                  const existingUUIDs = new Set(
-                    baseConvos.value.map((c) => c.uuid),
-                  );
-
-                  // Filter out conversations that already exist in baseConvos
-                  const newConvos = resolvedConvos.filter(
-                    (convo) => !existingUUIDs.has(convo.uuid),
-                  );
-
-                  // Add only unique conversations to baseConvos
-                  if (newConvos.length > 0) {
-                    baseConvos.value = [...baseConvos.value, ...newConvos];
-                  }
-
-                  if (!baseConvos.value.length) {
+                  if (!resolvedConvos.data.length) {
                     return session.value ? (
                       <Link
                         href="/"
@@ -200,13 +184,43 @@ export default component$(
                       </Link>
                     ) : null;
                   }
+
+                  const existingUUIDs = new Set(
+                    baseConvos.value.map((c) => c.uuid),
+                  );
+
+                  const newConvos = resolvedConvos.data.filter(
+                    (convo) => !existingUUIDs.has(convo.uuid),
+                  );
+
+                  if (newConvos.length > 0) {
+                    baseConvos.value = [...baseConvos.value, ...newConvos];
+                  }
+
                   return (
                     <>
                       {baseConvos.value.map((chat, index) => (
                         <div
                           key={index}
-                          class={`relative cursor-pointer rounded bg-gray-800 p-3 px-4 transition-all duration-300 ease-in-out hover:bg-gray-700 ${chat.uuid === uuid.value ? "scale-[1.02] border-2 border-blue-500 bg-gray-700 shadow-lg" : "border-2 border-gray-800"}`}
+                          class={`group relative cursor-pointer rounded bg-gray-800 p-3 px-4 transition-all duration-300 ease-in-out hover:bg-gray-700 ${chat.uuid === uuid.value ? "scale-[1.02] border-2 border-blue-500 bg-gray-700 shadow-lg" : "border-2 border-gray-800"}`}
                         >
+                          <button
+                            class="absolute right-2 top-1/2 hidden -translate-y-1/2 rounded p-1 text-gray-400 hover:bg-gray-600 hover:text-white group-hover:block"
+                            onClick$={(e) => {
+                              e.preventDefault();
+                              // Add delete logic here
+                            }}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="h-4 w-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
                           <Link
                             prefetch={false}
                             href={"/chat/" + chat.uuid}
@@ -246,26 +260,32 @@ export default component$(
                           </Link>
                         </div>
                       ))}
-                      <button
-                        onClick$={async () => {
-                          console.log(
-                            "Fetching conversations...",
-                            props.isMenuOpen.value,
-                          );
-                          if (props.isMenuOpen.value == true && session.value) {
-                            nav("/list");
-                          }
-                          if (
-                            props.isMenuOpen.value == false &&
-                            session.value
-                          ) {
-                            start.value += 3;
-                          }
-                        }}
-                        class="mt-4 w-full rounded-lg bg-gray-800 py-2 text-sm text-white transition-colors duration-200 hover:bg-gray-700"
-                      >
-                        Load More
-                      </button>
+
+                      {resolvedConvos.total > 7 && (
+                        <button
+                          onClick$={async () => {
+                            console.log(
+                              "Fetching conversations...",
+                              props.isMenuOpen.value,
+                            );
+                            if (
+                              props.isMenuOpen.value == true &&
+                              session.value
+                            ) {
+                              nav("/list");
+                            }
+                            if (
+                              props.isMenuOpen.value == false &&
+                              session.value
+                            ) {
+                              start.value += 3;
+                            }
+                          }}
+                          class="mt-4 w-full rounded-lg bg-gray-800 py-2 text-sm text-white transition-colors duration-200 hover:bg-gray-700"
+                        >
+                          Load More
+                        </button>
+                      )}
                     </>
                   );
                 }}
