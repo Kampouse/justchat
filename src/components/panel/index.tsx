@@ -41,8 +41,6 @@ export default component$(
         return { data: [], total: 0 };
       }
 
-      if (counter.value < start.value) return;
-
       track.track(() => start.value);
 
       return GetConvos(props.session, start, end);
@@ -332,6 +330,9 @@ export default component$(
                                 return;
                               }
 
+                              if (counter.value <= start.value) {
+                                return;
+                              }
                               start.value += 3;
                             }
                           }}
