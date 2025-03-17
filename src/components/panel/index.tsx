@@ -33,7 +33,7 @@ export default component$(
     const uuid = useSignal<string>(loc.params["id"]);
     const showDeleteModal = useSignal(false);
     const deleteTarget = useSignal<string | null>(null);
-
+    const counter = useSignal(0);
     const baseConvos = useSignal<ConvoData[]>([]);
     const deleted = useSignal<string[]>([]);
     const convos = useResource$(async (track) => {
@@ -154,7 +154,7 @@ export default component$(
         <div
           class={`fixed inset-y-0 left-0 transform ${
             props.isMenuOpen.value ? "translate-x-0" : "-translate-x-full"
-          } z-40 flex w-full flex-col justify-between overflow-y-auto border-gray-800 bg-gray-900 p-2 transition duration-200 ease-in-out md:relative md:w-72 ${
+          } z-40 flex w-full flex-col justify-between  border-gray-800 bg-gray-900 p-2 transition duration-200 ease-in-out md:relative md:w-72 ${
             isPanelHidden.value ? "md:-translate-x-full" : "md:translate-x-0"
           }`}
         >
@@ -208,6 +208,9 @@ export default component$(
                 const clientHeight = target.clientHeight;
 
                 if (scrollTop + clientHeight >= scrollHeight) {
+                  if (counter.value <= start.value) {
+                    return;
+                  }
                   start.value += 15;
                 }
               }}
@@ -248,6 +251,7 @@ export default component$(
                     baseConvos.value.map((c) => c.uuid),
                   );
 
+                  counter.value = resolvedConvos.total;
                   const newConvos = resolvedConvos.data.filter(
                     (convo) => !existingUUIDs.has(convo.uuid),
                   );
@@ -321,6 +325,10 @@ export default component$(
                               props.isMenuOpen.value == false &&
                               session.value
                             ) {
+                              if (start.value >= resolvedConvos.total) {
+                                return;
+                              }
+
                               start.value += 3;
                             }
                           }}

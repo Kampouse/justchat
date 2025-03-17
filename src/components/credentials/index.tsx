@@ -11,7 +11,7 @@ export const Credentials = component$<Session | null>((props) => {
         text-white shadow-lg md:max-w-[90vw]"
     >
       <div class="flex flex-col justify-center gap-3 sm:justify-center">
-        {!props?.user.email ? (
+        {!props?.user?.email ? (
           <>
             <div class="flex min-h-[120px] w-full flex-col items-center justify-center space-y-4">
               <p class="text-center text-sm text-gray-300 md:text-base">
