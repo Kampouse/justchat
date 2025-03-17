@@ -222,48 +222,47 @@ export const Message = component$<{
                 </div>
               )}
 
-              {lessonData.value.practical?.conversation &&
-                lessonData.value.practical.conversation.length > 0 && (
-                  <div class="rounded-lg bg-indigo-900/20 p-4 backdrop-blur-sm">
-                    <span class="mb-3 block text-lg font-bold text-indigo-400">
-                      Practice Conversation
-                    </span>
-                    <div class="divide-y divide-indigo-900/30">
-                      {lessonData.value.practical.conversation.map(
-                        (conv, index) => (
-                          <div
-                            key={index}
-                            class="space-y-4 py-4 first:pt-0 last:pb-0"
-                          >
-                            {conv.context && (
-                              <div class="mb-3 text-base italic text-indigo-300">
-                                {conv.context}
+              {lessonData.value.practical.conversation.length > 0 && (
+                <div class="rounded-lg bg-indigo-900/20 p-4 backdrop-blur-sm">
+                  <span class="mb-3 block text-lg font-bold text-indigo-400">
+                    Practice Conversation
+                  </span>
+                  <div class="divide-y divide-indigo-900/30">
+                    {lessonData.value.practical.conversation.map(
+                      (conv, index) => (
+                        <div
+                          key={index}
+                          class="space-y-4 py-4 first:pt-0 last:pb-0"
+                        >
+                          {conv.context && (
+                            <div class="mb-3 text-base italic text-indigo-300">
+                              {conv.context}
+                            </div>
+                          )}
+                          <div class="space-y-4">
+                            <div class="rounded-lg bg-indigo-950/30 p-3">
+                              <div class="text-lg font-medium text-gray-100">
+                                A: {conv.person1}
                               </div>
-                            )}
-                            <div class="space-y-4">
-                              <div class="rounded-lg bg-indigo-950/30 p-3">
-                                <div class="text-lg font-medium text-gray-100">
-                                  A: {conv.person1}
-                                </div>
-                                <div class="mt-1 text-base text-indigo-300">
-                                  {conv.person1_base}
-                                </div>
+                              <div class="mt-1 text-base text-indigo-300">
+                                {conv.person1_base}
                               </div>
-                              <div class="rounded-lg bg-indigo-950/30 p-3">
-                                <div class="text-lg font-medium text-gray-100">
-                                  B: {conv.person2}
-                                </div>
-                                <div class="mt-1 text-base text-indigo-300">
-                                  {conv.person2_base}
-                                </div>
+                            </div>
+                            <div class="rounded-lg bg-indigo-950/30 p-3">
+                              <div class="text-lg font-medium text-gray-100">
+                                B: {conv.person2}
+                              </div>
+                              <div class="mt-1 text-base text-indigo-300">
+                                {conv.person2_base}
                               </div>
                             </div>
                           </div>
-                        ),
-                      )}
-                    </div>
+                        </div>
+                      ),
+                    )}
                   </div>
-                )}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -355,7 +354,7 @@ export const ChatInput = component$<ChatInputProps>((props) => {
       )}
 
       <div class="fixed bottom-0 left-0 right-0 mx-2 rounded-full border border-transparent backdrop-blur-md sm:left-72 sm:mx-4 md:mx-8 lg:mx-32">
-        <div class="mx-auto max-w-3xl px-4 pb-4 pt-2">
+        <div class="mx-auto max-w-3xl px-4 py-2 pb-3">
           <Form
             preventdefault:submit
             onSubmit$={onSubmit$}

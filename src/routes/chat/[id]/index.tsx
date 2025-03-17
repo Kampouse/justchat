@@ -114,7 +114,7 @@ export default component$(() => {
 
       try {
         for await (const item of streamData) {
-          if (item && typeof item === "object" && "secondaryLanguage" in item) {
+          if (typeof item === "object" && "secondaryLanguage" in item) {
             messages.value[messages.value.length - 1].content =
               item.primaryLanguage +
               (item.secondaryLanguage ? ` (${item.secondaryLanguage})` : "");
@@ -227,11 +227,11 @@ export default component$(() => {
           </div>
         )}
 
-        <div class="border-t border-gray-600 bg-gray-700 p-2 ">
+        <div class="">
           <Chat.ChatInput
             language={language}
             isMenuOpen={isMenuOpen}
-            remaining={remaining.value ?? 0}
+            remaining={remaining.value}
             messages={messages.value.length}
             onSubmit$={submit}
             isRunning={isRunning}

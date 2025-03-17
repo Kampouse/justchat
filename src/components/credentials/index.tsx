@@ -1,10 +1,9 @@
-import { useSignIn, useSignOut } from "~/routes/plugin@auth";
+import { useSignIn } from "~/routes/plugin@auth";
 import { component$ } from "@builder.io/qwik";
 import { Link } from "@builder.io/qwik-city";
 import type { Session } from "~/server";
 export const Credentials = component$<Session | null>((props) => {
   const login = useSignIn();
-  const logout = useSignOut();
   return (
     <div
       id="login-modal"
@@ -12,7 +11,7 @@ export const Credentials = component$<Session | null>((props) => {
         text-white shadow-lg md:max-w-[90vw]"
     >
       <div class="flex flex-col justify-center gap-3 sm:justify-center">
-        {!props?.user?.email ? (
+        {!props?.user.email ? (
           <>
             <div class="flex min-h-[120px] w-full flex-col items-center justify-center space-y-4">
               <p class="text-center text-sm text-gray-300 md:text-base">
@@ -80,26 +79,7 @@ export const Credentials = component$<Session | null>((props) => {
               <p class="text-sm font-semibold text-blue-100 sm:text-left sm:text-lg">
                 {props.user.name}
               </p>
-              <div class="flex flex-row items-center gap-2">
-                <button
-                  onClick$={async () => {
-                    await logout.submit({});
-                  }}
-                  type="submit"
-                  class="flex items-center gap-1.5 rounded-md bg-gray-700 px-2 py-1 text-xs text-gray-300 transition-colors duration-200 hover:bg-gray-600 hover:text-white sm:text-sm"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-3 w-3 sm:h-4 sm:w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                  Sign out
-                </button>
-              </div>
+              <div class="flex flex-row items-center gap-2"></div>
             </div>
           </div>
         )}

@@ -122,7 +122,7 @@ export default component$(() => {
 
       try {
         for await (const item of data) {
-          if (item && typeof item === "object" && "secondaryLanguage" in item) {
+          if (typeof item === "object" && "secondaryLanguage" in item) {
             messages.value[messages.value.length - 1].content =
               item.primaryLanguage + " (" + item.secondaryLanguage + ")";
           }
@@ -162,7 +162,7 @@ export default component$(() => {
       />
       <div class="flex flex-1 flex-col">
         {!user.value.session && (
-          <div class="fixed bottom-0 left-0 right-0 z-50 block w-full border-t border-gray-600 bg-gray-800 p-4 shadow-lg md:hidden">
+          <div class="fixed bottom-0 left-0 right-0 z-50 block w-full border-t  bg-gray-800 p-4 shadow-lg md:hidden">
             <div class="mx-auto max-w-md">
               <Credentials user={user.value.user as any} />
             </div>
@@ -198,17 +198,12 @@ export default component$(() => {
                   <circle cx="12" cy="12" r="3" />
                   <path d="M12 7v2M12 15v2M7 12h2M15 12h2" />
                 </svg>
-                <h2 class="mb-2 text-xl font-semibold text-white">
-                  Getting Started
-                </h2>
+                <h2 class="mb-2 text-xl font-semibold text-white">JustChat</h2>
                 <div class="mx-auto flex max-w-md flex-col justify-center space-y-4 text-gray-300">
-                  <p>Welcome to the AI Chat! Here's how to use it:</p>
-                  <ol class="list-decimal pl-5 text-left">
-                    <li>Type your message in the input box below</li>
-                    <li>Press Enter or click Send to start the conversation</li>
-                    <li>Previous conversations will appear above</li>
-                    <li>Click the 'Reset' to start a new chat</li>
-                  </ol>
+                  <p>
+                    Welcome to JustChat! A platform for learning a new language
+                    through conversation
+                  </p>
                 </div>
               </div>
             </div>
@@ -236,9 +231,7 @@ export default component$(() => {
           </div>
         )}
 
-        <div
-          class={`border-t border-gray-600 bg-gray-700 p-2 ${isVisible.value ? "hidden" : ""}`}
-        >
+        <div class={` bg-gray-700 p-2 ${isVisible.value ? "hidden" : ""}`}>
           {isRunning.value && (
             <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
               <div class="rounded-lg bg-gray-800 p-6 text-white shadow-lg">

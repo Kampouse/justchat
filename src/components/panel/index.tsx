@@ -41,9 +41,7 @@ export default component$(
         return { data: [], total: 0 };
       }
 
-      // track.track(() => deleted.value.length);
       track.track(() => start.value);
-      console.log("refreshing?");
       return GetConvos(props.session, start, end);
     });
 
@@ -80,7 +78,7 @@ export default component$(
         {/* Toggle panel button - only visible on desktop */}
         <button
           onClick$={() => (isPanelHidden.value = !isPanelHidden.value)}
-          class="fixed left-2 top-4 z-50 hidden w-fit rounded-lg p-4 transition-colors duration-200 hover:bg-gray-800 md:block"
+          class="fixed left-2 top-4 z-50 hidden w-fit rounded-lg p-4 transition-colors duration-200  md:block"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -161,12 +159,16 @@ export default component$(
           }`}
         >
           <div class="flex h-full flex-col">
-            <div class="items-center justify-between pb-2 md:pl-2 ">
+            <div class="items-center justify-between pb-2">
               {session.value && (
-                <div class="flex flex-row items-center justify-between gap-4 rounded-lg bg-gray-800 p-4">
-                  <h2 class="flex-1 text-center text-xl font-bold text-white">
-                    Chat History
-                  </h2>
+                <div class="flex items-center justify-between rounded-lg bg-gray-800 p-4 pr-2">
+                  <Link
+                    href="/"
+                    class="mx-auto text-xl font-bold text-white transition-colors hover:text-blue-400"
+                  >
+                    {" "}
+                    JustChat
+                  </Link>
                   <Link
                     prefetch={false}
                     href={"/"}
@@ -177,20 +179,20 @@ export default component$(
                       }
                       props.suspensed.value = true;
                     }}
-                    class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors duration-200 hover:bg-blue-700"
+                    class="flex items-center rounded-md bg-gray-800 p-2 text-gray-300 transition-colors hover:text-white"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
+                      class="h-5 w-5"
                       fill="none"
                       viewBox="0 0 24 24"
-                      stroke-width="1.5"
                       stroke="currentColor"
-                      class="h-5 w-5"
                     >
                       <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
-                        d="M12 4.5v15m7.5-7.5h-15"
+                        stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                       />
                     </svg>
                   </Link>
@@ -198,7 +200,7 @@ export default component$(
               )}
             </div>
             <div
-              class="scrollbar-hide flex flex-grow flex-col gap-2 overflow-y-scroll rounded-xl px-2 [&::-webkit-scrollbar]:bg-gray-900"
+              class="scrollbar-hide overflow-y flex flex-grow flex-col gap-2 rounded-xl [&::-webkit-scrollbar]:bg-transparent"
               onScroll$={(event) => {
                 const target = event.target as HTMLElement;
                 const scrollTop = target.scrollTop;
@@ -262,7 +264,7 @@ export default component$(
                           return (
                             <div
                               key={index}
-                              class={`group relative w-full cursor-pointer rounded bg-gray-800  px-1 transition-all duration-300 ease-in-out hover:bg-gray-700 ${chat.uuid === uuid.value ? "scale-[1.02] border-2 border-blue-500 bg-gray-700 shadow-lg" : "border-2 border-gray-800"}`}
+                              class={`group relative w-full cursor-pointer rounded-lg bg-gray-800  px-1 transition-all duration-300 ease-in-out hover:bg-gray-700 ${chat.uuid === uuid.value ? "scale-[1.02] border-2 border-blue-500 bg-gray-700 shadow-lg" : "border-2 border-gray-800"}`}
                             >
                               <div class="flex items-center justify-stretch gap-3 p-1">
                                 <Link
@@ -276,7 +278,7 @@ export default component$(
                                   }}
                                   class="mr-3 min-w-0 flex-1 space-y-2"
                                 >
-                                  <h3 class="w-full whitespace-pre-wrap break-words text-sm font-medium leading-snug text-white">
+                                  <h3 class="w-full whitespace-pre-wrap break-words pl-1 text-sm font-medium leading-snug text-white">
                                     {chat.name ?? "no name yet"}
                                   </h3>
                                 </Link>

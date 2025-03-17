@@ -31,7 +31,7 @@ export const useServerSessio = routeLoader$(async (e) => {
 
 export const useConved = routeLoader$(async (e) => {
   const session = e.sharedMap.get("session") as Session | null;
-  return (await getConvos(session)) ?? [];
+  return await getConvos(session);
 });
 
 export const useRemainingQueires = routeLoader$(async (e) => {
