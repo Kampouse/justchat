@@ -225,12 +225,6 @@ export default component$(
 
                     return;
                   } else {
-                    console.log(
-                      "Fetching conversations...",
-                      start.value - counter.value == 0,
-                      start.value,
-                      counter.value,
-                    );
                     if (counter.value - start.value < 3) {
                       start.value = counter.value - start.value;
                     } else {
@@ -277,11 +271,6 @@ export default component$(
                   );
 
                   counter.value = resolvedConvos.total;
-                  console.log(
-                    "Reached end of conversation",
-                    counter.value,
-                    resolvedConvos.total,
-                  );
                   const newConvos = resolvedConvos.data.filter(
                     (convo) => !existingUUIDs.has(convo.uuid),
                   );
@@ -338,52 +327,48 @@ export default component$(
                             </div>
                           );
                         })}
-                      {resolvedConvos.total > 7 && (
-                        <button
-                          onClick$={async () => {
-                            if (
-                              start.value == counter.value ||
-                              start.value + 3 == counter.value
-                            ) {
-                              if (start.value - counter.value > 0) {
-                                start.value = counter.value - start.value;
-                              }
+                      {resolvedConvos.total > 7 &&
+                        start.value + 3 !== counter.value && (
+                          <button
+                            disabled={start.value + 3 == counter.value}
+                            onClick$={async () => {
+                              if (
+                                start.value == counter.value ||
+                                start.value + 3 == counter.value
+                              ) {
+                                if (start.value - counter.value > 0) {
+                                  start.value = counter.value - start.value;
+                                }
 
-                              return;
-                            } else {
-                              console.log(
-                                "Fetching conversations...",
-                                start.value - counter.value == 0,
-                                start.value,
-                                counter.value,
-                              );
-                              if (counter.value - start.value < 3) {
-                                start.value = counter.value - start.value;
-                              } else {
-                                start.value += 3;
-                              }
-                            }
-
-                            if (
-                              props.isMenuOpen.value == true &&
-                              session.value
-                            ) {
-                              nav("/list");
-                            }
-                            if (
-                              props.isMenuOpen.value == false &&
-                              session.value
-                            ) {
-                              if (start.value == counter.value) {
                                 return;
+                              } else {
+                                if (counter.value - start.value < 3) {
+                                  start.value = counter.value - start.value;
+                                } else {
+                                  start.value += 3;
+                                }
                               }
-                            }
-                          }}
-                          class=" w-full rounded-lg bg-gray-800 py-2 text-sm text-white transition-colors duration-200 hover:bg-gray-700"
-                        >
-                          Load More
-                        </button>
-                      )}
+
+                              if (
+                                props.isMenuOpen.value == true &&
+                                session.value
+                              ) {
+                                nav("/list");
+                              }
+                              if (
+                                props.isMenuOpen.value == false &&
+                                session.value
+                              ) {
+                                if (start.value == counter.value) {
+                                  return;
+                                }
+                              }
+                            }}
+                            class=" w-full rounded-lg bg-gray-800 py-2 text-sm text-white transition-colors duration-200 hover:bg-gray-700"
+                          >
+                            Load More
+                          </button>
+                        )}
                     </>
                   );
                 }}
