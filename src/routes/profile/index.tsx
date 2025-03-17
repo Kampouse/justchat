@@ -143,7 +143,7 @@ export default component$(() => {
                 <div class="mb-4 flex items-center justify-between">
                   <div>
                     <h3 class="text-2xl font-bold">Premium Plan</h3>
-                    <p class="text-gray-200">$9.99/month</p>
+                    <p class="text-gray-200">$4.99/month</p>
                   </div>
                 </div>
                 <ul class="mb-6 space-y-2">
