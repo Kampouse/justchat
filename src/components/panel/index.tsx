@@ -27,7 +27,7 @@ export default component$(
     suspensed: Signal<boolean>;
   }) => {
     const loc = useLocation();
-    const end = useSignal(7);
+    const end = useSignal(9);
     const nav = useNavigate();
     const start = useSignal(0);
     const uuid = useSignal<string>(loc.params["id"]);
@@ -46,7 +46,10 @@ export default component$(
         start.value = counter.value;
       }
 
-      return GetConvos(props.session, start, end);
+      const stuff = await GetConvos(props.session, start, end);
+      stuff.total;
+      counter.value = stuff.total;
+      return stuff;
     });
 
     useTask$(({ track }) => {
@@ -204,7 +207,7 @@ export default component$(
               )}
             </div>
             <div
-              class="scrollbar-hide flex flex-grow flex-col gap-2 overflow-y-auto rounded-xl [&::-webkit-scrollbar]:bg-transparent"
+              class="scrollbar-hide flex flex-grow flex-col gap-2 overflow-y-auto rounded-xl px-1 [&::-webkit-scrollbar]:bg-transparent"
               onScroll$={(event) => {
                 const target = event.target as HTMLElement;
                 const scrollTop = target.scrollTop;
@@ -212,10 +215,28 @@ export default component$(
                 const clientHeight = target.clientHeight;
 
                 if (scrollTop + clientHeight >= scrollHeight) {
-                  if (counter.value <= start.value) {
+                  if (
+                    start.value == counter.value ||
+                    start.value + 3 == counter.value
+                  ) {
+                    if (start.value - counter.value > 0) {
+                      start.value = counter.value - start.value;
+                    }
+
                     return;
+                  } else {
+                    console.log(
+                      "Fetching conversations...",
+                      start.value - counter.value == 0,
+                      start.value,
+                      counter.value,
+                    );
+                    if (counter.value - start.value < 3) {
+                      start.value = counter.value - start.value;
+                    } else {
+                      start.value += 3;
+                    }
                   }
-                  start.value += 3;
                 }
               }}
             >
@@ -256,6 +277,11 @@ export default component$(
                   );
 
                   counter.value = resolvedConvos.total;
+                  console.log(
+                    "Reached end of conversation",
+                    counter.value,
+                    resolvedConvos.total,
+                  );
                   const newConvos = resolvedConvos.data.filter(
                     (convo) => !existingUUIDs.has(convo.uuid),
                   );
@@ -315,10 +341,29 @@ export default component$(
                       {resolvedConvos.total > 7 && (
                         <button
                           onClick$={async () => {
-                            console.log(
-                              "Fetching conversations...",
-                              props.isMenuOpen.value,
-                            );
+                            if (
+                              start.value == counter.value ||
+                              start.value + 3 == counter.value
+                            ) {
+                              if (start.value - counter.value > 0) {
+                                start.value = counter.value - start.value;
+                              }
+
+                              return;
+                            } else {
+                              console.log(
+                                "Fetching conversations...",
+                                start.value - counter.value == 0,
+                                start.value,
+                                counter.value,
+                              );
+                              if (counter.value - start.value < 3) {
+                                start.value = counter.value - start.value;
+                              } else {
+                                start.value += 3;
+                              }
+                            }
+
                             if (
                               props.isMenuOpen.value == true &&
                               session.value
@@ -329,16 +374,12 @@ export default component$(
                               props.isMenuOpen.value == false &&
                               session.value
                             ) {
-                              if (start.value >= resolvedConvos.total) {
+                              if (start.value == counter.value) {
                                 return;
-                              }
-
-                              if (counter.value > start.value) {
-                                start.value += 3;
                               }
                             }
                           }}
-                          class="mt-4 w-full rounded-lg bg-gray-800 py-2 text-sm text-white transition-colors duration-200 hover:bg-gray-700"
+                          class=" w-full rounded-lg bg-gray-800 py-2 text-sm text-white transition-colors duration-200 hover:bg-gray-700"
                         >
                           Load More
                         </button>
