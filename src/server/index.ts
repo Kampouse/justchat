@@ -567,3 +567,34 @@ export const generateLanguageLesson = async (ctx: Session, message: string)  => 
     throw error;
   }
 };
+export const deleteConvoById = async (ctx: Session | null, uuid: string) => {
+  if (!ctx) throw new Error("No session provided");
+
+  const db = Drizzler();
+  const conversation = await getConvoByUuid({ ctx, uuid });
+
+  if (!conversation) throw new Error("Conversation not found");
+
+  const user = await getUser(ctx);
+  if (!user || !user[0]) throw new Error("User not found");
+
+  // Verify user owns the conversation
+  if (conversation.createdBy !== user[0].id) {
+    throw new Error("Unauthorized to delete this conversation");
+  }
+
+  // Delete associated messages first
+  await db
+    .delete(schema.messages)
+    .where(eq(schema.messages.conversationId, conversation.id))
+    .execute();
+
+  // Delete the conversation
+  const deleted = await db
+    .delete(schema.conversations)
+    .where(eq(schema.conversations.id, conversation.id))
+    .returning()
+    .execute();
+
+  return deleted[0];
+};

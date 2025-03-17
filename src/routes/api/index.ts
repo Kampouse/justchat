@@ -1,4 +1,5 @@
 import { server$ } from "@builder.io/qwik-city";
+
 import {
   streamableResponse,
   createConvo,
@@ -11,6 +12,8 @@ import type { Session } from "~/server";
 import Drizzler from "../../../drizzle";
 import { conversations } from "../../../drizzle/schema";
 import { eq } from "drizzle-orm";
+
+import { deleteConvoById } from "~/server";
 
 export type Message = {
   type: "ai" | "human";
@@ -94,3 +97,15 @@ export const CreateMessages = server$(
     }
   },
 );
+export const DeleteConvo = server$(async function ({ uuid }: { uuid: string }) {
+  const data = this.sharedMap.get("session");
+  if (!data) return;
+
+  try {
+    const result = await deleteConvoById(data, uuid);
+    return result;
+  } catch (error) {
+    console.error("Error deleting conversation:", error);
+    throw error;
+  }
+});

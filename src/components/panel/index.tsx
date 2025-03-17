@@ -9,6 +9,7 @@ import { useSession } from "~/routes/plugin@auth";
 import { useResource$ } from "@builder.io/qwik";
 import { GetConvos } from "~/server";
 import { Resource } from "@builder.io/qwik";
+import { DeleteConvo } from "~/routes/api";
 
 type ConvoData = {
   type: string | null;
@@ -30,15 +31,21 @@ export default component$(
     const nav = useNavigate();
     const start = useSignal(0);
     const uuid = useSignal<string>(loc.params["id"]);
+    const showDeleteModal = useSignal(false);
+    const deleteTarget = useSignal<string | null>(null);
+
+    const baseConvos = useSignal<ConvoData[]>([]);
+    const deleted = useSignal<string[]>([]);
     const convos = useResource$(async (track) => {
       if (!props.session) {
         return { data: [], total: 0 };
       }
-      track.track(() => start.value);
 
+      // track.track(() => deleted.value.length);
+      track.track(() => start.value);
+      console.log("refreshing?");
       return GetConvos(props.session, start, end);
     });
-    const baseConvos = useSignal<ConvoData[]>([]);
 
     useTask$(({ track }) => {
       track(() => loc.params);
@@ -77,7 +84,7 @@ export default component$(
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6 text-white transition-transform duration-200"
+            class="h-6 w-6 text-white transition-transform duration-200 hover:text-blue-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -94,6 +101,57 @@ export default component$(
             />
           </svg>
         </button>
+
+        {/* Delete Modal */}
+        {showDeleteModal.value && (
+          <div class="fixed inset-0 z-50 flex items-center justify-center">
+            <div class="fixed inset-0 bg-black bg-opacity-50"></div>
+            <div class="relative z-50 w-96 rounded-lg bg-gray-800 p-6 text-white shadow-xl">
+              <h3 class="mb-4 text-lg font-bold">Delete Chat</h3>
+              <p class="mb-6 text-gray-300">
+                Are you sure you want to delete this chat?
+              </p>
+              <div class="flex justify-end gap-4">
+                <button
+                  onClick$={async () => {
+                    showDeleteModal.value = false;
+                    deleteTarget.value = null;
+                  }}
+                  class="rounded bg-gray-600 px-4 py-2 text-white transition-colors hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick$={async () => {
+                    // Add delete logic here
+
+                    if (!deleteTarget.value) return;
+                    const status = await DeleteConvo({
+                      uuid: deleteTarget.value,
+                    });
+
+                    deleted.value.push(deleteTarget.value);
+                    if (status) {
+                      if (uuid.value === deleteTarget.value) {
+                        nav("/");
+                      }
+                    }
+
+                    console.log("Deleted");
+                    showDeleteModal.value = false;
+                    deleteTarget.value = null;
+                  }}
+                  class="rounded bg-red-600 px-4 py-2 text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+                  role="button"
+                  aria-label="Delete chat permanently"
+                  tabIndex={0}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Sidebar panel */}
         <div
@@ -199,68 +257,52 @@ export default component$(
 
                   return (
                     <>
-                      {baseConvos.value.map((chat, index) => (
-                        <div
-                          key={index}
-                          class={`group relative cursor-pointer rounded bg-gray-800 p-3 px-4 transition-all duration-300 ease-in-out hover:bg-gray-700 ${chat.uuid === uuid.value ? "scale-[1.02] border-2 border-blue-500 bg-gray-700 shadow-lg" : "border-2 border-gray-800"}`}
-                        >
-                          <button
-                            class="absolute right-2 top-1/2 hidden -translate-y-1/2 rounded p-1 text-gray-400 hover:bg-gray-600 hover:text-white group-hover:block"
-                            onClick$={(e) => {
-                              e.preventDefault();
-                              // Add delete logic here
-                            }}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              class="h-4 w-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
+                      {baseConvos.value
+                        .filter((chat) => !deleted.value.includes(chat.uuid))
+                        .map((chat, index) => {
+                          return (
+                            <div
+                              key={index}
+                              class={`group relative w-full cursor-pointer rounded bg-gray-800  px-1 transition-all duration-300 ease-in-out hover:bg-gray-700 ${chat.uuid === uuid.value ? "scale-[1.02] border-2 border-blue-500 bg-gray-700 shadow-lg" : "border-2 border-gray-800"}`}
                             >
-                              <path d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                          <Link
-                            prefetch={false}
-                            href={"/chat/" + chat.uuid}
-                            onClick$={() => {
-                              props.isMenuOpen.value = false;
-                              if (chat.uuid !== uuid.value) {
-                                props.suspensed.value = true;
-                              }
-                            }}
-                            class="relative block"
-                          >
-                            <h3 class="truncate text-sm font-medium text-white">
-                              {chat.name ?? "no name yet"}
-                            </h3>
-                            <p class="flex items-center gap-2 truncate text-xs text-gray-400">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-3 w-3"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                              {new Date(chat.createdAt).toLocaleDateString(
-                                undefined,
-                                {
-                                  month: "long",
-                                  day: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  hourCycle: "h23",
-                                  localeMatcher: "best fit",
-                                },
-                              )}
-                            </p>
-                          </Link>
-                        </div>
-                      ))}
-
+                              <div class="flex items-center justify-stretch gap-3 p-1">
+                                <Link
+                                  prefetch={false}
+                                  href={"/chat/" + chat.uuid}
+                                  onClick$={() => {
+                                    props.isMenuOpen.value = false;
+                                    if (chat.uuid !== uuid.value) {
+                                      props.suspensed.value = true;
+                                    }
+                                  }}
+                                  class="mr-3 min-w-0 flex-1 space-y-2"
+                                >
+                                  <h3 class="w-full whitespace-pre-wrap break-words text-sm font-medium leading-snug text-white">
+                                    {chat.name ?? "no name yet"}
+                                  </h3>
+                                </Link>
+                                <button
+                                  class="invisible flex-shrink-0 rounded-full p-2.5 text-gray-400 transition-colors hover:bg-gray-600 hover:text-white group-hover:visible"
+                                  onClick$={(e) => {
+                                    e.preventDefault();
+                                    deleteTarget.value = chat.uuid;
+                                    showDeleteModal.value = true;
+                                  }}
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-5 w-5"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
                       {resolvedConvos.total > 7 && (
                         <button
                           onClick$={async () => {
