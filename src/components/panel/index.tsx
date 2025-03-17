@@ -41,7 +41,10 @@ export default component$(
         return { data: [], total: 0 };
       }
 
+      if (counter.value < start.value) return;
+
       track.track(() => start.value);
+
       return GetConvos(props.session, start, end);
     });
 
@@ -200,7 +203,7 @@ export default component$(
               )}
             </div>
             <div
-              class="scrollbar-hide overflow-y flex flex-grow flex-col gap-2 rounded-xl [&::-webkit-scrollbar]:bg-transparent"
+              class="scrollbar-hide flex flex-grow flex-col gap-2 overflow-y-auto rounded-xl [&::-webkit-scrollbar]:bg-transparent"
               onScroll$={(event) => {
                 const target = event.target as HTMLElement;
                 const scrollTop = target.scrollTop;
