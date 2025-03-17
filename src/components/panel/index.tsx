@@ -42,6 +42,9 @@ export default component$(
       }
 
       track.track(() => start.value);
+      if (start.value > counter.value) {
+        start.value = counter.value;
+      }
 
       return GetConvos(props.session, start, end);
     });
@@ -212,7 +215,7 @@ export default component$(
                   if (counter.value <= start.value) {
                     return;
                   }
-                  start.value += 15;
+                  start.value += 3;
                 }
               }}
             >
@@ -330,10 +333,9 @@ export default component$(
                                 return;
                               }
 
-                              if (counter.value <= start.value) {
-                                return;
+                              if (counter.value > start.value) {
+                                start.value += 3;
                               }
-                              start.value += 3;
                             }
                           }}
                           class="mt-4 w-full rounded-lg bg-gray-800 py-2 text-sm text-white transition-colors duration-200 hover:bg-gray-700"
