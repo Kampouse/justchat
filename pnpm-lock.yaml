@@ -7,13 +7,6 @@ settings:
 importers:
 
   .:
-    dependencies:
-      '@polar-sh/sdk':
-        specifier: ^0.30.0
-        version: 0.30.0(zod@3.24.2)
-      zod:
-        specifier: ^3.24.2
-        version: 3.24.2
     devDependencies:
       '@auth/qwik':
         specifier: 0.2.2
@@ -42,6 +35,9 @@ importers:
       '@libsql/client':
         specifier: ^0.14.0
         version: 0.14.0
+      '@polar-sh/sdk':
+        specifier: ^0.30.0
+        version: 0.30.0(zod@3.24.2)
       '@types/better-sqlite3':
         specifier: ^7.6.9
         version: 7.6.12
@@ -129,6 +125,9 @@ importers:
       vite-tsconfig-paths:
         specifier: ^4.2.1
         version: 4.3.2(typescript@5.4.5)(vite@5.3.5(@types/node@20.14.11))
+      zod:
+        specifier: ^3.24.2
+        version: 3.24.2
 
 packages:
 
