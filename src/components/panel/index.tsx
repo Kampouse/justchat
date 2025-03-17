@@ -137,7 +137,6 @@ export default component$(
                       }
                     }
 
-                    console.log("Deleted");
                     showDeleteModal.value = false;
                     deleteTarget.value = null;
                   }}
