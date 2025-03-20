@@ -1,17 +1,17 @@
 import { component$, useSignal, $, useTask$ } from "@builder.io/qwik";
-import type { Message } from "./api";
+import type { Message } from "~/components/chat";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { useStore } from "@builder.io/qwik";
 import { Credentials } from "~/components/credentials";
 import { routeLoader$, useLocation, useNavigate } from "@builder.io/qwik-city";
 import Panel from "~/components/panel/index";
-import * as Chat from "~/components/chat-component";
+import * as Chat from "~/components/chat";
 import { createUser, getUser, type Session } from "~/server";
 import { v4 as uuid } from "uuid";
-import { languages } from "~/components/chat-component";
+import { languages } from "~/components/chat";
 import { CreateConvo, CreateMessages, getStreamableResponse } from "./api";
 import { WarningBanner } from "~/components/warning-banner";
-import type { Language } from "~/components/chat-component";
+import type { Language } from "~/components/chat";
 import { GetRemainingQueries } from "~/server";
 
 export const useRemainingQueries = routeLoader$(async (e) => {
@@ -105,7 +105,7 @@ export default component$(() => {
 
       messages.value = [
         ...messages.value,
-        { type: "human", content: message as string },
+        { type: "human", content: message as string, id: "2" },
       ];
       const conv_uuid = uuid();
 

@@ -7,8 +7,7 @@ import {
   GetRemainingQueries,
   getUser,
 } from "~/server";
-import { type Message } from "~/routes/api";
-
+import type { Message } from "~/components/chat";
 export const useMessages = routeLoader$(async (e) => {
   const ctx = e.sharedMap.get("session") as Session | null;
   const uuid = e.params.id;
@@ -19,6 +18,7 @@ export const useMessages = routeLoader$(async (e) => {
   return messages.map((el) => ({
     type: el.type,
     content: el.content,
+    id: el.id.toString(),
   })) as Message[];
 });
 

@@ -1,19 +1,15 @@
 import { component$, useSignal, $, useTask$ } from "@builder.io/qwik";
+import { scrollToBottom } from "~/components/chat";
 import { useStore } from "@builder.io/qwik";
 import { useLocation } from "@builder.io/qwik-city";
 import { type DocumentHead } from "@builder.io/qwik-city";
-
 import Panel from "~/components/panel";
-import * as Chat from "~/components/chat-component";
-import { WarningBanner } from "~/components/warning-banner";
-import { languages } from "~/components/chat-component";
+import * as Chat from "~/components/chat";
+import type { Message, Language } from "~/components/chat";
+import { languages } from "~/components/chat";
 import { BasePrompt } from "~/routes";
-import {
-  CreateMessages,
-  getStreamableResponse,
-  type Message,
-} from "~/routes/api";
-import type { Language } from "~/components/chat-component";
+import { CreateMessages, getStreamableResponse } from "~/routes/api";
+import { Conversation } from "~/components/Conversation";
 import {
   useMessages,
   useServerSessio,
@@ -21,22 +17,6 @@ import {
   useTitle,
 } from "./layout";
 
-/* ==========================================================================
-         Helper Functions
-   ========================================================================== */
-export const scrollToBottom = () => {
-  const chatContainer = document.getElementById("chat");
-  if (chatContainer) {
-    chatContainer.scrollTo({
-      top: chatContainer.scrollHeight,
-      behavior: "smooth",
-    });
-  }
-};
-
-/* ==========================================================================
-         Main Chat Component
-   ========================================================================== */
 export default component$(() => {
   const loc = useLocation();
   const suspensed = useSignal(false);
@@ -55,7 +35,6 @@ export default component$(() => {
   const session = useServerSessio();
   const remaining = useRemainingQueires();
 
-  // Update conversation when location changes.
   useTask$(({ track }) => {
     track(() => loc.params);
     uuid.value = loc.params["id"];
@@ -64,7 +43,6 @@ export default component$(() => {
     }
   });
 
-  // Scroll to bottom when component mounts
   const defaultLanguage = languages.find(
     (e) => e.code === (session.value.user?.[0]?.language ?? "fr"),
   );
@@ -75,6 +53,7 @@ export default component$(() => {
       flag: "🇫🇷",
     },
   );
+
   const submit = $(async (e: Event) => {
     try {
       const form = e.target as HTMLFormElement;
@@ -83,26 +62,21 @@ export default component$(() => {
       const formData = new FormData(form);
       const userMessage = formData.get("message") as string;
 
-      // Validate not empty message
       if (!userMessage.trim()) {
         return;
       }
 
-      // Clear input immediately
       const inputElement = form.querySelector(
         'input[name="message"]',
       ) as HTMLInputElement;
       inputElement.value = "";
 
-      // Update UI state
       isErroring.value = false;
       isRunning.value = true;
 
-      // Add message placeholder
-      messages.value.push({ type: "human", content: userMessage });
-      messages.value.push({ type: "ai", content: "" });
+      messages.value.push({ type: "human", content: userMessage, id: "0" });
+      messages.value.push({ type: "ai", content: "", id: "1" });
 
-      // Initial scroll after messages are added
       setTimeout(scrollToBottom, 50);
       const streamData = await getStreamableResponse({
         input: userMessage,
@@ -126,8 +100,6 @@ export default component$(() => {
       }
 
       clearInterval(intervalId);
-
-      // Final scroll after completion with a small delay
       setTimeout(scrollToBottom, 100);
 
       const msgs = await CreateMessages({
@@ -149,6 +121,7 @@ export default component$(() => {
       isRunning.value = false;
     }
   });
+
   return (
     <div class="flex h-[100dvh] min-h-screen flex-col md:flex-row">
       <Panel
@@ -156,87 +129,21 @@ export default component$(() => {
         suspensed={suspensed}
         session={session.value.session}
       />
-      <div class="flex h-full max-h-[100dvh] flex-1 flex-col">
-        <div
-          id="chat"
-          class="flex-1 overflow-y-auto bg-gray-700 p-2 md:p-4 [&::-webkit-scrollbar-thumb]:bg-gray-600 [&::-webkit-scrollbar]:bg-gray-700"
-        >
-          {remaining.value <= 0 && (
-            <WarningBanner
-              title="Query Limit Reached"
-              message="You've reached your daily query limit. Please upgrade your plan or wait until tomorrow."
-              type="warning"
-            />
-          )}
-          <div
-            class={`flex flex-col space-y-3 transition-opacity duration-300 md:space-y-4 ${
-              suspensed.value ? "opacity-0" : "opacity-100"
-            }`}
-          >
-            {messages.value.map((message, index) => (
-              <div
-                key={index}
-                class={`flex items-start ${
-                  message.type === "human" ? "justify-end" : ""
-                }`}
-              >
-                {message.type === "ai" && <Chat.AiAvatar />}
-
-                <Chat.Message
-                  message={{ ...message }}
-                  last={index === messages.value.length - 1}
-                />
-              </div>
-            ))}
-          </div>
-          <div
-            class={`flex h-full items-center justify-center transition-opacity duration-300 ${
-              suspensed.value ? "opacity-100" : "opacity-0"
-            } ${!suspensed.value ? "hidden" : ""}`}
-          >
-            {suspensed.value && (
-              <div class="fixed inset-0 flex items-center justify-center transition-opacity duration-700">
-                <div class="h-12 w-12 animate-spin rounded-full border-4 border-gray-600 border-t-gray-300"></div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {isErroring.value && (
-          <div class="fixed bottom-20 left-0 right-0 mx-auto max-w-md p-2 md:p-4">
-            <div class="animate-fade-in rounded-lg border border-red-200 bg-red-100 p-3 text-sm text-red-700 shadow-lg md:p-4 md:text-base">
-              <div class="flex items-center space-x-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4 cursor-pointer md:h-5 md:w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  onClick$={() => (isErroring.value = false)}
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                <p class="font-medium">
-                  An error occurred during chat. Please try again.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div class="">
-          <Chat.ChatInput
-            language={language}
-            isMenuOpen={isMenuOpen}
-            remaining={remaining.value}
-            messages={messages.value.length}
-            onSubmit$={submit}
-            isRunning={isRunning}
-          />
-        </div>
+      <Conversation
+        messages={messages}
+        suspensed={suspensed}
+        remaining={remaining.value}
+        isErroring={isErroring}
+      />
+      <div class="">
+        <Chat.ChatInput
+          language={language}
+          isMenuOpen={isMenuOpen}
+          remaining={remaining.value}
+          messages={messages.value.length}
+          onSubmit$={submit}
+          isRunning={isRunning}
+        />
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { server$ } from "@builder.io/qwik-city";
-
+import type { Message } from "~/components/chat";
 import {
   streamableResponse,
   createConvo,
@@ -14,11 +14,6 @@ import { conversations } from "../../../drizzle/schema";
 import { eq } from "drizzle-orm";
 
 import { deleteConvoById } from "~/server";
-
-export type Message = {
-  type: "ai" | "human";
-  content: string;
-};
 
 export const getStreamableResponse = server$(async function ({
   input,
@@ -89,6 +84,7 @@ export const CreateMessages = server$(
         return {
           content: e.content,
           type: e.type as "ai" | "human",
+          id: e.id.toString(),
         } satisfies Message;
       });
     } catch (error) {
