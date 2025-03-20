@@ -5,9 +5,9 @@ import Loading from "./chat/loading";
 import { Form } from "@builder.io/qwik-city";
 import type { QRL, Signal } from "@builder.io/qwik";
 import { useSignal } from "@builder.io/qwik";
+import MessageActions from "./chat/MessageActions";
 import Lesson from "./chat/Lesson";
 import type { TranslationObjectSchema } from "~/server/ai";
-import MessageActions from "./chat/MessageActions";
 import { updateUserLanguage, generateLanguageLesson } from "~/server";
 
 // Server Functions
@@ -64,6 +64,9 @@ export const languages: Language[] = [
 const MessageContent = component$<{
   message: { type: string; content: string };
 }>(({ message }) => {
+  const isLoading = useSignal(false);
+  const lessonData = useSignal<any | null>(null);
+  const isLessonModalOpen = useSignal(false);
   return (
     <div
       class={`${
@@ -81,6 +84,15 @@ const MessageContent = component$<{
       >
         <p>{message.content}</p>
       </div>
+      {message.type == "ai" && (
+        <MessageActions
+          message={message}
+          isLoading={isLoading}
+          lessonData={lessonData}
+          isLessonModalOpen={isLessonModalOpen}
+        />
+      )}
+      {lessonData.value && <Lesson lessonData={lessonData.value} />}
     </div>
   );
 });
@@ -90,10 +102,8 @@ export const Message = component$<{
   message: { type: string; content: string };
   last: boolean;
 }>(({ message, last }) => {
-  const isLessonModalOpen = useSignal(false);
   type Language = typeof TranslationObjectSchema._type;
   const lessonData = useSignal<Language | null>(null);
-  const isLoading = useSignal(false);
   const loc = useLocation();
   useTask$((track) => {
     track.track(() => loc.url.pathname);
@@ -106,17 +116,6 @@ export const Message = component$<{
       class={`flex ${message.type === "ai" ? "w-full justify-start" : "justify-end"} ${last ? "mb-24" : "mb-6"}`}
     >
       <MessageContent message={message} />
-      {message.type === "ai" && (
-        <MessageActions
-          message={message}
-          isLoading={isLoading}
-          lessonData={lessonData}
-          isLessonModalOpen={isLessonModalOpen}
-        />
-      )}
-      {isLessonModalOpen.value && lessonData.value && (
-        <Lesson lessonData={lessonData.value} />
-      )}
     </div>
   );
 });
