@@ -8,8 +8,8 @@ import {
 } from "@langchain/core/prompts";
 import { ChatOpenAI } from "@langchain/openai";
 import { trimMessages } from "@langchain/core/messages";
-import { Message } from "~/routes/api";
 import Drizzler from "../../drizzle";
+import { Message } from "~/components/chat";
 import { getUser, Session } from ".";
 import { tool } from "@langchain/core/tools";
 export const TranslationObjectSchema = z.object({
