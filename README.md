@@ -112,6 +112,7 @@ MIT
 will not work without all the variables set in the .env file
 
 ### Development
+
 - `DATABASE_URL`: Local development database connection string
 - `POLAR_ID_TEST`: Polar API test environment ID
 - `OPENAI_API_KEY`: OpenAI API key for development
@@ -125,6 +126,7 @@ will not work without all the variables set in the .env file
 - `GOOGLE_SECRET`: Google OAuth app client secret
 
 ### Production
+
 - `DATABASE_URL`: Production database connection string
 - `POLAR_ID_PROD`: Polar API production environment ID
 - `OPENAI_API_KEY`: OpenAI API key for production
