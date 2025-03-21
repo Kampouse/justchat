@@ -291,7 +291,6 @@ export default component$(
                             >
                               <div class="flex items-center justify-stretch gap-3 p-1">
                                 <Link
-                                  prefetch={false}
                                   href={"/chat/" + chat.uuid}
                                   onClick$={() => {
                                     props.isMenuOpen.value = false;
