@@ -2,7 +2,12 @@ import { useSignIn } from "~/routes/plugin@auth";
 import { component$ } from "@builder.io/qwik";
 import { Link } from "@builder.io/qwik-city";
 import type { Session } from "~/server";
-export const Credentials = component$<Session | null>((props) => {
+
+interface CredentialsProps {
+  session: Session | null;
+}
+
+export const Credentials = component$<CredentialsProps>((props) => {
   const login = useSignIn();
   return (
     <div
@@ -11,7 +16,7 @@ export const Credentials = component$<Session | null>((props) => {
         text-white shadow-lg md:max-w-[90vw]"
     >
       <div class="flex flex-col justify-center gap-3 sm:justify-center">
-        {!props?.user?.email ? (
+        {!props.session?.user?.email ? (
           <>
             <div class="flex min-h-[120px] w-full flex-col items-center justify-center space-y-4">
               <p class="text-center text-sm text-gray-300 md:text-base">
@@ -21,7 +26,7 @@ export const Credentials = component$<Session | null>((props) => {
                 <button
                   onClick$={async () => {
                     await login.submit({
-                      providerId: "github",
+                      providerId: "github" as const,
                       redirectTo: "/api/user/login/",
                     });
                   }}
@@ -35,7 +40,7 @@ export const Credentials = component$<Session | null>((props) => {
                 <button
                   onClick$={async () => {
                     await login.submit({
-                      providerId: "google",
+                      providerId: "google" as const,
                       redirectTo: "/api/user/login/",
                     });
                   }}
@@ -68,7 +73,7 @@ export const Credentials = component$<Session | null>((props) => {
           <div class="flex flex-row items-center justify-center gap-2 rounded-lg sm:flex-row sm:gap-6">
             <Link href="/profile" class="group relative">
               <img
-                src={props.user.image}
+                src={props.session.user.image}
                 alt="Profile"
                 width="40"
                 height="40"
@@ -77,7 +82,7 @@ export const Credentials = component$<Session | null>((props) => {
             </Link>
             <div class="flex flex-row items-center gap-2 sm:flex-col sm:items-start sm:gap-1">
               <p class="text-sm font-semibold text-blue-100 sm:text-left sm:text-lg">
-                {props.user.name}
+                {props.session.user.name}
               </p>
               <div class="flex flex-row items-center gap-2"></div>
             </div>

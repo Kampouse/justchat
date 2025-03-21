@@ -164,7 +164,7 @@ export default component$(() => {
         {!user.value.session && (
           <div class="fixed bottom-0 left-0 right-0 z-50 block w-full border-t  bg-gray-800 p-4 shadow-lg md:hidden">
             <div class="mx-auto max-w-md">
-              <Credentials user={user.value.user as any} />
+              <Credentials session={user.value.session as Session | null} />
             </div>
           </div>
         )}
