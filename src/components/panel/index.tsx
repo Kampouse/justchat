@@ -1,17 +1,17 @@
-import { component$, useTask$ } from "@builder.io/qwik";
-import type { ResourceReturn } from "@builder.io/qwik";
-import { Credentials } from "../credentials";
-import type { Signal } from "@builder.io/qwik";
-import { Link, useNavigate } from "@builder.io/qwik-city";
-import { useLocation } from "@builder.io/qwik-city";
-import type { Session } from "~/server";
-import { useSignal } from "@builder.io/qwik";
+import {
+  component$,
+  useTask$,
+  type ResourceReturn,
+  type Signal,
+  useSignal,
+  useResource$,
+  Resource,
+} from "@builder.io/qwik";
+import { Link, useNavigate, useLocation } from "@builder.io/qwik-city";
 import { useSession } from "~/routes/plugin@auth";
-import { useResource$ } from "@builder.io/qwik";
-import { GetConvos } from "~/server";
-import { Resource } from "@builder.io/qwik";
+import { Credentials } from "../credentials";
 import { DeleteConvo } from "~/routes/api";
-
+import { GetConvos, type Session } from "~/server";
 // Types
 type ConvoData = {
   type: string | null;
@@ -152,7 +152,7 @@ const ChatItem = component$<{
     }
 
     return (
-      <div
+      <button
         class={`group relative w-full cursor-pointer rounded-lg bg-gray-800 px-1 transition-all duration-300 ease-in-out hover:bg-gray-700 ${
           chat.uuid === uuid.value
             ? "scale-[1.02] border-2 border-blue-500 bg-gray-700 shadow-lg"
@@ -173,7 +173,7 @@ const ChatItem = component$<{
               {chat.name ?? "no name yet"}
             </h3>
           </div>
-          <button
+          <div
             class="invisible flex-shrink-0 rounded-full p-2.5 text-gray-400 transition-colors hover:bg-gray-600 hover:text-white group-hover:visible"
             onClick$={(e) => {
               e.stopPropagation();
@@ -190,9 +190,9 @@ const ChatItem = component$<{
             >
               <path d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </button>
+          </div>
         </div>
-      </div>
+      </button>
     );
   },
 );
