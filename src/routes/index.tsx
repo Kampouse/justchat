@@ -1,5 +1,5 @@
 import { component$, useSignal, $, useTask$ } from "@builder.io/qwik";
-import type { Message } from "~/components/chat";
+import { type Message } from "~/components/chat/Message";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { useStore } from "@builder.io/qwik";
 import { Credentials } from "~/components/credentials";
@@ -8,10 +8,9 @@ import Panel from "~/components/panel/index";
 import * as Chat from "~/components/chat";
 import { createUser, getUser, type Session } from "~/server";
 import { v4 as uuid } from "uuid";
-import { languages } from "~/components/chat";
+import { languages, type Language } from "~/components/chat/Languages";
 import { CreateConvo, CreateMessages, getStreamableResponse } from "./api";
 import { WarningBanner } from "~/components/warning-banner";
-import type { Language } from "~/components/chat";
 import { GetRemainingQueries } from "~/server";
 
 export const useRemainingQueries = routeLoader$(async (e) => {

@@ -1,7 +1,7 @@
 import { WarningBanner } from "./warning-banner";
-import type { Message } from "./chat";
+import { type Message } from "./chat/Message";
+import { Message as MessageComponent } from "./chat/Message";
 import { component$ } from "@builder.io/qwik";
-import * as Chat from "./chat";
 import Avatar from "./chat/Avatar";
 export const Conversation = component$<{
   messages: { value: Message[] };
@@ -36,7 +36,7 @@ export const Conversation = component$<{
             >
               {message.type === "ai" && <Avatar />}
 
-              <Chat.Message
+              <MessageComponent
                 message={{ ...message }}
                 last={index === messages.value.length - 1}
               />

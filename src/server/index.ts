@@ -9,7 +9,7 @@ import { server$ } from "@builder.io/qwik-city";
 import { desc } from "drizzle-orm";
 import { schema } from "../../drizzle/schema";
 import { ChatOpenAI } from "@langchain/openai";
-import type { Message } from "~/components/chat";
+import { Message } from "~/components/chat/Message";
 import { eq } from "drizzle-orm";
 import { AiChat, GenerateLanguageLesson } from "./ai";
 import { customersGetState } from "@polar-sh/sdk/funcs/customersGetState.js";

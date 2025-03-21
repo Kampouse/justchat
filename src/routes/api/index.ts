@@ -1,5 +1,5 @@
 import { server$ } from "@builder.io/qwik-city";
-import type { Message } from "~/components/chat";
+import { type Message } from "~/components/chat/Message";
 import {
   streamableResponse,
   createConvo,

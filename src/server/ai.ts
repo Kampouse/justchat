@@ -9,7 +9,7 @@ import {
 import { ChatOpenAI } from "@langchain/openai";
 import { trimMessages } from "@langchain/core/messages";
 import Drizzler from "../../drizzle";
-import { Message } from "~/components/chat";
+import { Message } from "~/components/chat/Message";
 import { getUser, Session } from ".";
 import { tool } from "@langchain/core/tools";
 export const TranslationObjectSchema = z.object({
