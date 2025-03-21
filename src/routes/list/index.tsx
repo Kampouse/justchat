@@ -2,9 +2,9 @@ import { component$, useTask$ } from "@builder.io/qwik";
 import { routeLoader$ } from "@builder.io/qwik-city";
 import { Link } from "@builder.io/qwik-city";
 import { useSignal } from "@builder.io/qwik";
-import { getConvos } from "~/server";
+import { getConvos } from "~/server/conversations";
 import { useSession } from "~/routes/plugin@auth";
-import type { Session } from "~/server";
+import type { Session } from "~/server/types";
 
 export const useConvos = routeLoader$(async function ({ sharedMap }) {
   const session = sharedMap.get("session") as Session | null;

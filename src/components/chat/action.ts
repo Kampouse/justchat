@@ -1,6 +1,6 @@
 import { server$ } from "@builder.io/qwik-city";
-import { updateUserLanguage } from "~/server";
-import { generateLanguageLesson } from "~/server";
+import { updateUserLanguage } from "~/server/users";
+import { generateLanguageLesson } from "~/server/ai";
 
 export const UpdateUserLanguage = server$(async function (
   languageCode: string,
@@ -11,5 +11,10 @@ export const UpdateUserLanguage = server$(async function (
 
 export const GenerateLesson = server$(async function (message: string) {
   const session = this.sharedMap.get("session");
-  return await generateLanguageLesson(session, message);
+
+  if (!session) {
+    throw new Error("Session not found");
+  }
+
+  return await generateLanguageLesson(message);
 });

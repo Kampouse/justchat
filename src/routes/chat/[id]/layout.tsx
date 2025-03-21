@@ -1,12 +1,11 @@
 import { routeLoader$ } from "@builder.io/qwik-city";
-import type { Session } from "~/server";
+import { type Session } from "~/server";
 import {
   getAllMessages,
   getConvoByUuid,
   getConvos,
-  GetRemainingQueries,
-  getUser,
-} from "~/server";
+} from "~/server/conversations";
+import { getUser, GetRemainingQueries } from "~/server/users";
 import { type Message } from "~/components/chat/Message";
 export const useMessages = routeLoader$(async (e) => {
   const ctx = e.sharedMap.get("session") as Session | null;

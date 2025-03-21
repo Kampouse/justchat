@@ -6,12 +6,13 @@ import { Credentials } from "~/components/credentials";
 import { routeLoader$, useLocation, useNavigate } from "@builder.io/qwik-city";
 import Panel from "~/components/panel/index";
 import * as Chat from "~/components/chat";
-import { createUser, getUser, type Session } from "~/server";
+import { createUser, getUser } from "~/server/users";
+import type { Session } from "~/server/types";
 import { v4 as uuid } from "uuid";
 import { languages, type Language } from "~/components/chat/Languages";
 import { CreateConvo, CreateMessages, getStreamableResponse } from "./api";
 import { WarningBanner } from "~/components/warning-banner";
-import { GetRemainingQueries } from "~/server";
+import { GetRemainingQueries } from "~/server/users";
 
 export const useRemainingQueries = routeLoader$(async (e) => {
   const session = e.sharedMap.get("session") as Session | null;

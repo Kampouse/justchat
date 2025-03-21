@@ -11,7 +11,8 @@ import { Link, useNavigate, useLocation } from "@builder.io/qwik-city";
 import { useSession } from "~/routes/plugin@auth";
 import { Credentials } from "../credentials";
 import { DeleteConvo } from "~/routes/api";
-import { GetConvos, type Session } from "~/server";
+import { GetConvos } from "~/server/conversations";
+import { type Session } from "~/server/types";
 // Types
 type ConvoData = {
   type: string | null;
@@ -352,8 +353,8 @@ export default component$(
       if (start.value > counter.value) {
         start.value = counter.value;
       }
-
-      const stuff = await GetConvos(props.session, start, end);
+      //maybe broke something
+      const stuff = await GetConvos(props.session, start.value, end.value);
       stuff.total;
       counter.value = stuff.total;
       return stuff;
