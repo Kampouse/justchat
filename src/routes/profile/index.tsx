@@ -109,7 +109,7 @@ export default component$(() => {
                 <div class="flex items-center justify-between">
                   <span class="text-gray-400">Monthly Queries:</span>
                   <span class="font-semibold text-white">
-                    {user.value.queriesUsed ?? 0} /{" "}
+                    {user.value.queriesRemaining ?? 0} /{" "}
                     {user.value.subscription === "active" ? "500" : "100"}
                   </span>
                 </div>

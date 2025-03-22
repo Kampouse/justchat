@@ -89,6 +89,7 @@ export default component$(() => {
       try {
         for await (const item of streamData) {
           if (typeof item === "object" && "secondaryLanguage" in item) {
+            //#todo make this  message.value { primray , secoundary ...}
             messages.value[messages.value.length - 1].content =
               item.primaryLanguage +
               (item.secondaryLanguage ? ` (${item.secondaryLanguage})` : "");
