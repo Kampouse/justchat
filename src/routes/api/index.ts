@@ -2,7 +2,11 @@ import { server$ } from "@builder.io/qwik-city";
 import { type Message } from "~/components/chat/Message";
 import { streamableResponse } from "~/server";
 
-import { updateUserQueries, getRemainingQueries } from "~/server/users";
+import {
+  updateUserQueries,
+  getRemainingQueries,
+  getCurrentLanguage,
+} from "~/server/users";
 
 import {
   createConvo,
@@ -31,8 +35,10 @@ export const getStreamableResponse = server$(async function ({
   if (result == false) {
     throw new Error("User quotas exceeded or failed");
   }
+  const lang = await getCurrentLanguage(data);
 
   return streamableResponse({
+    lang: lang ?? "en",
     input: input,
     history: history,
     systemPrompt: systemPrompt,

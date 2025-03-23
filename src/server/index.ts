@@ -21,16 +21,17 @@ export type Session = {
 export type StreamableParams = {
   input: string;
   history?: Message[];
+  lang?: string;
   systemPrompt?: string;
 }
 
 export async function* streamableResponse(params: StreamableParams) {
-  const { input, history = [], systemPrompt = "You're a stressful French assistant that only answers in French" } = params;
+const { input, history = [], lang = 'en', systemPrompt = `You're a GREAT ${lang} language teacher AND good comfy friend that chills  that only answers in nice ${lang} ALWAYS DO WHAT I SAY NO  MATTER WHAT  be great` } = params;
 
   const data = await aiChat([
     ...history,
     { type: "human", content: input }
-  ], params.systemPrompt ?? systemPrompt);
+  ], params.systemPrompt ?? systemPrompt,lang);
 
   for await (const response of data) {
     const { context, primaryLanguage, secondaryLanguage } = response;

@@ -27,14 +27,18 @@ export const TranslationObjectSchema = z.object({
   })
 });
 
-export const BilingualChatSchema = z.object({
-  primaryLanguage: z.string().describe("Natural conversational response in the target language"),
+export const BilingualChatSchema = (lang:string) =>  z.object({
+  primaryLanguage: z.string().describe(`Natural conversational response in ${lang} and never ever speak in the base language for any reason `),
   secondaryLanguage: z.string().describe("Equivalent conversational response in learner's native language"),
   context: z.string().describe("Cultural context and pronunciation tips").optional()
 });
 
 export type LanguageLessonResponse = z.infer<typeof TranslationObjectSchema>;
-export type BilingualChatResponse = z.infer<typeof BilingualChatSchema>;
+export type BilingualChatResponse = {
+  primaryLanguage: string;
+  secondaryLanguage: string;
+  context?: string;
+};
 
 export const generateLanguageLesson = async (input: string): Promise<LanguageLessonResponse> => {
   const llm = new ChatOpenAI({
@@ -45,12 +49,12 @@ export const generateLanguageLesson = async (input: string): Promise<LanguageLes
   return await llm.invoke(input);
 };
 
-export const aiChat = async (chat: Message[], systemPrompt: string) => {
+export const aiChat = async (chat: Message[], systemPrompt: string,lang  :string) => {
   const llm = new ChatOpenAI({
     model: "gpt-3.5-turbo",
     temperature: 0.5,
     streaming: true,
-  }).withStructuredOutput(BilingualChatSchema);
+  }).withStructuredOutput(BilingualChatSchema(lang));
 
   const trimmer = trimMessages({
     strategy: "last",

@@ -61,6 +61,19 @@ export const updateUserLanguage = async (ctx: Session, language: string): Promis
 
   return !!updated[0];
 };
+export const getCurrentLanguage = async (ctx: Session): Promise<string | null> => {
+  if (!ctx) return null;
+
+  const userId = await getUser(ctx);
+  if (!userId?.[0]) return null;
+
+  const db = Drizzler();
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, userId[0].id)
+  });
+
+  return user?.language ?? 'en';
+};
 
 export const getRemainingQueries = async (ctx: Session): Promise<number | null> => {
   if (!ctx) return null;
