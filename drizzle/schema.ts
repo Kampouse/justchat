@@ -61,6 +61,8 @@ export const messages = sqliteTable("messages", {
   senderId: integer("sender_id").references(() => users.id),
   type: text("type").default("human"),
   content: text("content").notNull(),
+  primaryLanguage: text("primary_language"),
+  secondaryLanguage: text("secondary_language"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });
 export const schema = {
