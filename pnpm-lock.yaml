@@ -97,7 +97,7 @@ importers:
         version: 5.9.6
       langchain:
         specifier: ^0.3.7
-        version: 0.3.8(@langchain/core@0.3.26(openai@4.77.0(zod@3.24.2)))(openai@4.77.0(zod@3.24.2))
+        version: 0.3.8(@langchain/core@0.3.26(openai@4.77.0(zod@3.24.2)))(@langchain/groq@0.2.0(@langchain/core@0.3.26(openai@4.77.0(zod@3.24.2))))(openai@4.77.0(zod@3.24.2))
       postcss:
         specifier: ^8.4.39
         version: 8.4.49
@@ -777,6 +777,12 @@ packages:
   '@langchain/core@0.3.26':
     resolution: {integrity: sha512-6RUQHEp8wv+JwtYIIEBYBzbLlcAQZFc7EDOgAM0ukExjh9HiXoJzoWpgMRRCrr/koIbtwXPJUqBprZK1I1CXHQ==}
     engines: {node: '>=18'}
+
+  '@langchain/groq@0.2.0':
+    resolution: {integrity: sha512-GKdU+TFQeE9Ywol7jeH2tjCpRGUU1H0erOCKG1avNkyj9eb/yewaLkX6yketpJqP0nmIxsI/dBh+lXm72pKIIA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@langchain/core': '>=0.2.21 <0.4.0'
 
   '@langchain/langgraph-checkpoint@0.0.13':
     resolution: {integrity: sha512-amdmBcNT8a9xP2VwcEWxqArng4gtRDcnVyVI4DsQIo1Aaz8e8+hH17zSwrUF3pt1pIYztngIfYnBOim31mtKMg==}
@@ -2124,6 +2130,9 @@ packages:
 
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
+
+  groq-sdk@0.5.0:
+    resolution: {integrity: sha512-RVmhW7qZ+XZoy5fIuSdx/LGQJONpL8MHgZEW7dFwTdgkzStub2XQx6OKv28CHogijdwH41J+Npj/z2jBPu3vmw==}
 
   has-bigints@1.1.0:
     resolution: {integrity: sha512-R3pbpkcIqv2Pm3dUwgjclDRVmWpTJW2DcMzcIhEXEx1oh/CEMObMm3KLmRJOdvhM7o4uQBnwr8pzRK2sJWIqfg==}
@@ -4166,6 +4175,17 @@ snapshots:
     transitivePeerDependencies:
       - openai
 
+  '@langchain/groq@0.2.0(@langchain/core@0.3.26(openai@4.77.0(zod@3.24.2)))':
+    dependencies:
+      '@langchain/core': 0.3.26(openai@4.77.0(zod@3.24.2))
+      '@langchain/openai': 0.3.16(@langchain/core@0.3.26(openai@4.77.0(zod@3.24.2)))
+      groq-sdk: 0.5.0
+      zod: 3.24.2
+      zod-to-json-schema: 3.24.1(zod@3.24.2)
+    transitivePeerDependencies:
+      - encoding
+    optional: true
+
   '@langchain/langgraph-checkpoint@0.0.13(@langchain/core@0.3.26(openai@4.77.0(zod@3.24.2)))':
     dependencies:
       '@langchain/core': 0.3.26(openai@4.77.0(zod@3.24.2))
@@ -5712,6 +5732,20 @@ snapshots:
 
   graphemer@1.4.0: {}
 
+  groq-sdk@0.5.0:
+    dependencies:
+      '@types/node': 18.19.68
+      '@types/node-fetch': 2.6.12
+      abort-controller: 3.0.0
+      agentkeepalive: 4.5.0
+      form-data-encoder: 1.7.2
+      formdata-node: 4.4.1
+      node-fetch: 2.7.0
+      web-streams-polyfill: 3.3.3
+    transitivePeerDependencies:
+      - encoding
+    optional: true
+
   has-bigints@1.1.0: {}
 
   has-flag@4.0.0: {}
@@ -6006,7 +6040,7 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
-  langchain@0.3.8(@langchain/core@0.3.26(openai@4.77.0(zod@3.24.2)))(openai@4.77.0(zod@3.24.2)):
+  langchain@0.3.8(@langchain/core@0.3.26(openai@4.77.0(zod@3.24.2)))(@langchain/groq@0.2.0(@langchain/core@0.3.26(openai@4.77.0(zod@3.24.2))))(openai@4.77.0(zod@3.24.2)):
     dependencies:
       '@langchain/core': 0.3.26(openai@4.77.0(zod@3.24.2))
       '@langchain/openai': 0.3.16(@langchain/core@0.3.26(openai@4.77.0(zod@3.24.2)))
@@ -6021,6 +6055,8 @@ snapshots:
       yaml: 2.6.1
       zod: 3.24.2
       zod-to-json-schema: 3.24.1(zod@3.24.2)
+    optionalDependencies:
+      '@langchain/groq': 0.2.0(@langchain/core@0.3.26(openai@4.77.0(zod@3.24.2)))
     transitivePeerDependencies:
       - encoding
       - openai
