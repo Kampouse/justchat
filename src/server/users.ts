@@ -105,7 +105,6 @@ export const updateUserQueries = async (ctx: Session): Promise<boolean> => {
   return updatedUser && updatedUser[0] && typeof updatedUser[0].queriesRemaining === 'number' && updatedUser[0].queriesRemaining >= 0;
 };
 export const GetRemainingQueries = async (ctx: Session): Promise<number | null> => {
-  console.log("used :(");
   if (!ctx) return null;
 
   const userId = await getUser(ctx);

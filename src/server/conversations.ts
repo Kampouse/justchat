@@ -77,6 +77,8 @@ export const createMessages = async ({
     conversationId: conv.id,
     senderId: user[0].id,
     content: e.content,
+    primaryLanguage: e.primaryLanguage,
+    secondaryLanguage: e.secondaryLanguage,
     type: e.type,
     createdAt: new Date(),
   }));

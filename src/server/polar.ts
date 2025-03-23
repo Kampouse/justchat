@@ -39,7 +39,6 @@ export const SyncCustomer = async (email: string) => {
       .limit(1);
 
     if (!cus.ok) {
-      console.log("Customer not found in Polar", cus.error.message);
       const customer = await customersCreate(polar, {
         externalId: email,
         email: email,

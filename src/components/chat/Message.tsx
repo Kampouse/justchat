@@ -5,13 +5,16 @@ import MessageActions from "./MessageActions";
 import type { TranslationObjectSchema } from "~/server/ai";
 export type Message = {
   id?: string;
+  primaryLanguage?: string;
+  secondaryLanguage?: string;
   remaining?: number;
   content: string;
   type: string;
 };
 const MessageContent = component$<{
-  message: { type: string; content: string; remaining: number };
+  message: Message;
 }>(({ message }) => {
+  console.log(message);
   const isLoading = useSignal(false);
   const lessonData = useSignal<any | null>(null);
   const isLessonModalOpen = useSignal(false);
@@ -30,12 +33,23 @@ const MessageContent = component$<{
             : "text-sm font-medium leading-relaxed text-white md:text-base"
         } relative`}
       >
-        <p>{message.content}</p>
+        {message.type === "ai" && message.secondaryLanguage ? (
+          <>
+            <p>{message.primaryLanguage}</p>
+            <p class="blur-lg transition-all duration-200 hover:blur-none">
+              {message.secondaryLanguage}
+            </p>{" "}
+          </>
+        ) : (
+          <>
+            <p>{message.content}</p>
+          </>
+        )}
       </div>
       {message.type == "ai" && (
         <MessageActions
           message={message}
-          remaining={message.remaining}
+          remaining={message.remaining ?? 0}
           isLoading={isLoading}
           lessonData={lessonData}
           isLessonModalOpen={isLessonModalOpen}
@@ -48,7 +62,7 @@ const MessageContent = component$<{
 
 // Main Components
 export const Message = component$<{
-  message: { type: string; content: string; remaining: number };
+  message: Message;
   last: boolean;
 }>(({ message, last }) => {
   type Language = typeof TranslationObjectSchema._type;
@@ -58,7 +72,6 @@ export const Message = component$<{
     track.track(() => loc.url.pathname);
     lessonData.value = null;
   });
-
   return (
     <div
       id="message"

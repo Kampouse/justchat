@@ -62,7 +62,6 @@ export default component$(() => {
       ? user.value.user[0].language
       : "fr";
 
-  console.log(user_lang);
   const langy = languages.find((lang) => lang.code === user_lang);
   const selectedLanguage = useSignal<Language>(
     langy || {

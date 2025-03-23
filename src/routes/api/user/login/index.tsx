@@ -16,9 +16,8 @@ export const onRequest: RequestHandler = async (event) => {
         throw event.redirect(302, "/");
       }
 
-      const stuff = await createUser(session);
+      await createUser(session);
       await createConvo(session, id);
-      console.log(stuff);
     } catch (e) {
       console.error(e);
     }

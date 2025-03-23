@@ -17,6 +17,8 @@ export const useMessages = routeLoader$(async (e) => {
   return messages.map((el) => ({
     type: el.type,
     content: el.content,
+    primaryLanguage: el.primaryLanguage,
+    secondaryLanguage: el.secondaryLanguage,
     id: el.id.toString(),
   })) as Message[];
 });

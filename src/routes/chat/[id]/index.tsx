@@ -83,13 +83,17 @@ export default component$(() => {
         history: messages.value.slice(0, -2),
         systemPrompt: BasePrompt(language.value),
       });
-
       const intervalId = setInterval(scrollToBottom, 100);
 
       try {
         for await (const item of streamData) {
           if (typeof item === "object" && "secondaryLanguage" in item) {
             //#todo make this  message.value { primray , secoundary ...}
+
+            messages.value[messages.value.length - 1].primaryLanguage =
+              item.primaryLanguage;
+            messages.value[messages.value.length - 1].secondaryLanguage =
+              item.secondaryLanguage;
             messages.value[messages.value.length - 1].content =
               item.primaryLanguage +
               (item.secondaryLanguage ? ` (${item.secondaryLanguage})` : "");
