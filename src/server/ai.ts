@@ -28,11 +28,10 @@ export const TranslationObjectSchema = z.object({
 });
 
 export const BilingualChatSchema = (lang:string) =>  z.object({
-  primaryLanguage: z.string().describe(`Natural conversational response in ${lang} and never ever speak in the base language for any reason `),
-  secondaryLanguage: z.string().describe("Equivalent conversational response in learner's native language"),
-  context: z.string().describe("Cultural context and pronunciation tips").optional()
+  primaryLanguage: z.string().describe(`Listen and engage with the user's message, then provide a meaningful response in ${lang} that advances the conversation. Write all emotions and reactions directly in ${lang}. This could include answering questions, offering insights, expressing empathy, making suggestions, or asking relevant follow-up questions. Maintain a natural, conversational tone while ensuring the response is culturally appropriate and authentic to ${lang} speakers.`),
+  secondaryLanguage: z.string().describe("Equivalent conversational response in learner's native language, preserving cultural nuances"),
+  context: z.string().describe("Essential cultural context, pronunciation guidance, and usage notes").optional()
 });
-
 export type LanguageLessonResponse = z.infer<typeof TranslationObjectSchema>;
 export type BilingualChatResponse = {
   primaryLanguage: string;
@@ -51,8 +50,8 @@ export const generateLanguageLesson = async (input: string): Promise<LanguageLes
 
 export const aiChat = async (chat: Message[], systemPrompt: string,lang  :string) => {
   const llm = new ChatOpenAI({
-    model: "gpt-3.5-turbo",
-    temperature: 0.5,
+    model: "gpt-4",
+    temperature: 0.3,
     streaming: true,
   }).withStructuredOutput(BilingualChatSchema(lang));
 
