@@ -1,4 +1,5 @@
 import { server$ } from "@builder.io/qwik-city";
+import { updateUserQueries } from "~/server/users";
 import { updateUserLanguage } from "~/server/users";
 import { generateLanguageLesson } from "~/server/ai";
 
@@ -14,6 +15,11 @@ export const GenerateLesson = server$(async function (message: string) {
 
   if (!session) {
     throw new Error("Session not found");
+  }
+
+  const output = await updateUserQueries(session);
+  if (!output) {
+    throw new Error("unable to generete lesson credit too low");
   }
 
   return await generateLanguageLesson(message);

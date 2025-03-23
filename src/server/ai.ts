@@ -7,6 +7,7 @@ import {
   ChatPromptTemplate,
   MessagesPlaceholder,
 } from "@langchain/core/prompts";
+import { updateUserQueries } from "./users";
 
 // Schema definitions
 export const TranslationObjectSchema = z.object({
@@ -19,7 +20,7 @@ export const TranslationObjectSchema = z.object({
      conversation: z.array(z.object({
       person1: z.string().describe("First speaker's line"),
       person1_base: z.string().describe("First speaker's line in the base language"),
-      person2: z.string().describe("Second speaker's line"), 
+      person2: z.string().describe("Second speaker's line"),
       person2_base: z.string().describe("Second speaker's line in the base language"),
       context: z.string().describe("Conversational context").optional()
     })).describe("Example dialogue easy to follow"),
@@ -40,7 +41,7 @@ export const generateLanguageLesson = async (input: string): Promise<LanguageLes
     model: "gpt-4",
     temperature: 0.5
   }).withStructuredOutput(TranslationObjectSchema);
-  
+
   return await llm.invoke(input);
 };
 
@@ -57,12 +58,12 @@ export const aiChat = async (chat: Message[], systemPrompt: string) => {
     tokenCounter: (msgs) => msgs.length,
   });
 
-  const messageHistory = chat.map((m) => 
+  const messageHistory = chat.map((m) =>
     m.type === "ai" ? new AIMessage(m.content) : new HumanMessage(m.content)
   );
 
   const trimmedMessages = await trimmer.invoke(messageHistory);
-  
+
   const prompt = ChatPromptTemplate.fromMessages([
     ["system", systemPrompt],
     new MessagesPlaceholder("messages"),

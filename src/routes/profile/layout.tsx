@@ -28,11 +28,6 @@ export const useProfile = routeLoader$(async ({ sharedMap }) => {
   });
 });
 
-export const useSubscription = routeLoader$(async (ctx) => {
-  const sesh = await ctx.sharedMap.get("session");
-  return await SyncCustomer(sesh.user.email);
-});
-
 export const useCheckout = routeAction$(async ({ email }, { env }) => {
   try {
     const polar = new PolarCore({

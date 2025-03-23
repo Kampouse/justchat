@@ -6,17 +6,18 @@ import { DB } from "../../../drizzle";
 import { users } from "../../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import {
-  useSubscription,
   useCancelSubscription,
   useResumeSubscription,
   useCheckout,
 } from "./layout";
 import { useSignOut } from "~/routes/plugin@auth";
+import { GetRemainingQueries } from "~/server/users";
 
 export const useProfile = routeLoader$(async ({ sharedMap }) => {
   const db = DB();
-  const session = await sharedMap.get("session");
 
+  const session = await sharedMap.get("session");
+  await GetRemainingQueries(session);
   if (!session?.user?.email) {
     return null;
   }
@@ -30,7 +31,6 @@ export const useProfile = routeLoader$(async ({ sharedMap }) => {
 
 export default component$(() => {
   const user = useProfile();
-  useSubscription();
   const checkout = useCheckout();
   const cancelSubscription = useCancelSubscription();
   const resumeSubscription = useResumeSubscription();
@@ -109,7 +109,7 @@ export default component$(() => {
                 <div class="flex items-center justify-between">
                   <span class="text-gray-400">Monthly Queries:</span>
                   <span class="font-semibold text-white">
-                    {user.value.queriesRemaining ?? 0} /{" "}
+                    {user.value.queriesUsed ?? 0} /{" "}
                     {user.value.subscription === "active" ? "500" : "100"}
                   </span>
                 </div>

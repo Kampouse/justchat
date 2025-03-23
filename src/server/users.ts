@@ -78,7 +78,6 @@ export const getRemainingQueries = async (ctx: Session): Promise<number | null> 
 
 export const updateUserQueries = async (ctx: Session): Promise<boolean> => {
   if (!ctx) throw new Error("No session provided");
-
   const userId = await getUser(ctx);
   if (!userId || !userId[0]) throw new Error("Invalid user");
 
@@ -90,7 +89,7 @@ export const updateUserQueries = async (ctx: Session): Promise<boolean> => {
   if (!user) throw new Error("User not found");
 
   // Check if queries are exhausted
-  if (user.queriesRemaining && user.queriesRemaining <= 0) {
+  if (user.queriesRemaining != null && user.queriesRemaining <= 0) {
     throw new Error("Query limit exceeded");
   }
 
@@ -103,11 +102,10 @@ export const updateUserQueries = async (ctx: Session): Promise<boolean> => {
     })
     .where(eq(users.id, userId[0].id))
     .returning();
-
-  return updatedUser && updatedUser[0] && typeof updatedUser[0].queriesRemaining === 'number' && updatedUser[0].queriesRemaining > 0;
+  return updatedUser && updatedUser[0] && typeof updatedUser[0].queriesRemaining === 'number' && updatedUser[0].queriesRemaining >= 0;
 };
-
 export const GetRemainingQueries = async (ctx: Session): Promise<number | null> => {
+  console.log("used :(");
   if (!ctx) return null;
 
   const userId = await getUser(ctx);
@@ -133,13 +131,13 @@ export const GetRemainingQueries = async (ctx: Session): Promise<number | null> 
     const lastResetTime = new Date(user.lastQueryReset).getTime();
     const timeDiff = currentTime - lastResetTime;
     const thirtyDays = 30 * 24 * 60 * 60 * 1000;
-
     if (timeDiff > thirtyDays) {
-      const queryLimit = user.subscriptionStatus === 'active' ? PREMIUM_MONTHLY_QUERIES : TRIAL_MONTHLY_QUERIES;
 
+      const queryLimit = user.subscriptionStatus === 'active' ? PREMIUM_MONTHLY_QUERIES : TRIAL_MONTHLY_QUERIES;
       await database.update(users)
         .set({
           queriesRemaining: queryLimit,
+        queriesUsed: 0,
           lastQueryReset: new Date()
         })
         .where(eq(users.id, userId[0].id));

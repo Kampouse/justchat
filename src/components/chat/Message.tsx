@@ -5,11 +5,12 @@ import MessageActions from "./MessageActions";
 import type { TranslationObjectSchema } from "~/server/ai";
 export type Message = {
   id?: string;
+  remaining?: number;
   content: string;
   type: string;
 };
 const MessageContent = component$<{
-  message: { type: string; content: string };
+  message: { type: string; content: string; remaining: number };
 }>(({ message }) => {
   const isLoading = useSignal(false);
   const lessonData = useSignal<any | null>(null);
@@ -34,6 +35,7 @@ const MessageContent = component$<{
       {message.type == "ai" && (
         <MessageActions
           message={message}
+          remaining={message.remaining}
           isLoading={isLoading}
           lessonData={lessonData}
           isLessonModalOpen={isLessonModalOpen}
@@ -46,7 +48,7 @@ const MessageContent = component$<{
 
 // Main Components
 export const Message = component$<{
-  message: { type: string; content: string };
+  message: { type: string; content: string; remaining: number };
   last: boolean;
 }>(({ message, last }) => {
   type Language = typeof TranslationObjectSchema._type;

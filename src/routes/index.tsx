@@ -19,6 +19,7 @@ export const useRemainingQueries = routeLoader$(async (e) => {
   if (!session) return 0;
 
   const data = await GetRemainingQueries(session);
+  console.log(data);
   if (data == null) {
     return 0;
   }

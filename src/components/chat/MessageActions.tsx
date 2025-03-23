@@ -29,10 +29,11 @@ export const Loading = component$(() => {
 
 export default component$<{
   message: { content: string };
+  remaining: number;
   isLoading: Signal<boolean>;
   lessonData: Signal<any>;
   isLessonModalOpen: Signal<boolean>;
-}>(({ message, isLoading, lessonData, isLessonModalOpen }) => {
+}>(({ message, isLoading, lessonData, isLessonModalOpen, remaining }) => {
   return (
     <div class="mt-2 flex justify-end space-x-2">
       <button
@@ -72,7 +73,7 @@ export default component$<{
           }
         }}
         class="inline-flex items-center space-x-1 rounded-md bg-blue-600/20 px-2 py-1 text-xs text-blue-400 transition-colors hover:bg-blue-600/30"
-        disabled={isLoading.value || lessonData.value != null}
+        disabled={isLoading.value || lessonData.value != null || remaining <= 0}
       >
         {isLoading.value ? (
           <Loading />

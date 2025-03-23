@@ -37,7 +37,7 @@ export const Conversation = component$<{
               {message.type === "ai" && <Avatar />}
 
               <MessageComponent
-                message={{ ...message }}
+                message={{ ...message, remaining }}
                 last={index === messages.value.length - 1}
               />
             </div>
