@@ -84,9 +84,11 @@ export const CreateMessages = server$(
       return msgs?.map((e) => {
         return {
           content: e.content,
+          primaryLanguage: e.primaryLanguage,
+          secondaryLanguage: e.secondaryLanguage,
           type: e.type as "ai" | "human",
           id: e.id.toString(),
-        } satisfies Message;
+        } as Message;
       });
     } catch (error) {
       console.error("Error creating messages:", error);

@@ -115,14 +115,20 @@ export default component$(() => {
         systemPrompt: BasePrompt(selectedLanguage.value),
       });
 
-      const output = "";
-      messages.value = [...messages.value, { type: "ai", content: output }];
+      messages.value = [
+        ...messages.value,
+        { type: "ai", content: "", primaryLanguage: "", secondaryLanguage: "" },
+      ];
       isRunning.value = true;
       showBanner.value = false;
 
       try {
         for await (const item of data) {
           if (typeof item === "object" && "secondaryLanguage" in item) {
+            messages.value[messages.value.length - 1].primaryLanguage =
+              item.primaryLanguage;
+            messages.value[messages.value.length - 1].secondaryLanguage =
+              item.secondaryLanguage;
             messages.value[messages.value.length - 1].content =
               item.primaryLanguage + " (" + item.secondaryLanguage + ")";
           }
