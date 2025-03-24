@@ -28,7 +28,7 @@ export const TranslationObjectSchema = z.object({
 });
 
 export const BilingualChatSchema = (lang: string) => z.object({
-  primaryLanguage: z.string().describe(` respond with (${lang}) act as french teacher provide easy  way to follow for the student  Vary sentence structure and vocabulary to maintain a human-like conversational flow.  Avoid being overly repetitive.`),
+  primaryLanguage: z.string().describe(`Listen and engage with the user's message, then provide a meaningful response in ${lang} that advances the conversation. Write all emotions and reactions directly in ${lang}. This could include answering questions, offering insights, expressing empathy, making suggestions, or asking relevant follow-up questions. Maintain a natural, conversational tone while ensuring the response is culturally appropriate and authentic to ${lang} speakers.`),
   secondaryLanguage: z.string().describe("Equivalent conversational response in learner's native language, preserving cultural nuances"),
   context: z.string().describe("Essential cultural context, pronunciation guidance, and usage notes").optional()
 });
