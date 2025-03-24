@@ -47,18 +47,6 @@ export const SyncCustomer = async (email: string) => {
       if (!customer.ok) {
         throw new Error("Failed to create customer in Polar");
       }
-
-      await db.update(schema.users)
-        .set({
-          polarCustomerId: customer.value.id,
-          name: customer.value.name || user[0].name,
-          subscription: 'none',
-          subscriptionStatus: 'none',
-          queriesRemaining: TRIAL_MONTHLY_QUERIES
-        })
-        .where(eq(schema.users.email, email))
-        .execute();
-
       return customer;
     }
 
