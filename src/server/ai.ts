@@ -1,7 +1,7 @@
 import { HumanMessage, AIMessage } from "@langchain/core/messages";
 import { ChatOpenAI } from "@langchain/openai";
 import { trimMessages } from "@langchain/core/messages";
-import {z} from "zod";
+import { z } from "zod";
 import { Message } from "~/components/chat/Message";
 import {
   ChatPromptTemplate,
@@ -13,11 +13,11 @@ import { updateUserQueries } from "./users";
 export const TranslationObjectSchema = z.object({
   translation: z.string().describe("the litteral translation").optional(),
   explanation: z.string().describe("grammatical explanation of the translation").optional(),
-  pitfall : z.string().describe("A potential pitfall to avoid").optional(),
-  grammars : z.array(z.string()).optional().describe("Grammatical rules with translation"),
+  pitfall: z.string().describe("A potential pitfall to avoid").optional(),
+  grammars: z.array(z.string()).optional().describe("Grammatical rules with translation"),
   pronunciation: z.string().describe("Pronunciation guide").optional(),
   practical: z.object({
-     conversation: z.array(z.object({
+    conversation: z.array(z.object({
       person1: z.string().describe("First speaker's line"),
       person1_base: z.string().describe("First speaker's line in the base language"),
       person2: z.string().describe("Second speaker's line"),
@@ -26,9 +26,8 @@ export const TranslationObjectSchema = z.object({
     })).describe("Example dialogue easy to follow"),
   })
 });
-
-export const BilingualChatSchema = (lang:string) =>  z.object({
-  primaryLanguage: z.string().describe(`Listen and engage with the user's message, then provide a meaningful response in ${lang} that advances the conversation. Write all emotions and reactions directly in ${lang}. This could include answering questions, offering insights, expressing empathy, making suggestions, or asking relevant follow-up questions. Maintain a natural, conversational tone while ensuring the response is culturally appropriate and authentic to ${lang} speakers.`),
+export const BilingualChatSchema = (lang: string) => z.object({
+  primaryLanguage: z.string().describe(`Listen to the user's message attentively, then create a thoughtful and culturally sensitive response in ${lang} to foster a meaningful conversation. Reflect on their sentiments, context, and cultural nuances, adapting your reply to their tone and needs. Offer relevant emotions, insights, empathy, or solutions, ensuring your response is a nuanced and authentic adaptation, formatted as requested, and free from translation artifacts. Respect the user's language and culture in tone and content.`),
   secondaryLanguage: z.string().describe("Equivalent conversational response in learner's native language, preserving cultural nuances"),
   context: z.string().describe("Essential cultural context, pronunciation guidance, and usage notes").optional()
 });
@@ -48,7 +47,7 @@ export const generateLanguageLesson = async (input: string): Promise<LanguageLes
   return await llm.invoke(input);
 };
 
-export const aiChat = async (chat: Message[], systemPrompt: string,lang  :string) => {
+export const aiChat = async (chat: Message[], systemPrompt: string, lang: string) => {
   const llm = new ChatOpenAI({
     model: "gpt-4",
     temperature: 0.3,
