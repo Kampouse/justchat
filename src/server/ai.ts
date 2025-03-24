@@ -27,7 +27,7 @@ export const TranslationObjectSchema = z.object({
   })
 });
 export const BilingualChatSchema = (lang: string) => z.object({
-  primaryLanguage: z.string().describe(`Listen to the user's message attentively, then create a thoughtful and culturally sensitive response in ${lang} to foster a meaningful conversation. Reflect on their sentiments, context, and cultural nuances, adapting your reply to their tone and needs. Offer relevant emotions, insights, empathy, or solutions, ensuring your response is a nuanced and authentic adaptation, formatted as requested, and free from translation artifacts. Respect the user's language and culture in tone and content.`),
+  primaryLanguage: z.string().describe(`Listen to the user's message attentively, then create a thoughtful and culturally sensitive response in ${lang} to foster a meaningful conversation. Reflect on their sentiments, context, and cultural nuances, adapting your reply to their tone and needs. Offer relevant emotions, insights, empathy, or solutions, ensuring your response is a nuanced and authentic adaptation, formatted as requested. when user make a statement make a remark or ask a question `),
   secondaryLanguage: z.string().describe("Equivalent conversational response in learner's native language, preserving cultural nuances"),
   context: z.string().describe("Essential cultural context, pronunciation guidance, and usage notes").optional()
 });
@@ -63,7 +63,8 @@ export const aiChat = async (chat: Message[], systemPrompt: string, lang: string
   const messageHistory = chat.map((m) =>
     m.type === "ai" ? new AIMessage(m.content) : new HumanMessage(m.content)
   );
-
+  const message = new AIMessage("I WILL NOT REPEAT A TRANSLATION AFTER THE USER STATEMENT i WILL SAY SOMETHING ELSE ");
+  messageHistory.push(message);
   const trimmedMessages = await trimmer.invoke(messageHistory);
 
   const prompt = ChatPromptTemplate.fromMessages([
