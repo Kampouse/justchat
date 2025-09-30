@@ -136,7 +136,12 @@ export const useCancelSubscription = routeAction$(
       { id: user.subscriptionId as string },
     );
 
-    await SyncCustomer(user.email);
+    try {
+      await SyncCustomer(user.email);
+    } catch (error) {
+      console.error("Error syncing customer:", error);
+    }
+
     if (!res.ok) throw res.error;
     return res.value;
   },

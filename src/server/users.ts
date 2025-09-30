@@ -133,28 +133,31 @@ export const GetRemainingQueries = async (ctx: Session): Promise<number | null> 
     await database.update(users)
       .set({ lastSyncDate: new Date() })
       .where(eq(users.id, userId[0].id)).execute();
+    try {
+      await SyncCustomer(ctx.user.email);
+    } catch (error) {
+      console.error('Error syncing customer:', error);
+    }
 
-    await SyncCustomer(ctx.user.email);
-  }
+    // Handle query reset logic
+    if (user.lastQueryReset) {
+      const currentTime = new Date().getTime();
+      const lastResetTime = new Date(user.lastQueryReset).getTime();
+      const timeDiff = currentTime - lastResetTime;
+      const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+      if (timeDiff > thirtyDays) {
 
-  // Handle query reset logic
-  if (user.lastQueryReset) {
-    const currentTime = new Date().getTime();
-    const lastResetTime = new Date(user.lastQueryReset).getTime();
-    const timeDiff = currentTime - lastResetTime;
-    const thirtyDays = 30 * 24 * 60 * 60 * 1000;
-    if (timeDiff > thirtyDays) {
+        const queryLimit = user.subscriptionStatus === 'active' ? PREMIUM_MONTHLY_QUERIES : TRIAL_MONTHLY_QUERIES;
+        await database.update(users)
+          .set({
+            queriesRemaining: queryLimit,
+            queriesUsed: 0,
+            lastQueryReset: new Date()
+          })
+          .where(eq(users.id, userId[0].id));
 
-      const queryLimit = user.subscriptionStatus === 'active' ? PREMIUM_MONTHLY_QUERIES : TRIAL_MONTHLY_QUERIES;
-      await database.update(users)
-        .set({
-          queriesRemaining: queryLimit,
-        queriesUsed: 0,
-          lastQueryReset: new Date()
-        })
-        .where(eq(users.id, userId[0].id));
-
-      return queryLimit;
+        return queryLimit;
+      }
     }
   }
 
